@@ -53,3 +53,4 @@ The platform will automatically generate personalized tasks and send follow-up e
 
 ## Get Involved
 For a firsthand experience of the current Career Quiz, visit [go.uvm.edu/cq1](go.uvm.edu/cq1). 
+We also have an existing document of the branching logic for each question stored in Qualtrics.
