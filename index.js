@@ -12,7 +12,10 @@ let quiz = {
     categories: []
 };
 
-
+function getQuizInfo() {
+  quiz.title = document.getElementById('quiz-title').value;
+  quiz.desc = document.getElementById('quiz-desc').value;
+}
 function addBlock() {
     const id = uid();
     /* 25 is an arbitrary number for the sake of having a limit  */
@@ -55,5 +58,7 @@ function renderBlock(){
  * Eventually will have every single thing we want to render on the page in this function 
  */
 function render() {
+    getQuizInfo()
     renderBlock()
+    console.log(quiz)
 }

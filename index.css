@@ -24,6 +24,7 @@ aside {
   width: 30%;
 }
 
+
 .add_block{
   background-color: #154734;
   color: white;
@@ -33,6 +34,9 @@ aside {
 
 }
 
+.quiz_info{
+    padding: 10px 20px;
+}
 input{
     font-family: 'DM Serif Display', serif;
     font-size: 17px;
