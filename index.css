@@ -1,0 +1,16 @@
+  header{
+    background: #154734;
+    color: whitesmoke;
+    padding: 0;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+div{
+    background: #F7F7F7;
+  }
