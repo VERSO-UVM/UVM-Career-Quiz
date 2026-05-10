@@ -16,26 +16,41 @@
 
 <body>
     <header>
-        <h1>Quiz builder </h1>
+        <h1>Quiz builder</h1>
     </header>
-    <aside>
-        <div class="quiz_info">
-            <p>Title</p>
-            <input class="quiz_input" id="quiz-title" placeholder="e.g.Career-Ready quiz"
-                value="">
-        </div>
-        <div class="quiz_info">
-            <p>Subtitle / description</p>
-            <textarea class="quiz_input" id="quiz-desc"
-                placeholder="What is this quiz for?"></textarea>
-        </div>
-        <div id="block_creation">
-            <button class="add_block" onclick="addBlock()">Add a block</button>
-        </div>
-        <div id="block"></div>
 
+    <div id="app_layout">
+        <aside>
+            <div class="quiz_info">
+                <p>Title</p>
+                <input class="quiz_input" id="quiz-title" placeholder="e.g. Career-Ready quiz" value="">
+            </div>
+            <div class="quiz_info">
+                <p>Subtitle / description</p>
+                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?"></textarea>
+            </div>
+            <div id="block_creation">
+                <button class="add_block" onclick="addBlock()">Add a block</button>
+            </div>
+            <div id="block"></div>
+        </aside>
 
-    </aside>
+        <main id="question_editor" style="display: none;">
+            <div id="editor_header">
+                <h2 id="editor_block_title">Block name</h2>
+                <button id="close_editor" onclick="closeEditor()">✕ Close</button>
+            </div>
+            <div id="questions_list"></div>
+            <button class="add_question_btn" onclick="addQuestion(active_category_Id)">Add question</button>
+        </main>
+
+        <main id="empty_state">
+            <div id="empty_hint">
+                <p>Select a block to start adding questions</p>
+            </div>
+        </main>
+    </div>
+
     <script src="index.js"></script>
 </body>
 

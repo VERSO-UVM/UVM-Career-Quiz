@@ -1,76 +1,314 @@
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #e8e8e8;
+
+}
 
 header {
     background: #154734;
     color: whitesmoke;
-    padding: 0;
+    padding: 0 20px;
     height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: sticky;
     top: 0;
+
 }
 
-div {
-    background: #F7F7F7;
+
+#app_layout {
+    display: flex;
+    height: calc(100vh - 56px);
 }
+
 
 aside {
-  width: 30%;
-  float: left;
-  font-style: italic;
-  background-color: lightgray;
-  width: 30%;
+    width: 280px;
+    background: #f0f0f0;
+    height: 100%;
+    overflow-y: auto;
+    border-right: 1px solid #d0d0d0;
+    display: flex;
+    flex-direction: column;
+}
+
+.quiz_info {
+    padding: 12px 16px;
+    border-bottom: 1px solid #ddd;
+    background: #f7f7f7;
+}
+
+.quiz_info p {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+input,
+textarea {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 15px;
+    border: none;
+    background: transparent;
+    color: #154734;
+    width: 100%;
+    padding: 0;
+    resize: none;
+    outline: none;
+}
+
+textarea {
+    min-height: 60px;
+}
+
+#block_creation {
+    padding: 12px 16px;
+    background: #f0f0f0;
+}
+
+.add_block {
+    background: #154734;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    text-align: left;
+}
+
+.add_block:hover {
+    background: #1d6347;
 }
 
 
-.add_block{
-  background-color: #154734;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-
+#block {
+    flex: 1;
 }
 
-.quiz_info{
-    padding: 10px 20px;
+.block_item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f7f7f7;
+    cursor: pointer;
 }
-input{
-    font-family: 'DM Serif Display', serif;
-    font-size: 17px;
+
+.block_item:hover {
+    background: #eaf2ed;
+}
+
+.block_item.active {
+    background: #d4eade;
+    border-left: 3px solid #154734;
+    background: #dceee5;
+}
+
+.block_number {
+    font-size: 11px;
+    color: #999;
+    min-width: 20px;
+    font-style: italic;
+}
+
+.block_name_input {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
     border: none;
     background: transparent;
     color: #154734;
     flex: 1;
     padding: 0;
+    cursor: text;
+    width: auto;
 }
 
-#block_creation {
-    background: #F7F7F7;
-    text-align: center;
-}
-#block > div {
-    background: #F7F7F7;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    border-bottom: 1px solid #e0e0e0;
+.block_name_input:focus {
+    outline: none;
+    border-bottom: 1px solid #154734;
 }
 
 .remove_block {
     background: transparent;
-    color: #999;
+    color: #bbb;
     border: none;
-    font-size: 16px;
-    padding: 4px 8px;
+    font-size: 13px;
+    padding: 2px 6px;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 3px;
+    flex-shrink: 0;
 }
 
 .remove_block:hover {
     background: #fde8e8;
     color: #c0392b;
+}
+
+
+main#question_editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f7f7f7;
+    overflow-y: auto;
+}
+
+#editor_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px 16px;
+    border-bottom: 2px solid #154734;
+    background: #f7f7f7;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+#editor_block_title {
+    font-size: 22px;
+    color: #154734;
+}
+
+#close_editor {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #888;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-radius: 3px;
+    transition: all 0.15s;
+}
+
+#close_editor:hover {
+    background: #fde8e8;
+    color: #c0392b;
+    border-color: #f5c6c6;
+}
+
+#questions_list {
+    padding: 20px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.no_questions {
+    color: #aaa;
+    font-style: italic;
+    font-size: 14px;
+    padding: 12px 0;
+}
+
+.question_item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    border: 1px solid #e4e4e4;
+    border-radius: 4px;
+    padding: 10px 14px;
+    transition: box-shadow 0.12s;
+}
+
+.question_item:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.question_number {
+    font-size: 12px;
+    font-weight: bold;
+    color: #154734;
+    min-width: 28px;
+    font-style: italic;
+}
+
+.question_input {
+    flex: 1;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 15px;
+    border: none;
+    background: transparent;
+    color: #222;
+    outline: none;
+    width: auto;
+}
+
+.question_input::placeholder {
+    color: #ccc;
+}
+
+.remove_question {
+    background: transparent;
+    color: #bbb;
+    border: none;
+    font-size: 13px;
+    padding: 2px 6px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.remove_question:hover {
+    background: #fde8e8;
+    color: #c0392b;
+}
+
+.add_question_btn {
+    margin: 0 28px 28px;
+    background: white;
+    color: #154734;
+    border: 1px dashed #154734;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    text-align: left;
+    transition: background 0.15s;
+    border-radius: 3px;
+}
+
+.add_question_btn:hover {
+    background: #eaf2ed;
+}
+
+main#empty_state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+}
+
+#question_editor+#empty_state {
+    display: none;
+}
+
+#empty_hint {
+    text-align: center;
+    color: #aaa;
+    background: transparent;
+}
+
+#empty_hint span {
+    font-size: 36px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+#empty_hint p {
+    font-size: 15px;
+    font-style: italic;
 }
