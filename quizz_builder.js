@@ -120,7 +120,7 @@ function renderQuestions(cat_Id) {
             <input
                 class="question_input"
                 value="${q.text.replace(/"/g, '&quot;')}"
-                placeholder="Type your question here"
+                placeholder="Type your question here…"
                 oninput="changeQuestionText('${cat_Id}', '${q.id}', this.value)"
             />
             <button class="remove_question" onclick="removeQuestion('${cat_Id}', '${q.id}')">✕</button>
