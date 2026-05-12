@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Creation</title>
-    <link href="quizz_builder.css" rel="stylesheet">
+    <link href="static/quiz_builder.css" rel="stylesheet">
     <!-- TODO as of right now this page allow for modification of only one quiz. 
      Therefore we need to build a page (let's call it A) that will LEAD into this page (B).
      Page A will allow the user to choose which quiz we want to modify/allow the user to create a brand new one  
@@ -17,6 +17,10 @@
 <body>
     <header>
         <h1>Quiz builder</h1>
+        <form method="POST">
+            <button type ="submit" class="add_block">Test</button>
+        </form>
+
     </header>
 
     <div id="app_layout">
@@ -41,7 +45,7 @@
                 <button id="close_editor" onclick="closeEditor()">✕ Close</button>
             </div>
             <div id="questions_list"></div>
-            <button class="add_question_btn" onclick="addQuestion(active_category_Id)">Add question</button>
+            <button class="add_question_btn" onclick="addQuestion(active_category_Id)">Add a question</button>
         </main>
 
         <main id="empty_state">
@@ -51,7 +55,7 @@
         </main>
     </div>
 
-    <script src="quizz_builder.js"></script>
+    <script src="static/quiz_builder.js"></script>
 </body>
 
 </html>

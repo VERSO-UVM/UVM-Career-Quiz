@@ -1,20 +1,20 @@
 function uid() {
     return Math.random().toString(36).slice(2, 9);
 }
- 
+
 let quiz = {
     title: '',
     desc: '',
     categories: []
 };
- 
+
 let active_category_Id = null;
- 
+
 function getQuizInfo() {
     quiz.title = document.getElementById('quiz-title').value;
     quiz.desc = document.getElementById('quiz-desc').value;
 }
- 
+
 function addBlock() {
     const id = uid();
     /* 25 is an arbitrary number for the sake of having a limit, might want to remove that one day */
@@ -25,7 +25,7 @@ function addBlock() {
     quiz.categories.push({ id, name: 'Block ' + (quiz.categories.length + 1), items: [] });
     render();
 }
- 
+
 function changeBlockName(id, new_name) {
     const category = quiz.categories.find(block => block.id === id);
     if (category) {
@@ -35,50 +35,50 @@ function changeBlockName(id, new_name) {
         }
     }
 }
- 
+
 function removeBlock(id) {
     quiz.categories = quiz.categories.filter(block => block.id !== id);
- 
+
     // Renumber blocks that still have default names
     quiz.categories.forEach((block, index) => {
         if (/^Block \d+$/.test(block.name)) {
             block.name = 'Block ' + (index + 1);
         }
     });
- 
+
     // If the removed block was active, close the editor
     if (active_category_Id === id) {
         active_category_Id = null;
         closeEditor();
     }
- 
+
     render();
 }
- 
+
 function openEditor(id) {
     active_category_Id = id;
     const category = quiz.categories.find(b => b.id === id);
     if (!category) return;
- 
+
     document.getElementById('question_editor').style.display = 'flex';
     document.getElementById('empty_state').style.display = 'none';
     document.getElementById('editor_block_title').textContent = category.name;
- 
+
     renderQuestions(id);
- 
+
     // Highlight active block in sidebar
     document.querySelectorAll('.block_item').forEach(el => el.classList.remove('active'));
     const activeEl = document.querySelector(`.block_item[data-id="${id}"]`);
     if (activeEl) activeEl.classList.add('active');
 }
- 
+
 function closeEditor() {
     document.getElementById('question_editor').style.display = 'none';
     document.getElementById('empty_state').style.display = 'flex';
     document.querySelectorAll('.block_item').forEach(el => el.classList.remove('active'));
     active_category_Id = null;
 }
- 
+
 function addQuestion(cat_Id) {
     const category = quiz.categories.find(b => b.id === cat_Id);
     if (!category) return;
@@ -86,14 +86,14 @@ function addQuestion(cat_Id) {
     category.items.push({ id: q_Id, text: '', type: 'text' });
     renderQuestions(cat_Id);
 }
- 
+
 function removeQuestion(cat_Id, q_Id) {
     const category = quiz.categories.find(b => b.id === cat_Id);
     if (!category) return;
     category.items = category.items.filter(q => q.id !== q_Id);
     renderQuestions(cat_Id);
 }
- 
+
 function changeQuestionText(cat_Id, q_Id, new_Text) {
     const category = quiz.categories.find(b => b.id === cat_Id);
     if (!category)
@@ -102,18 +102,18 @@ function changeQuestionText(cat_Id, q_Id, new_Text) {
     if (question)
         question.text = new_Text;
 }
- 
+
 function renderQuestions(cat_Id) {
     const category = quiz.categories.find(b => b.id === cat_Id);
     if (!category)
         return;
- 
+
     const container = document.getElementById('questions_list');
     if (!category.items.length) {
         container.innerHTML = `<p class="no_questions">No questions yet. Add one below.</p>`;
         return;
     }
- 
+
     container.innerHTML = category.items.map((q, index) => `
         <div class="question_item" id="q_${q.id}">
             <span class="question_number">Q${index + 1}</span>
@@ -127,7 +127,7 @@ function renderQuestions(cat_Id) {
         </div>
     `).join('');
 }
- 
+
 function renderBlock() {
     const container = document.getElementById('block');
     container.innerHTML = quiz.categories.map((block, index) => `
@@ -144,7 +144,7 @@ function renderBlock() {
         </div>
     `).join('');
 }
- 
+
 /**
  * Broke off render into multiple functions in order to avoid cluttering, and for an easier experience reading the code
  */
@@ -152,4 +152,12 @@ function render() {
     getQuizInfo();
     renderBlock();
 }
- 
+
+// TODO make it so this function send the stringfied quiz to app.py, where it will be saved as a file, ready to be reloaded after another session 
+function exportQuiz() {
+    const jsonString = JSON.stringify(quiz, null, 2);
+}
+
+function importQuiz(){
+    // TODO implement this function. Ideally what it would do is fetch a specific quiz via the flask backend. 
+}
