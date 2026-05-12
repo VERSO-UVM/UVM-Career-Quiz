@@ -53,8 +53,15 @@
             </div>
         </main>
     </div>
-
+    <script>
+        let quiz = {{ quiz | tojson }} || {
+            title: '',
+            desc: '',
+            categories: []
+        };
+    </script>
     <script src="static/quiz_builder.js"></script>
+
 </body>
 
 </html>

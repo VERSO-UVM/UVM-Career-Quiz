@@ -2,11 +2,6 @@ function uid() {
     return Math.random().toString(36).slice(2, 9);
 }
 
-let quiz = {
-    title: '',
-    desc: '',
-    categories: []
-};
 
 let active_category_Id = null;
 
@@ -149,14 +144,17 @@ function renderBlock() {
  * Broke off render into multiple functions in order to avoid cluttering, and for an easier experience reading the code
  */
 function render() {
+    document.getElementById('quiz-title').value = quiz.title;
+    document.getElementById('quiz-desc').value = quiz.desc;
     getQuizInfo();
     renderBlock();
 }
 
 function saveQuiz() {
-    if (!quiz.title)
-        alert("You have not chosen the name of your quiz. Please do so before saving it")
-        return 
+    if (!quiz.title){
+        alert("You have not chosen the name of your quiz. Please do so before saving it");
+        return ;
+    }
     const jsonString = JSON.stringify(quiz, null, 2);
 
     fetch('/save-quiz', {
@@ -165,9 +163,7 @@ function saveQuiz() {
             'Content-Type': 'application/json'
         },
         body: jsonString
-    })
+    });
 }
 
-function loadQuiz() {
-    // TODO implement this function. Ideally what it would do is fetch a specific quiz via the flask backend. 
-}
+render();
