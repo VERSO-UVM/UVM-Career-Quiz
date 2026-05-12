@@ -22,10 +22,22 @@ header {
 
 }
 
+.export_quiz {
+    background: #154734;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+}
+
+.export_quiz:hover {
+    background: #2d815f;
+}
 
 #app_layout {
     display: flex;
-    height: calc(100vh - 56px);
+    height: 90vh;
 }
 
 
@@ -34,14 +46,14 @@ aside {
     background: #f0f0f0;
     height: 100%;
     overflow-y: auto;
-    border-right: 1px solid #d0d0d0;
+    border-right: 1px solid whitesmoke;
     display: flex;
     flex-direction: column;
 }
 
 .quiz_info {
     padding: 12px 16px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid whitesmoke;
     background: #f7f7f7;
 }
 
@@ -49,7 +61,7 @@ aside {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #888;
+    color: gray;
     margin-bottom: 4px;
 }
 
@@ -118,7 +130,7 @@ textarea {
 
 .block_number {
     font-size: 11px;
-    color: #999;
+    color: gray;
     min-width: 20px;
     font-style: italic;
 }
@@ -152,8 +164,8 @@ textarea {
 }
 
 .remove_block:hover {
-    background: #fde8e8;
-    color: #c0392b;
+    background: white;
+    color: red;
 }
 
 
@@ -161,7 +173,7 @@ main#question_editor {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #f7f7f7;
+    background: white;
     overflow-y: auto;
 }
 
@@ -171,7 +183,7 @@ main#question_editor {
     justify-content: space-between;
     padding: 20px 28px 16px;
     border-bottom: 2px solid #154734;
-    background: #f7f7f7;
+    background: white;
     position: sticky;
     top: 0;
     z-index: 5;
@@ -184,8 +196,8 @@ main#question_editor {
 
 #close_editor {
     background: transparent;
-    border: 1px solid #ccc;
-    color: #888;
+    border: 1px solid gray;
+    color: gray;
     padding: 5px 12px;
     cursor: pointer;
     font-size: 13px;
@@ -194,8 +206,8 @@ main#question_editor {
 }
 
 #close_editor:hover {
-    background: #fde8e8;
-    color: #c0392b;
+    background: white;
+    color: red;
     border-color: #f5c6c6;
 }
 
@@ -207,7 +219,7 @@ main#question_editor {
 }
 
 .no_questions {
-    color: #aaa;
+    color: gray;
     font-style: italic;
     font-size: 14px;
     padding: 12px 0;
@@ -218,15 +230,11 @@ main#question_editor {
     align-items: center;
     gap: 12px;
     background: white;
-    border: 1px solid #e4e4e4;
+    border: 1px solid whitesmoke;
     border-radius: 4px;
     padding: 10px 14px;
-    transition: box-shadow 0.12s;
 }
 
-.question_item:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
-}
 
 .question_number {
     font-size: 12px;
@@ -242,18 +250,18 @@ main#question_editor {
     font-size: 15px;
     border: none;
     background: transparent;
-    color: #222;
+    color: black;
     outline: none;
     width: auto;
 }
 
 .question_input::placeholder {
-    color: #ccc;
+    color: gray;
 }
 
 .remove_question {
     background: transparent;
-    color: #bbb;
+    color: gray;
     border: none;
     font-size: 13px;
     padding: 2px 6px;
@@ -263,7 +271,7 @@ main#question_editor {
 
 .remove_question:hover {
     background: #fde8e8;
-    color: #c0392b;
+    color: red;
 }
 
 .add_question_btn {
@@ -276,12 +284,11 @@ main#question_editor {
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 14px;
     text-align: left;
-    transition: background 0.15s;
     border-radius: 3px;
 }
 
 .add_question_btn:hover {
-    background: #eaf2ed;
+    background: white;
 }
 
 main#empty_state {
@@ -289,7 +296,7 @@ main#empty_state {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f0f0f0;
+    background: white;
 }
 
 #question_editor+#empty_state {

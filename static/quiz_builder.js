@@ -153,11 +153,21 @@ function render() {
     renderBlock();
 }
 
-// TODO make it so this function send the stringfied quiz to app.py, where it will be saved as a file, ready to be reloaded after another session 
-function exportQuiz() {
+function saveQuiz() {
+    if (!quiz.title)
+        alert("You have not chosen the name of your quiz. Please do so before saving it")
+        return 
     const jsonString = JSON.stringify(quiz, null, 2);
+
+    fetch('/save-quiz', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: jsonString
+    })
 }
 
-function importQuiz(){
+function loadQuiz() {
     // TODO implement this function. Ideally what it would do is fetch a specific quiz via the flask backend. 
 }
