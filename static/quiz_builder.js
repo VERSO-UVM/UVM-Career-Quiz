@@ -144,8 +144,6 @@ function renderBlock() {
  * Broke off render into multiple functions in order to avoid cluttering, and for an easier experience reading the code
  */
 function render() {
-    document.getElementById('quiz-title').value = quiz.title;
-    document.getElementById('quiz-desc').value = quiz.desc;
     getQuizInfo();
     renderBlock();
 }
@@ -165,5 +163,4 @@ function saveQuiz() {
         body: jsonString
     });
 }
-
 render();

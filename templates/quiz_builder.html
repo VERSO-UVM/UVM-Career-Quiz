@@ -26,11 +26,13 @@
         <aside>
             <div class="quiz_info">
                 <p>Title</p>
-                <input class="quiz_input" id="quiz-title" placeholder="e.g. Career-Ready quiz" value="">
+                <input class="quiz_input" id="quiz-title" placeholder="e.g. Career-Ready quiz" value=""
+                    oninput="render()">
             </div>
             <div class="quiz_info">
                 <p>Subtitle / description</p>
-                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?"></textarea>
+                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?"
+                    oninput="render()"></textarea>
             </div>
             <div id="block_creation">
                 <button class="add_block" onclick="addBlock()">Add a block</button>
@@ -59,9 +61,10 @@
             desc: '',
             categories: []
         };
+        document.getElementById('quiz-title').value = quiz.title;
+        document.getElementById('quiz-desc').value = quiz.desc;
     </script>
     <script src="static/quiz_builder.js"></script>
-
 </body>
 
 </html>

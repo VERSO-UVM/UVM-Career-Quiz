@@ -1,0 +1,26 @@
+{
+  "categories": [
+    {
+      "id": "smuygav",
+      "items": [],
+      "name": "Block 1"
+    },
+    {
+      "id": "4etruwi",
+      "items": [],
+      "name": "Block 2"
+    },
+    {
+      "id": "17bbxj5",
+      "name": "Block 3",
+      "items": []
+    },
+    {
+      "id": "jar2joc",
+      "name": "Block 4",
+      "items": []
+    }
+  ],
+  "desc": "for testing purpose, otherwise the site will crash.",
+  "title": "testing quiz"
+}

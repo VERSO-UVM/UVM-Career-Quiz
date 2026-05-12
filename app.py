@@ -5,11 +5,17 @@ app = Flask(__name__)
 
 
 # TODO change the route here from "/" to "/quiz builder" whenever we have a real landing page, right now it only exist as a way to actually test the flask 
+# TODO right now it only accept test_quiz as an argument, once we have quiz_selection done, we would wnat it to pass the name of the file to this, and open the file this way
 @app.route('/', methods=['GET', 'POST'])
 def quiz_builder():
-    with open('testing_quiz/rts.json') as f:
-        quiz = json.load(f)
-    return render_template('quiz_builder.html', quiz=quiz)
+    quiz = {"title": "", "desc": "", "categories": []}
+    error = ""
+    try:
+        with open('testing_quiz/testing_quiz.json') as f:
+            quiz = json.load(f)
+    except FileNotFoundError as e:
+        error = e 
+    return render_template('quiz_builder.html', quiz=quiz, error = error)
 
 
 
