@@ -29,6 +29,7 @@ header {
     cursor: pointer;
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 14px;
+    height: 56px;
 }
 
 .export_quiz:hover {

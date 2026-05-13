@@ -8,13 +8,14 @@ app = Flask(__name__)
 # TODO right now it only accept test_quiz as an argument, once we have quiz_selection done, we would wnat it to pass the name of the file to this, and open the file this way
 @app.route('/', methods=['GET', 'POST'])
 def quiz_builder():
-    quiz = {"title": "", "desc": "", "categories": []}
+    quiz = {"title": "", "desc": "", "id": "", "categories": []}
     error = ""
     try:
         with open('testing_quiz/testing_quiz.json') as f:
             quiz = json.load(f)
     except FileNotFoundError as e:
         error = e 
+    print(quiz)
     return render_template('quiz_builder.html', quiz=quiz, error = error)
 
 
@@ -22,8 +23,9 @@ def quiz_builder():
 # TODO change the test.json name to something that is unique (and would be unique to each file)
 @app.route('/save-quiz', methods=['POST'])
 def save_quiz():
-    quiz = request.get_json()  
-    with open(f'testing_quiz/{quiz["title"]}.json', 'w') as f:
+    quiz = request.get_json()
+    print(quiz)
+    with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
 
     return jsonify({ 'status': 'ok', 'message': 'Quiz saved' })
