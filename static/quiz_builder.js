@@ -149,7 +149,6 @@ function renderBlock() {
 function render() {
     getQuizInfo();
     renderBlock();
-    console.log(quiz)
 }
 
 function saveQuiz() {
@@ -171,4 +170,3 @@ if(quiz.title){
     document.title = quiz.title;
 }
 render();
-console.log(quiz);

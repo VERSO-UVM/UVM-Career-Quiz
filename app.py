@@ -15,7 +15,6 @@ def quiz_builder():
             quiz = json.load(f)
     except FileNotFoundError as e:
         error = e 
-    print(quiz)
     return render_template('quiz_builder.html', quiz=quiz, error = error)
 
 
@@ -24,6 +23,5 @@ def quiz_builder():
 @app.route('/save-quiz', methods=['POST'])
 def save_quiz():
     quiz = request.get_json()
-    print(quiz)
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
