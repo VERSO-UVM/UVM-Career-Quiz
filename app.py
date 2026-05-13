@@ -27,5 +27,3 @@ def save_quiz():
     print(quiz)
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
-
-    return jsonify({ 'status': 'ok', 'message': 'Quiz saved' })

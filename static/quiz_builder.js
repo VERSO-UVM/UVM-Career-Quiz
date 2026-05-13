@@ -12,7 +12,7 @@ function getQuizInfo() {
 
 function addBlock() {
     const id = uid();
-    /* 25 is an arbitrary number for the sake of having a limit, might want to remove that one day */
+    //25 is an arbitrary number for the sake of having a limit, might want to remove that one day
     if (quiz.categories.length >= 25) {
         alert("Too many categories");
         return;
@@ -53,7 +53,8 @@ function removeBlock(id) {
 function openEditor(id) {
     active_category_Id = id;
     const category = quiz.categories.find(b => b.id === id);
-    if (!category) return;
+    if (!category) 
+        return;
 
     document.getElementById('question_editor').style.display = 'flex';
     document.getElementById('empty_state').style.display = 'none';
@@ -76,7 +77,8 @@ function closeEditor() {
 
 function addQuestion(cat_Id) {
     const category = quiz.categories.find(b => b.id === cat_Id);
-    if (!category) return;
+    if (!category) 
+        return;
     const q_Id = uid();
     category.items.push({ id: q_Id, text: '', type: 'text' });
     renderQuestions(cat_Id);
@@ -84,7 +86,8 @@ function addQuestion(cat_Id) {
 
 function removeQuestion(cat_Id, q_Id) {
     const category = quiz.categories.find(b => b.id === cat_Id);
-    if (!category) return;
+    if (!category) 
+        return;
     category.items = category.items.filter(q => q.id !== q_Id);
     renderQuestions(cat_Id);
 }
@@ -146,6 +149,7 @@ function renderBlock() {
 function render() {
     getQuizInfo();
     renderBlock();
+    console.log(quiz)
 }
 
 function saveQuiz() {
@@ -163,4 +167,8 @@ function saveQuiz() {
         body: jsonString
     });
 }
+if(quiz.title){
+    document.title = quiz.title;
+}
 render();
+console.log(quiz);
