@@ -419,6 +419,8 @@ function render() {
     if (quiz.title) {
         document.title = quiz.title;
     }
+    if (!quiz.id)
+        quiz.id = uid();
     getQuizInfo();
     renderCategory();
 }

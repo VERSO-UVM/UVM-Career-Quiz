@@ -61,7 +61,7 @@
         let quiz = {{ quiz | tojson }} || {
             title: '',
             desc: '',
-            id: uid(),
+            id: '',
             categories: []
         };
         document.getElementById('quiz-title').value = quiz.title;
