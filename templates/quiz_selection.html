@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link href="static/quiz_builder.css" rel="stylesheet">
 </head>
+
 <body>
-    <!-- This page will be the page upon which you land after you log in. The user will be able to choose among the quiz that they created (or that was shared with them). 
-     They will also be able to create a new quiz, and such.-->
+    {% for quiz in quizzes %}
+        <a href="{{ url_for('quiz_builder', quiz=quiz) }}">
+            <button>{{ quiz }}</button>
+        </a>
+    {% endfor %}
 </body>
+
 </html>

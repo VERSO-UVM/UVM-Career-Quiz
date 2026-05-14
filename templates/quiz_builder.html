@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Creation</title>
     <link rel="icon" href="/static/asset/favicon/favicon.ico">
-    <link href="static/quiz_builder.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_builder.css') }}">
     <!-- TODO as of right now this page allow for modification of only one quiz. 
      Therefore we need to build a page (let's call it A) that will LEAD into this page (B).
      Page A will allow the user to choose which quiz we want to modify/allow the user to create a brand new one  
@@ -67,7 +67,8 @@
         document.getElementById('quiz-title').value = quiz.title;
         document.getElementById('quiz-desc').value = quiz.desc;
     </script>
-    <script src="static/quiz_builder.js"></script>
+    <script src="{{ url_for('static', filename='quiz_builder.js') }}" ></script>
+
 </body>
 
 </html>
