@@ -22,6 +22,11 @@ header {
 
 }
 
+.header_actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 .export_quiz {
     background: #154734;
     color: white;
@@ -30,11 +35,28 @@ header {
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 14px;
     height: 56px;
+    padding :0px;
+}
+.home_btn{
+    background: #154734;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    height: 56px;
+    padding :10px;
+    border-right: 3px solid rgb(3, 56, 35);
 }
 
 .export_quiz:hover {
     background: rgb(30, 95, 69);
 }
+
+.home_btn:hover {
+    background: rgb(30, 95, 69);
+}
+
 
 #app_layout {
     display: flex;

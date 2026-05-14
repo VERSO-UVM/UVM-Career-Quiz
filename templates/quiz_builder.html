@@ -18,8 +18,12 @@
 <body>
     <header>
         <h1>Quiz builder</h1>
-        <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
-
+        <div class="header_actions">
+            <a href="{{ url_for('quiz_selection') }}">
+                <button class="home_btn">Home</button>
+            </a>
+            <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
+        </div>
 
     </header>
 
@@ -67,7 +71,7 @@
         document.getElementById('quiz-title').value = quiz.title;
         document.getElementById('quiz-desc').value = quiz.desc;
     </script>
-    <script src="{{ url_for('static', filename='quiz_builder.js') }}" ></script>
+    <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
 
 </body>
 
