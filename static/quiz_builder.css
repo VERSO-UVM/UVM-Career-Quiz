@@ -341,7 +341,7 @@ main#empty_state {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 18px 12px;
+    padding:29px 18px 12px;
     border-bottom: 2px solid #154734;
     position: sticky;
     top: 0;
