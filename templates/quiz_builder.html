@@ -35,15 +35,15 @@
                 <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?"
                     oninput="render()"></textarea>
             </div>
-            <div id="block_creation">
-                <button class="add_block" onclick="addBlock()">Add a block</button>
+            <div id="category_creation">
+                <button class="add_category" onclick="addCategory()">Add a category</button>
             </div>
-            <div id="block"></div>
+            <div id="category"></div>
         </aside>
 
         <main id="question_editor" style="display: none;">
             <div id="editor_header">
-                <h2 id="editor_block_title">Block name</h2>
+                <h2 id="editor_category_title">category name</h2>
                 <button id="close_editor" onclick="closeEditor()">✕ Close</button>
             </div>
             <div id="questions_list"></div>
@@ -52,9 +52,10 @@
 
         <main id="empty_state">
             <div id="empty_hint">
-                <p>Select a block to start adding questions</p>
+                <p>Select a category to start adding questions</p>
             </div>
         </main>
+        <div id="answer_panel" style="display: none;"></div>
     </div>
     <script>
         let quiz = {{ quiz | tojson }} || {

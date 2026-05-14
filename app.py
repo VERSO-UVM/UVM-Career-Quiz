@@ -25,3 +25,4 @@ def save_quiz():
     quiz = request.get_json()
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
+    return render_template('quiz_builder.html', quiz=quiz)
