@@ -44,13 +44,30 @@ def save_quiz_in_the_db(q_id, q_title):
     conn.close()
 
 def create_db():
+    id_1 = "1"
+    u_name_1 = "1"
+    u_pass_1 = "1"
+    id_2 = "2"
+    u_name_2 = "2"
+    u_pass_2 = "2"
+    q_id_1 = "pjo4roy"
+    name_1 = "testing quiz"
+    q_id_2 = "so7kpib"
+    name_2 = "abc"
     conn = sqlite3.connect("carrer_quiz.db")
     cur = conn.cursor()
     user_creation(cur)
+    cur.execute("INSERT INTO USER (u_ID, Username, Password) VALUES (?,?,?)", (id_1, u_name_1, u_pass_1))
+    cur.execute("INSERT INTO USER (u_ID, Username, Password) VALUES (?,?,?)", (id_2, u_name_2, u_pass_2))
     conn.commit()
     quiz_creation(cur)
+    cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id_1, name_1))
+    cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id_2, name_2))
     conn.commit()
     acess_creation(cur)
+    cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_1, q_id_1))
+    cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_2, q_id_1))
+    cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_2, q_id_2))
     conn.commit()
     conn.close()
 if __name__ == "__main__":
