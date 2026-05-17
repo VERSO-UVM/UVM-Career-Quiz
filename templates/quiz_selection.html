@@ -17,10 +17,13 @@
     <br>
     <main>
         {% for quiz in quizzes %}
+
         <a id="category_creation" href="{{ url_for('quiz_builder', quiz=quiz) }}">
-            <button class="add_category">{{ quiz[:-5] }}</button>
+            <button class="add_category">{{ names[count] }}</button>
         </a>
+        {set count = count + 1}
         {% endfor %}
+
         <br>
         <a id="category_creation" href="{{ url_for('quiz_builder', quiz='new_quiz') }}">
             <button class="add_category">Create New Quiz</button>
