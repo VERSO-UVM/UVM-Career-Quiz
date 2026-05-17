@@ -18,7 +18,7 @@ def user_creation(cur):
 
 def quiz_creation(cur):
     cur.execute('''DROP TABLE IF EXISTS QUIZ''')
-    cur.execute('''CREATE TABLE QUIZ(q_ID TEXT NOT NULL UNIQUE, name TEXT NOT NULL UNIQUE,PRIMARY KEY("q_ID"))''')
+    cur.execute('''CREATE TABLE QUIZ(q_ID TEXT NOT NULL UNIQUE, name TEXT NOT NULL,PRIMARY KEY("q_ID"))''')
 
 def acess_creation(cur):
     cur.execute('''DROP TABLE IF EXISTS ACESS''')
@@ -34,12 +34,19 @@ def find_name_with_id(q_id):
     if row : 
         return row[0][0]
     else :
-        return ""
+        return ""  
 
 #TODO both this and the find_name_with_id function need to be worked on so that user acces is taken into account.For now it's a free for all though
 def save_quiz_in_the_db(q_id, q_title):
     conn, cur = connecting_to_sql()
-    cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id, q_title))
+    query = "SELECT name FROM QUIZ WHERE q_ID = ?"
+    cur.execute(query,(q_id,))
+    row = cur.fetchall()
+
+    if row :
+        cur.execute("UPDATE QUIZ SET name = ? WHERE q_id = ?", (q_title, q_id))
+    else: 
+        cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id, q_title))
     conn.commit()
     conn.close()
 
