@@ -22,8 +22,10 @@ def quiz_builder(quiz):
 @app.route('/save-quiz', methods=['POST'])
 def save_quiz():
     quiz = request.get_json()
+    print(quiz["title"])
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
+        db.save_quiz_in_the_db(quiz["id"], quiz["title"])
     return render_template('quiz_builder.html', quiz=quiz)
 
 
@@ -37,4 +39,5 @@ def quiz_selection():
         quiz.append(filename)
     for q in quiz:
         name.append(db.find_name_with_id(q[:-5]))
+        print(name)
     return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)

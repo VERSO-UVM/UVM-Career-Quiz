@@ -36,7 +36,14 @@ def find_name_with_id(q_id):
     else :
         return ""
 
-if __name__ == "__main__":
+#TODO both this and the find_name_with_id function need to be worked on so that user acces is taken into account.For now it's a free for all though
+def save_quiz_in_the_db(q_id, q_title):
+    conn, cur = connecting_to_sql()
+    cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id, q_title))
+    conn.commit()
+    conn.close()
+
+def create_db():
     conn = sqlite3.connect("carrer_quiz.db")
     cur = conn.cursor()
     user_creation(cur)
@@ -46,3 +53,5 @@ if __name__ == "__main__":
     acess_creation(cur)
     conn.commit()
     conn.close()
+if __name__ == "__main__":
+    create_db()
