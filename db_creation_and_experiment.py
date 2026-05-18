@@ -1,5 +1,5 @@
 """
-Create the database. WARNING : CALLING ANY FUNCTION HERE WILL ESENTIALLY WIPE ALL DATA.
+Create the database. WARNING : CALLING CREATE_DB() WILL ESENTIALLY WIPE ALL DATA.
 To be used by an admin to wipe all data
 """
 
@@ -77,5 +77,6 @@ def create_db():
     cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_2, q_id_2))
     conn.commit()
     conn.close()
+
 if __name__ == "__main__":
     create_db()
