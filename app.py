@@ -1,9 +1,40 @@
-from flask import Flask, render_template,request
+from flask import Flask, render_template,request, session, redirect, url_for
 import os
 import json
 import db_creation_and_experiment as db 
+import log_in
 
 app = Flask(__name__)
+#TODO this is for testing purpose and will need to be changed as soon as we get a server
+app.secret_key = "flask_is_making_me_do_this"
+
+@app.route("/")
+def login_page():
+    session['user_id'] = None
+    session['username'] = None 
+    return render_template("login_page.html")
+
+@app.route("/quiz_login", methods=['GET', 'POST'])
+def quiz_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        result = log_in.login_customer(username, password)
+        if result == 0:
+            return render_template('customer_login.html', error="This username does not exist.")
+        if result == 1:
+            return render_template('customer_login.html', error="The password provided is not the correct one.")
+        else:
+            session['user_id'] = result
+            session['username'] = username 
+            return redirect(url_for('quiz_selection'))
+    return render_template("quiz_login.html")
+
+@app.route("/register")
+def register():
+    return render_template("register.html")
+
 
 
 @app.route('/quiz_builder/<quiz>', methods=['GET', 'POST'])
@@ -29,7 +60,7 @@ def save_quiz():
 
 
 # TODO this is good if we think the user is in a "single-player" state. We need to refactor this to have some more verification, but for now it will have to do. 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/quiz_selection", methods=['GET', 'POST'])
 def quiz_selection():
     folder_path = './testing_quiz'
     quiz = []
