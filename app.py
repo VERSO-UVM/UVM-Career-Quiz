@@ -21,10 +21,10 @@ def quiz_login():
         password = request.form['password']
 
         result = log_in.login_customer(username, password)
-        if result == 0:
-            return render_template('customer_login.html', error="This username does not exist.")
-        if result == 1:
-            return render_template('customer_login.html', error="The password provided is not the correct one.")
+        if result == -1:
+            return render_template('quiz_login.html', error="This username does not exist.")
+        if result == -2:
+            return render_template('quiz_login.html', error="The password provided is not the correct one.")
         else:
             session['user_id'] = result
             session['username'] = username 
@@ -55,18 +55,18 @@ def save_quiz():
     quiz = request.get_json()
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
-        db.save_quiz_in_the_db(quiz["id"], quiz["title"])
+        db.save_quiz_in_the_db(quiz["id"], quiz["title"],session['user_id'])
     return render_template('quiz_builder.html', quiz=quiz)
 
 
-# TODO this is good if we think the user is in a "single-player" state. We need to refactor this to have some more verification, but for now it will have to do. 
 @app.route("/quiz_selection", methods=['GET', 'POST'])
 def quiz_selection():
     folder_path = './testing_quiz'
     quiz = []
     name =[]
     for filename in os.listdir(folder_path):
-        quiz.append(filename)
+        if(db.has_acess(session['user_id'], filename[:-5])):
+            quiz.append(filename)
     for q in quiz:
         name.append(db.find_name_with_id(q[:-5]))
     return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)

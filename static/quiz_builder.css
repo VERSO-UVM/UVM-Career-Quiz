@@ -500,9 +500,9 @@ main#empty_state {
 }
 
 .add_answer_btn {
-    background: white;
-    color: #154734;
-    border: 1px dashed #154734;
+    background: #154734;
+    color: white;
+    border: 1px solid #154734;
     padding: 7px 12px;
     cursor: pointer;
     font-family: 'DM Serif Display', Georgia, serif;
@@ -512,7 +512,7 @@ main#empty_state {
 }
 
 .add_answer_btn:hover {
-    background: white;
+    background: rgb(30, 95, 69);
 }
 
 

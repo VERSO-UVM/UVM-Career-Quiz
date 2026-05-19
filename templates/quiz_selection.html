@@ -4,32 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link href="static/quiz_builder.css" rel="stylesheet">
+    <title>Quiz selection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_selection.css') }}">
     <link rel="icon" href="/static/asset/favicon/favicon.ico">
 </head>
 
 <body>
     <header>
         <h1>Quiz Selection</h1>
-
+        <a href="{{ url_for('login_page') }}">
+            <button class="home_btn">Log Out</button>
+        </a>
     </header>
-    <br>
     <main>
+        <aside>
+            {% for quiz in quizzes %}
 
-        {% for quiz in quizzes %}
+            <a id="quiz_creation" href="{{ url_for('quiz_builder', quiz=quiz) }}">
+                <button class="quiz_selector">{{ names[loop.index0] }}</button>
+            </a>
 
-        <a id="category_creation" href="{{ url_for('quiz_builder', quiz=quiz) }}">
-            <button class="add_category">{{ names[loop.index0] }}</button>
-        </a>
+            {% endfor %}
 
-        {% endfor %}
-
-        <br>
-        <a id="category_creation" href="{{ url_for('quiz_builder', quiz='new_quiz') }}">
-            <button class="add_category">Create New Quiz</button>
-        </a>
-
+            <br>
+            <a id="quiz_creation" href="{{ url_for('quiz_builder', quiz='new_quiz') }}">
+                <button class="quiz_selector">Create New Quiz</button>
+            </a>
+        </aside>
     </main>
 </body>
 

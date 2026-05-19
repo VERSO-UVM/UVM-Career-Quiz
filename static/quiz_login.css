@@ -1,0 +1,41 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: lightgray;
+
+}
+
+header {
+    background: #154734;
+    color: whitesmoke;
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+}
+
+div{
+  display: flex;
+  justify-content: center;
+  flex-direction: column; 
+  align-items: center; 
+  gap:10px;
+  height : 90vh
+}
+
+button{
+    background: #154734;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    padding :10px;
+}

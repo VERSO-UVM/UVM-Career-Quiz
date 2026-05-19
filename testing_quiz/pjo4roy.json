@@ -2,17 +2,13 @@
   "categories": [
     {
       "id": "ea30snn",
-      "name": "testing name change",
-      "items": []
+      "items": [],
+      "name": "testing name change"
     },
     {
       "id": "2vuhog6",
-      "name": "testing name change",
       "items": [
         {
-          "id": "c2wyzvg",
-          "text": "question can be named",
-          "type": "mc",
           "answer": [
             {
               "id": "04syrmi",
@@ -26,35 +22,44 @@
               "id": "z4859j5",
               "text": ""
             }
-          ]
+          ],
+          "id": "c2wyzvg",
+          "text": "question can be named",
+          "type": "mc"
         },
         {
+          "answer": [],
           "id": "5x4y6tw",
           "text": "question can be named",
-          "type": "",
-          "answer": []
+          "type": ""
         },
         {
+          "answer": [],
           "id": "53qs1nm",
           "text": "",
-          "type": "",
-          "answer": []
+          "type": ""
         }
-      ]
+      ],
+      "name": "testing name change"
     },
     {
       "id": "yq256fo",
-      "name": "Category 3",
-      "items": []
+      "items": [],
+      "name": "Category 3"
     },
     {
       "id": "x4a5kop",
-      "name": "Category 4",
-      "items": []
+      "items": [],
+      "name": "Category 4"
     },
     {
       "id": "wm3h08q",
-      "name": "Category 5",
+      "items": [],
+      "name": "Category 5"
+    },
+    {
+      "id": "t756sof",
+      "name": "Category 6",
       "items": []
     }
   ],

@@ -5,12 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log In Page</title>
+    <link rel="icon" href="/static/asset/favicon/favicon.ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_login.css') }}">
 </head>
 
 <body>
-    <a href="{{ url_for('quiz_selection') }}">
-        <button class="home_btn"> Go straight to where you need to be</button>
-    </a>
+    <header>
+        <h1>You can log in here</h1>
+    </header>
+    <div>
+        {% if error %}
+        <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('quiz_login') }}">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br>
+
+            <button type="submit">Log in </button>
+        </form>
+    </div>
 </body>
 
 </html>
