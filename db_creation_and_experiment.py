@@ -17,7 +17,7 @@ def connecting_to_sql():
 # Create the user table
 def user_creation(cur):
     cur.execute('''DROP TABLE IF EXISTS USER''')
-    cur.execute('''CREATE TABLE USER(u_ID TEXT NOT NULL UNIQUE, Username TEXT NOT NULL UNIQUE , Password TEXT NOT NULL,PRIMARY KEY("u_ID"))''')
+    cur.execute('''CREATE TABLE USER(u_ID TEXT NOT NULL UNIQUE, Username TEXT NOT NULL UNIQUE , Password TEXT NOT NULL, Email TEXT NOT NULL UNIQUE, PRIMARY KEY("u_ID"))''')
 
 #Create the quiz table
 def quiz_creation(cur):
@@ -73,17 +73,19 @@ def create_db():
     id_1 = "1"
     u_name_1 = "1"
     u_pass_1 = "1"
+    u_mail_1 = "1@1"
     id_2 = "2"
     u_name_2 = "2"
     u_pass_2 = "2"
+    u_mail_2 = "2@2"
     q_id_1 = "pjo4roy"
     name_1 = "testing quiz"
     q_id_2 = "so7kpib"
     name_2 = "abc"
     conn, cur = connecting_to_sql()
     user_creation(cur)
-    cur.execute("INSERT INTO USER (u_ID, Username, Password) VALUES (?,?,?)", (id_1, u_name_1, u_pass_1))
-    cur.execute("INSERT INTO USER (u_ID, Username, Password) VALUES (?,?,?)", (id_2, u_name_2, u_pass_2))
+    cur.execute("INSERT INTO USER (u_ID, Username, Password,Email) VALUES (?,?,?,?)", (id_1, u_name_1, u_pass_1, u_mail_1))
+    cur.execute("INSERT INTO USER (u_ID, Username, Password, Email) VALUES (?,?,?,?)", (id_2, u_name_2, u_pass_2,u_mail_2))
     conn.commit()
     quiz_creation(cur)
     cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id_1, name_1))

@@ -31,8 +31,21 @@ def quiz_login():
             return redirect(url_for('quiz_selection'))
     return render_template("quiz_login.html")
 
-@app.route("/register")
+@app.route("/register",methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+
+        new_id = log_in.registering_user(username, password, email)
+        if new_id == -1:
+            return render_template('register.html', error="Username already exists, please choose another.")
+        if new_id == -2:
+            return render_template('register.html', error="This email is already in use please log in to that account.")
+        session['user_id'] = new_id
+        session['username'] = username 
+        return redirect(url_for('quiz_selection'))
     return render_template("register.html")
 
 

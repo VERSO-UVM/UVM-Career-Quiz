@@ -26,7 +26,7 @@ div{
   justify-content: center;
   flex-direction: column; 
   align-items: center; 
-  gap:10px;
+  gap:25px;
   height : 90vh
 }
 
