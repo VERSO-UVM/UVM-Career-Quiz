@@ -27,7 +27,7 @@ Develop an easy-to-use interface for students, faculty, and administrators. It n
 * Support secure data handling and privacy compliance.
 
 ## Community Engagement
-Provide clear documentation to encourage adoption and adaptation andf oster a community of contributors to improve the tool over time.
+Provide clear documentation to encourage adoption and adaptation and foster a community of contributors to improve the tool over time.
 
 ## FAQs
 Why redesign the Career Quiz (CQ)?
