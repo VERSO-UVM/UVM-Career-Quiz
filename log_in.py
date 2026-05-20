@@ -3,12 +3,17 @@
 import sqlite3
 import uuid
 
+
+
+#As it stand you cannot carry sql statement between python file, therefore it will allow us to connect to the DB
 def connecting_to_sql():
     conn = sqlite3.connect("carrer_quiz.db")
     cur = conn.cursor()
     return conn,cur
 
-def login_customer(username, password):
+#Log in a User into the System
+#TODO as mentioned in the header, has it stand it's very unsafe (storing info in plain text). We need to change this and use a hash table
+def login_user(username, password):
     conn, cur = connecting_to_sql()
     query = """
     SELECT * FROM USER WHERE Username = ?;
@@ -33,7 +38,8 @@ def login_customer(username, password):
         conn.close()
         return user[0]
     
-
+#Register a user into the system.
+#TODO same as the above function
 def registering_user(username,password,email):
     conn, cur = connecting_to_sql()
     query = """
