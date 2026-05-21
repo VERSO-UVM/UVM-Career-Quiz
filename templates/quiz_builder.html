@@ -19,6 +19,9 @@
                 <button class="home_btn">Home</button>
             </a>
             <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
+            <a href="{{ url_for('quiz_preview', quiz = quiz.id )}}">
+                <button class="preview_btn">Preview</button>
+            </a>
         </div>
 
     </header>

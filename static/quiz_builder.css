@@ -539,3 +539,16 @@ main#empty_state {
     font-style: italic;
     min-height: 60px;
 }
+
+
+.preview_btn{
+    background: #154734;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    height: 56px;
+    padding :10px;
+    border-left: 3px solid rgb(3, 56, 35);
+}

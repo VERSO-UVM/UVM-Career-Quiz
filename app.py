@@ -98,3 +98,9 @@ def quiz_selection():
     for q in quiz:
         name.append(db.find_name_with_id(q[:-5]))
     return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)
+
+@app.route("/quiz_preview/<quiz>")
+def quiz_preview(quiz):
+    with open(f'testing_quiz/{quiz}.json') as f:
+        quiz_ = json.load(f)
+    return render_template("quiz_preview.html", quiz = quiz_)
