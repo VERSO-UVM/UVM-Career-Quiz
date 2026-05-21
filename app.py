@@ -84,6 +84,11 @@ def save_quiz():
     return render_template('quiz_builder.html', quiz=quiz)
 
 
+@app.route('/drawflow_testing')
+def drawflow_testing():
+    return render_template('drawflow_testing.html')
+
+
 
 
 #Allo the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a bruteforce strategy, but it should work (or at least it has so far)

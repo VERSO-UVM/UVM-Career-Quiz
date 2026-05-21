@@ -1,0 +1,80 @@
+body{
+    display: flex;
+    margin:0;
+}
+
+
+
+
+#sidebar {
+    padding: 14px;
+    margin:0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: space-between;
+
+}
+
+p {
+    overflow-wrap: break-word;
+}
+
+#nodes {
+    display:flex;
+    flex-direction: column;
+    gap:10px;
+}
+
+.node-type {
+    background-color: rgb(105, 174, 105);
+    padding: 10px;
+    border-radius: 16px;
+    
+}
+
+.question-node {
+    display:flex;
+    flex-direction: column;
+    gap:16px;
+}
+.answers {
+    display:flex;
+    flex-direction: column;
+    gap:5px
+}
+
+
+.answer {
+    display: flex;
+    gap:10px;
+    justify-content: space-between;
+}
+.remove-answer {
+    flex-shrink: 0; /* stops button from being pushed out */
+}
+
+.answer input {
+    flex:1;
+    min-width: 0;
+}
+
+#drawflow {
+    flex:1;
+    height: 100vh;
+    background-color: rgb(206, 206, 206);
+    margin:0;
+}
+
+
+
+
+.drawflow .drawflow-node .inputConnected {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 12px 0 12px 12px;
+    border-color: transparent transparent transparent #007bff;
+    background: transparent;
+    border-radius: 0px;
+}
