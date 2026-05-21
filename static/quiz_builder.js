@@ -17,7 +17,7 @@ function uid() {
 function getQuizInfo() {
     quiz.title = document.getElementById('quiz-title').value;
     quiz.desc = document.getElementById('quiz-desc').value;
-}
+} 
 
 
 /**
@@ -327,7 +327,7 @@ function removeAnswer(cat_Id, q_Id, opt_Id) {
     const question = category.items.find(q => q.id === q_Id);
     if (!question)
         return;
-    question.answers = question.answers.filter(o => o.id !== opt_Id);
+    question.answer = question.answer.filter(o => o.id !== opt_Id);
     renderAnswerPanel(cat_Id, q_Id);
 }
 
@@ -347,7 +347,7 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
     const question = category.items.find(q => q.id === q_Id);
     if (!question)
         return;
-    const answer = question.answers.find(o => o.id === opt_Id);
+    const answer = question.answer.find(o => o.id === opt_Id);
     if (answer)
         answer.text = new_text;
 }

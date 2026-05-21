@@ -27,6 +27,7 @@ header {
     gap: 10px;
     align-items: center;
 }
+
 .export_quiz {
     background: #154734;
     color: white;
@@ -35,9 +36,10 @@ header {
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 14px;
     height: 56px;
-    padding :0px;
+    padding: 0px;
 }
-.home_btn{
+
+.home_btn {
     background: #154734;
     color: white;
     border: none;
@@ -45,7 +47,7 @@ header {
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 14px;
     height: 56px;
-    padding :10px;
+    padding: 10px;
     border-right: 3px solid rgb(3, 56, 35);
 }
 
@@ -223,7 +225,6 @@ main#question_editor {
     cursor: pointer;
     font-size: 13px;
     border-radius: 3px;
-    transition: all 0.15s;
 }
 
 #close_editor:hover {
@@ -340,6 +341,7 @@ main#empty_state {
     font-size: 15px;
     font-style: italic;
 }
+
 .question_item {
     cursor: pointer;
 }
@@ -363,7 +365,7 @@ main#empty_state {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding:29px 18px 12px;
+    padding: 29px 18px 12px;
     border-bottom: 2px solid #154734;
     position: sticky;
     top: 0;
@@ -486,16 +488,17 @@ main#empty_state {
 }
 
 .remove_answer {
+    background: transparent;
     color: gray;
     border: none;
-    font-size: 12px;
-    padding: 1px 5px;
+    font-size: 13px;
+    padding: 2px 6px;
     cursor: pointer;
     border-radius: 3px;
 }
 
 .remove_answer:hover {
-    background: white;
+    background: lightgray;
     color: red;
 }
 
@@ -541,7 +544,7 @@ main#empty_state {
 }
 
 
-.preview_btn{
+.preview_btn {
     background: #154734;
     color: white;
     border: none;
@@ -549,6 +552,10 @@ main#empty_state {
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 14px;
     height: 56px;
-    padding :10px;
+    padding: 10px;
     border-left: 3px solid rgb(3, 56, 35);
+}
+
+.preview_btn:hover {
+    background: rgb(30, 95, 69);
 }
