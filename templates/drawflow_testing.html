@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.css">
+    <link rel="stylesheet" href="static/drawflow.css">
+</head>
+
+<body>
+    <div id="sidebar">
+        <div id="nodes">
+            <p>Drag and drop below:</p>
+            <div class="node-type" draggable="true" data-node="question">Question</div>
+            <div class="node-type" draggable="true" data-node="end">End</div>
+        </div>
+        <div>
+            <button id="jsonbtn" onclick="compileJson()">Log JSON</button>
+        </div>
+
+    </div>
+    <div id="drawflow"></div>
+
+    <script src="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.js"></script>
+    <script src="static/drawflow.js"></script>
+</body>
+
+</html>
