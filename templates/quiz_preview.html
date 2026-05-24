@@ -1,16 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preview</title>
+    <title>Quiz Preview</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_preview.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_builder.css') }}">
+    <link rel="icon" href="/static/asset/favicon/favicon.ico">
 </head>
-<body>
-    <script>
-        let quiz = {{ quiz | tojson }}
-        console.log(quiz);
-    </script>
 
+<body>
+    <header>
+        <h1>Preview</h1>
+        <div class="header_actions">
+            <a href="{{ url_for('quiz_builder', quiz=quiz.id ~ '.json') }}">
+                <button class="export_quiz">Get Back</button>
+            </a>
+        </div>
+    </header>
+
+    <body>
+        <div class="toolbar">
+            <button class="add_category" onclick="restart()">Restart Survey</button>
+        </div>
+
+        <div class="page-wrap" id="app"></div>
+
+    </body>
+
+    <div class="bottom-nav" id="bottom-nav">
+        <button class="nav-btn nav-btn-back" id="btn-back" onclick="go(-1)">Back</button>
+        <span class="nav-pager" id="nav-pager"></span>
+        <button class="nav-btn nav-btn-next" id="btn-next" onclick="go(1)">Next</button>
+    </div>
+
+    <footer>
+        <div class="footer-bar" id="footer-bar">
+            <div class="footer-meta">
+                <span id="footer-label">0 of 0 questions answered</span>
+                <span id="footer-remain"></span>
+            </div>
+            <div class="footer-track">
+                <div class="footer-fill" id="footer-fill"></div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        let quiz = {{ quiz | tojson }};
+    </script>
     <script src="{{ url_for('static', filename='quiz_preview.js') }}"></script>
 </body>
-</html> 
+
+</html>

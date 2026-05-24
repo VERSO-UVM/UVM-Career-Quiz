@@ -2,7 +2,65 @@
   "categories": [
     {
       "id": "ea30snn",
-      "items": [],
+      "items": [
+        {
+          "answer": [
+            {
+              "id": "smm44d0",
+              "text": ""
+            },
+            {
+              "id": "8bheh63",
+              "text": ""
+            },
+            {
+              "id": "y19zq2n",
+              "text": ""
+            },
+            {
+              "id": "wl4440a",
+              "text": ""
+            }
+          ],
+          "id": "wulbzl6",
+          "text": "",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "dlg8asl",
+              "text": ""
+            },
+            {
+              "id": "4oc4sv2",
+              "text": ""
+            }
+          ],
+          "id": "qwqppna",
+          "text": "",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "0tw7ooi",
+              "text": ""
+            },
+            {
+              "id": "df3ppsq",
+              "text": ""
+            },
+            {
+              "id": "tz9pau0",
+              "text": ""
+            }
+          ],
+          "id": "pljw7sb",
+          "text": "",
+          "type": "mc"
+        }
+      ],
       "name": "testing name change"
     },
     {
@@ -44,7 +102,20 @@
     },
     {
       "id": "yq256fo",
-      "items": [],
+      "items": [
+        {
+          "id": "gobahi8",
+          "text": "",
+          "type": "",
+          "answer": []
+        },
+        {
+          "id": "fnznjms",
+          "text": "",
+          "type": "",
+          "answer": []
+        }
+      ],
       "name": "Category 3"
     },
     {
@@ -59,8 +130,8 @@
     },
     {
       "id": "t756sof",
-      "name": "Category 6",
-      "items": []
+      "items": [],
+      "name": "Category 6"
     }
   ],
   "desc": "here for testing purpose (presently a placeholder for the fact I haven't implemented the id system yet)",

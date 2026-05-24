@@ -1,0 +1,274 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'DM Serif Display', Georgia, serif;
+    background: white;
+    color: black;
+    min-height: 100vh;
+    padding-bottom: 56px;
+}
+
+.toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 56px;
+    background: #154734;
+    border-bottom: 1px solid rgb(3, 56, 35);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 10px;
+}
+
+.page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 28px 24px;
+}
+
+.question-text {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 26px;
+    font-style: italic;
+    color: black;
+    line-height: 1.4;
+    margin-bottom: 24px;
+}
+
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.radio-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: white;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid whitesmoke;
+    user-select: none;
+}
+
+.radio-row:hover {
+    background: white;
+    border-color: #154734;
+}
+
+.radio-row.selected {
+    background: whitesmoke;
+    border: 2px solid #154734;
+}
+
+.radio-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid gray;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radio-row.selected .radio-circle {
+    border-color: #154734;
+}
+
+
+.radio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #154734;
+    display: none;
+}
+
+.radio-row.selected .radio-dot {
+    display: block;
+}
+
+.radio-label {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 16px;
+    color: black;
+}
+
+.open-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 14px 16px;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 15px;
+    color: black;
+    border: 1px solid whitesmoke;
+    border-radius: 3px;
+    resize: vertical;
+    background: white;
+}
+
+.open-textarea:focus {
+    border-color: #154734;
+    background: white;
+}
+
+
+
+.cat-splash {
+    padding: 24px 0 8px;
+}
+
+.cat-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: gray;
+    margin-bottom: 8px;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.cat-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 32px;
+    color: #154734;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+.cat-sub {
+    font-size: 14px;
+    color: gray;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+
+.bottom-nav {
+    position: fixed;
+    bottom: 56px;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid whitesmoke;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    z-index: 90;
+}
+
+.nav-btn {
+    height: 36px;
+    padding: 0 22px;
+    border-radius: 3px;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.nav-btn-back {
+    background: white;
+    color: #154734;
+    border: 1px solid #154734;
+}
+
+.nav-btn-back:hover {
+    background: white;
+}
+
+.nav-btn-back:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.nav-btn-back:disabled:hover {
+    background: white;
+}
+
+.nav-btn-next {
+    background: #154734;
+    color: white;
+    border: none;
+}
+
+.nav-btn-next:hover {
+    background: rgb(30, 95, 69);
+}
+
+.nav-pager {
+    font-size: 13px;
+    color: gray;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-style: italic;
+}
+
+.footer-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: white;
+    border-top: 1px solid whitesmoke;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 24px;
+}
+
+.footer-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: gray;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.footer-track {
+    height: 6px;
+    background: white;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.footer-fill {
+    height: 100%;
+    background: #154734;
+    border-radius: 3px;
+}
+
+
+.summary-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+}
+
+
+.summary-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 34px;
+    font-style: italic;
+    color: black;
+    margin-bottom: 10px;
+}
+
+
+
+
+@media (max-width: 540px) {
+
+    .question-text {
+        font-size: 20px;
+    }
+}

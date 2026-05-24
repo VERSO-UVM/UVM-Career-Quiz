@@ -103,9 +103,6 @@ textarea {
     outline: none;
 }
 
-textarea {
-    min-height: 60px;
-}
 
 #category_creation {
     padding: 12px 16px;
@@ -143,9 +140,6 @@ textarea {
     cursor: pointer;
 }
 
-.category_item:hover {
-    background: white;
-}
 
 .category_item.active {
     border: 3px solid #154734;
@@ -177,7 +171,6 @@ textarea {
 
 .remove_category {
     background: transparent;
-    color: gray;
     border: none;
     font-size: 13px;
     padding: 2px 6px;
@@ -187,7 +180,6 @@ textarea {
 }
 
 .remove_category:hover {
-    background: white;
     color: red;
 }
 
@@ -283,7 +275,6 @@ main#question_editor {
 
 .remove_question {
     background: transparent;
-    color: gray;
     border: none;
     font-size: 13px;
     padding: 2px 6px;
@@ -292,7 +283,6 @@ main#question_editor {
 }
 
 .remove_question:hover {
-    background: whitesmoke;
     color: red;
 }
 
@@ -321,9 +311,7 @@ main#empty_state {
     background: white;
 }
 
-#question_editor+#empty_state {
-    display: none;
-}
+
 
 #empty_hint {
     text-align: center;
@@ -489,7 +477,6 @@ main#empty_state {
 
 .remove_answer {
     background: transparent;
-    color: gray;
     border: none;
     font-size: 13px;
     padding: 2px 6px;
@@ -498,7 +485,6 @@ main#empty_state {
 }
 
 .remove_answer:hover {
-    background: lightgray;
     color: red;
 }
 
