@@ -63,7 +63,7 @@ def registering_user(username,password,email):
         while(user):
             id = str(uuid.uuid4())
             query = """
-                SELECT * FROM USER WHERE id = ?
+                SELECT * FROM USER WHERE u_id = ?
                 """
             cur.execute(query, (username,))
             user = cur.fetchone()
