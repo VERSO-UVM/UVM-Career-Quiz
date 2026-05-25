@@ -2,7 +2,10 @@ let pages = [];
 let cur = 0;
 let responses = {};
  
- 
+/**
+ * @param {*} quiz the quiz that is being previewed 
+ * @returns a list containing every question (even null question --> do we want to remove that part?)
+ */
 function buildPages(quiz) {
     const list = [];
     for (const category of quiz.categories) {
@@ -14,6 +17,10 @@ function buildPages(quiz) {
 }
  
 
+/**
+ * Update the footer each time a question is answered, is reponsible for the bar filling at the bottom 
+ * Allow the user to have a sense of how many question there are instead of trudging onward without any idea of what is awaiting them
+ */
 function updateFooter() {
     const total = pages.length;
     const answered = Object.values(responses).filter(v => v !== '' && v !== null && v !== undefined).length;
@@ -25,6 +32,13 @@ function updateFooter() {
     document.getElementById('footer-remain').textContent =
         remaining > 0 ? `${remaining} remaining` : (total ? 'All done!' : '');
 }
+
+
+/**
+ * render a question on the page
+ * @param {*} page the specific question that is being displayed
+ * @returns the html page containing the question
+ */
  
 function renderQuestionPage(page) {
     const item = page.item;
@@ -55,17 +69,25 @@ function renderQuestionPage(page) {
     }
  
     return `
-    <p class="question-text">${esc(item.text || 'This question has not yet been defined')}</p>
+    <p class="question-text">${esc(item.text) || 'This question has not yet been defined'}</p>
     ${body}`;
 }
  
+/**
+ * Called at the end of the survey to indicate that it's done
+ * @returns the page at the end of the survey
+ */
 function renderSummary() {
     return `
     <div class="summary-wrap">
       <h2 class="summary-title">Survey Complete</h2>
     </div>`;
 }
- 
+
+/**
+ * Render the page each time it is needed to render
+ * @returns is here in order to escape after a certain condition
+ */
 function render() {
     const app = document.getElementById('app');
     const isSummary = cur >= pages.length;
@@ -89,12 +111,22 @@ function render() {
     app.innerHTML = renderQuestionPage(page);
 }
 
+/**
+ * Go to a question before or after the current one
+ * @param {*} dir the direction that you need to go in(back is -1 forward is 1) 
+ */
+
 function go(dir) {
     cur = Math.max(0, Math.min(pages.length, cur + dir));
     render();
     window.scrollTo({ top: 0});
 }
 
+
+
+/**
+ * Restart the quiz after the quiz has been finished
+ */
 function restart() {
     responses = {};
     cur = 0;
@@ -102,27 +134,47 @@ function restart() {
     window.scrollTo({ top: 0 });
 }
 
+
+/**
+ * Load a quiz. Is called once when the page is first created
+ */
 function loadQuiz() {
     pages = buildPages(quiz);
     responses = {};
     cur = 0;
     render();
 }
- 
+/**
+ * Choose the answer to a multiple choice question
+ * @param {*} qId the question
+ * @param {*} optId the option to the quiz
+ */
 function selectMC(qId, optId) {
     responses[qId] = optId;
     render();
 }
 
+
+/**
+ * Choose the answer to a text based question
+ * @param {*} qId the question 
+ * @param {*} val the answer to the quiz 
+ */
 function setText(qId, val) {
     responses[qId] = val;
     updateFooter();
 }
 
+
+/**
+ * Since html is a slighly annoying language, user input can easily break it. This is here to sanitize an input
+ * @param {*} s the text that need escaping from  
+ * @returns the string sanitized
+ */
 function esc(s) {
     return String(s)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
+//will be called once every time we call this file.
 loadQuiz(quiz);
