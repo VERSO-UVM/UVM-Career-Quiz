@@ -226,14 +226,14 @@ function saveQuiz() {
     }
     const jsonString = JSON.stringify(quiz, null, 2);
 
-    fetch('/save-quiz', {
+    fetch('/save_quiz', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: jsonString
     })
-    .then(response => response.json())
+        .then(response => response.json())
         .then(data => {
             if (data.redirect) {
                 // This is what actually moves the user to the new page
@@ -432,21 +432,29 @@ function render() {
     renderCategory();
 }
 
-
+//from here
 function openShare() {
-  document.getElementById('share_overlay').style.display = 'flex';
+    document.getElementById('share_overlay').style.display = 'flex';
 }
 
 function closeShare() {
-  document.getElementById('share_overlay').style.display = 'none';
+    document.getElementById('share_overlay').style.display = 'none';
 }
 
-// Close the modal if the user clicks outside the modal box
-window.onclick = function(event) {
-  var overlay = document.getElementById('share_overlay');
-  if (event.target == overlay) {
-    overlay.style.display = 'none';
-  }
+window.onclick = function (event) {
+    var overlay = document.getElementById('share_overlay');
+    if (event.target == overlay) {
+        overlay.style.display = 'none';
+    }
+}
+// to here 
+// are function related to the share overlay button 
+
+function previewQuiz() {
+    if(quiz.title &&  !window.location.href.includes("new_quiz"))
+        window.location.href = `/quiz_preview/${quiz.id}`;
+    else
+        alert("Please choose a title and save your quiz before trying to preview it")
 }
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();

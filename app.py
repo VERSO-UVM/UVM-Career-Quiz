@@ -65,7 +65,6 @@ def register():
 #As it stand the cooperative aspect is a bit forlorn, will need to add option for sharing for example.
 @app.route('/quiz_builder/<quiz>', methods=['GET', 'POST'])
 def quiz_builder(quiz):
-    print(quiz)
     quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
     error = ""
     try:
@@ -77,7 +76,7 @@ def quiz_builder(quiz):
 
 
 #Button on the quiz builder page, allow a user to save a quiz in our server. As it stand there is no option to delete the quiz. We will need to work on that
-@app.route('/save-quiz', methods=['GET','POST'])
+@app.route('/save_quiz', methods=['GET','POST'])
 def save_quiz():
     quiz = request.get_json()
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
@@ -113,7 +112,4 @@ def quiz_preview(quiz):
         quiz_ = json.load(f)
     return render_template("quiz_preview.html", quiz = quiz_)
 
-
-@app.route("/quiz_share")
-def quiz_share():
-    return render_template("quiz_share.html")
+    
