@@ -22,6 +22,7 @@
             <a href="{{ url_for('quiz_preview', quiz = quiz.id )}}">
                 <button class="preview_btn">Preview</button>
             </a>
+            <button class ="share_btn" onclick="openShare()">Share</button>
         </div>
 
     </header>
@@ -60,11 +61,26 @@
         </main>
         <div id="answer_panel" style="display: none;"></div>
     </div>
+
+
+
+    <div id="share_overlay" class="share_overlay">
+        <div class="share_content">
+            <div class="share_header">
+                <h2>Search for the person you want to search with below</h2>
+                <button class="close_btn" onclick="closeShare()">x</button>
+            </div>
+            <div >
+                <p> In this div we want to have a drop down menu/form that will allow the user to search for someone, and send that info to flask.
+                     with flask we'll search into the database and update permission (mainly add the new user (if they exist)) to the Acess table alongside the quiz id</p>
+            </div>
+        </div>
+    </div>
     <script>
         let quiz = {{ quiz | tojson }} || {
             title: '',
             desc: '',
-            id: '', 
+            id: '',
             categories: []
         };
         document.getElementById('quiz-title').value = quiz.title;

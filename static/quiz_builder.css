@@ -545,3 +545,57 @@ main#empty_state {
 .preview_btn:hover {
     background: rgb(30, 95, 69);
 }
+
+.share_overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.share_content {
+  background-color: white;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+}
+
+
+.share_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid white;
+  padding-bottom: 10px;
+}
+
+.close_btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+
+.share_btn {
+    background: #154734;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    height: 56px;
+    padding: 10px;
+    border-left: 3px solid rgb(3, 56, 35);
+}
+
+.share_btn:hover {
+    background: rgb(30, 95, 69);
+}

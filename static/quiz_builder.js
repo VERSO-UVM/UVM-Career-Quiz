@@ -431,5 +431,22 @@ function render() {
     getQuizInfo();
     renderCategory();
 }
+
+
+function openShare() {
+  document.getElementById('share_overlay').style.display = 'flex';
+}
+
+function closeShare() {
+  document.getElementById('share_overlay').style.display = 'none';
+}
+
+// Close the modal if the user clicks outside the modal box
+window.onclick = function(event) {
+  var overlay = document.getElementById('share_overlay');
+  if (event.target == overlay) {
+    overlay.style.display = 'none';
+  }
+}
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();
