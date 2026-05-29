@@ -17,7 +17,7 @@ function uid() {
 function getQuizInfo() {
     quiz.title = document.getElementById('quiz-title').value;
     quiz.desc = document.getElementById('quiz-desc').value;
-} 
+}
 
 
 /**
@@ -232,7 +232,14 @@ function saveQuiz() {
             'Content-Type': 'application/json'
         },
         body: jsonString
-    });
+    })
+    .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                // This is what actually moves the user to the new page
+                window.location.href = data.redirect;
+            }
+        });
 }
 
 

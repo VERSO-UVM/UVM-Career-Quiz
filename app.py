@@ -1,4 +1,4 @@
-from flask import Flask, render_template,request, session, redirect, url_for
+from flask import Flask, render_template,request, session, redirect, url_for, jsonify
 import os
 import json
 import database_interaction as db 
@@ -65,6 +65,7 @@ def register():
 #As it stand the cooperative aspect is a bit forlorn, will need to add option for sharing for example.
 @app.route('/quiz_builder/<quiz>', methods=['GET', 'POST'])
 def quiz_builder(quiz):
+    print(quiz)
     quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
     error = ""
     try:
@@ -76,13 +77,14 @@ def quiz_builder(quiz):
 
 
 #Button on the quiz builder page, allow a user to save a quiz in our server. As it stand there is no option to delete the quiz. We will need to work on that
-@app.route('/save-quiz', methods=['POST'])
+@app.route('/save-quiz', methods=['GET','POST'])
 def save_quiz():
     quiz = request.get_json()
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
         db.save_quiz_in_the_db(quiz["id"], quiz["title"],session['user_id'])
-    return render_template('quiz_builder.html', quiz=quiz)
+    quiz_ = quiz["id"] + ".json"
+    return jsonify({"redirect": url_for('quiz_builder', quiz=quiz_)})
 
 
 @app.route('/drawflow_testing')
@@ -92,7 +94,7 @@ def drawflow_testing():
 
 
 
-#Allo the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a bruteforce strategy, but it should work (or at least it has so far)
+#Allow the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a bruteforce strategy, but it should work (or at least it has so far)
 @app.route("/quiz_selection", methods=['GET', 'POST'])
 def quiz_selection():
     folder_path = './testing_quiz'
@@ -110,3 +112,8 @@ def quiz_preview(quiz):
     with open(f'testing_quiz/{quiz}.json') as f:
         quiz_ = json.load(f)
     return render_template("quiz_preview.html", quiz = quiz_)
+
+
+@app.route("/quiz_share")
+def quiz_share():
+    return render_template("quiz_share.html")
