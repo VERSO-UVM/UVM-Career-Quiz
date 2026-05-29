@@ -91,6 +91,17 @@ def has_acess(u_ID, q_ID):
     conn.close()
     return row
 
+def user_with_acess(q_id):
+    conn, cur = connecting_to_sql()
+    query = "SELECT * FROM ACESS WHERE q_ID = ?"
+    cur.execute(query,(q_id,))
+    row = cur.fetchall()
+    conn.close()
+    if row:   
+        return row
+    else: 
+        return ""
+                
 #Call the first 4 function in this file to create the Database. Careful as stated above it wipe all and every data in the DB except for training one
 def create_db():
     id_1 = "1"

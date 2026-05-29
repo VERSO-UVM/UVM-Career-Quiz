@@ -435,6 +435,8 @@ function render() {
 //from here
 function openShare() {
     document.getElementById('share_overlay').style.display = 'flex';
+    document.getElementById('share_message').style.display = 'none';
+    loadAccessList();
 }
 
 function closeShare() {
@@ -469,19 +471,35 @@ async function submitShare() {
         const result = await response.json();
         msg.style.display = 'block';
         msg.style.color = result.error ? 'red' : 'green';
-        if (result.error){
-            msg.innerHTML = result.error 
+        if (result.error) {
+            msg.innerHTML = result.error
         }
-        else{ 
+        else {
             msg.textContent = result.success;
         }
 
         if (!result.error) {
             document.getElementById('share_username').value = '';
+            loadAccessList()
         }
     }
     else
         alert("Please choose a title and save your quiz before trying to share it")
+}
+/**
+ * Load from the backend the exact user who have access to this quiz
+ */
+async function loadAccessList() {
+    const list = document.getElementById('access_list');
+
+    const response = await fetch(`/quiz_share?quiz_id=${quiz.id}`);
+    const result = await response.json();
+    if (!result.users || result.users.length === 0) {
+        list.innerHTML = '<li class="access_list_empty">No one else has access yet.</li>';
+    } else {
+        list.innerHTML = result.users.map(u => `<li class="access_list_item">${u}</li>`).join('');
+    }
+
 }
 // to here 
 // are function related to the share overlay button 

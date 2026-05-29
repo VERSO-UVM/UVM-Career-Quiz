@@ -113,19 +113,17 @@ def quiz_preview(quiz):
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
+
+    if request.method == 'GET':
+        quiz_id = request.args.get('quiz_id', '').strip()
+        users = db.user_with_acess(quiz_id)
+        return jsonify({"users": [u[0] for u in users] if users else []})
+    
     error =""
     data = request.get_json()
     username = data.get('username', '').strip()
     quiz_id = data.get('quiz_id', '').strip()
 
-    quiz_filename = f"{quiz_id}.json"
-    quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
-    
-    try:
-        with open(f'testing_quiz/{quiz_filename}') as f:
-            quiz_ = json.load(f)
-    except FileNotFoundError:
-        quiz_["id"] = quiz_id
     u_id = db.find_id_with_uname(username)
 
     if(u_id ):

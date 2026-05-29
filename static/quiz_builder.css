@@ -615,3 +615,65 @@ main#empty_state {
 .share_btn_acept:hover {
     background: rgb(30, 95, 69);
 }
+
+
+
+.share_header h2 {
+    font-size: 16px;
+    color: #154734;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.share_content label {
+    font-size: 16px;
+    color: gray;
+}
+
+.share_content input[type="text"] {
+    border-bottom: 1px solid whitesmoke;
+    padding: 6px 0;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    color: #154734;
+    width: 100%;
+}
+
+
+#share_message {
+    font-size: 17px;
+    font-style: italic;
+    margin-top: 4px;
+}
+
+
+.access_list_label {
+    font-size: 16px;
+    color: gray;
+    margin-bottom: 8px;
+}
+
+#access_list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.access_list_item {
+    font-size: 17px;
+    color: #154734;
+    padding: 6px 10px;
+    background: whitesmoke;
+    border-radius: 3px;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.access_list_loading,
+.access_list_empty {
+    font-size: 17px;
+    color: gray;
+    font-style: italic;
+    padding: 4px 0;
+}

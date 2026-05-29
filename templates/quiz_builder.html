@@ -69,10 +69,15 @@
                 <button class="close_btn" onclick="closeShare()">x</button>
             </div>
             <div>
+                <div id="access_list_section">
+                    <p class="access_list_label">People with access:</p>
+                    <ul id="access_list">
+                    </ul>
+                </div>
                 <label for="share_username">Username of the person you want to share this quiz with : </label><br>
                 <input type="text" id="share_username" required placeholder="Jean Bon"><br>
-                <p id="share_message"  style="display:none;"></p><br>
-                <button class ="share_btn_acept" onclick="submitShare()">Share</button>
+                <p id="share_message" style="display:none;"></p><br>
+                <button class="share_btn_acept" onclick="submitShare()">Share</button>
             </div>
         </div>
     </div>
