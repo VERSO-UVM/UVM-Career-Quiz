@@ -599,3 +599,19 @@ main#empty_state {
 .share_btn:hover {
     background: rgb(30, 95, 69);
 }
+
+.share_btn_acept {
+    background: #154734;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    text-align: left;
+}
+
+.share_btn_acept:hover {
+    background: rgb(30, 95, 69);
+}

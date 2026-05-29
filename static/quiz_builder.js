@@ -447,14 +447,54 @@ window.onclick = function (event) {
         overlay.style.display = 'none';
     }
 }
+
+/**
+ * Submit the share request
+ * @returns here to break in case someone doesnt choose a username
+ */
+async function submitShare() {
+    if (quiz.title && !window.location.href.includes("new_quiz")) {
+        const username = document.getElementById('share_username').value.trim();
+        const msg = document.getElementById('share_message');
+        if (!username) {
+            msg.innerHTML = "Please choose a username before submitting"
+            return;
+        }
+        const response = await fetch("/quiz_share", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, quiz_id: quiz.id })
+        });
+
+        const result = await response.json();
+        msg.style.display = 'block';
+        msg.style.color = result.error ? 'red' : 'green';
+        if (result.error){
+            msg.innerHTML = result.error 
+        }
+        else{ 
+            msg.textContent = result.success;
+        }
+
+        if (!result.error) {
+            document.getElementById('share_username').value = '';
+        }
+    }
+    else
+        alert("Please choose a title and save your quiz before trying to share it")
+}
 // to here 
 // are function related to the share overlay button 
 
+/**
+ * Allow for a preview of the quiz. I did this instead of the simple url_for, as it allowed for easier verification that the quiz had been saved at least once.
+ */
 function previewQuiz() {
-    if(quiz.title &&  !window.location.href.includes("new_quiz"))
+    if (quiz.title && !window.location.href.includes("new_quiz"))
         window.location.href = `/quiz_preview/${quiz.id}`;
     else
         alert("Please choose a title and save your quiz before trying to preview it")
 }
+
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();

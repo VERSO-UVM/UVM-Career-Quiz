@@ -41,7 +41,30 @@ def find_name_with_id(q_id):
     if row : 
         return row[0][0]
     else :
-        return ""  
+        return ""
+
+#Find the user id of a user providing it's username. 
+def find_id_with_uname(username):
+    conn, cur = connecting_to_sql()
+    query = "SELECT u_id FROM USER WHERE Username = ?"
+
+    cur.execute(query,(username,))
+
+    row = cur.fetchone()
+
+    conn.close()
+
+    if row :
+        return row[0]
+    else :
+        return ""
+
+#Share a quiz with another user
+def share_quiz(u_id, q_id):
+    conn, cur = connecting_to_sql()
+    cur.execute("INSERT INTO ACESS (q_id, u_id) VALUES(?,?) ", (q_id, u_id))
+    conn.commit()
+    conn.close()
 
 #Save a quiz in the DB
 def save_quiz_in_the_db(q_id, q_title, u_ID):

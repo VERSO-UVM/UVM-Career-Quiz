@@ -66,13 +66,12 @@ def register():
 @app.route('/quiz_builder/<quiz>', methods=['GET', 'POST'])
 def quiz_builder(quiz):
     quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
-    error = ""
     try:
         with open(f'testing_quiz/{quiz}') as f:
             quiz_ = json.load(f)
     except FileNotFoundError as e:
-        error = e 
-    return render_template('quiz_builder.html', quiz =quiz_, error = error)
+        error = "So far this is just a way to bypass the problem of creating new quiz."
+    return render_template('quiz_builder.html', quiz =quiz_)
 
 
 #Button on the quiz builder page, allow a user to save a quiz in our server. As it stand there is no option to delete the quiz. We will need to work on that
@@ -112,4 +111,34 @@ def quiz_preview(quiz):
         quiz_ = json.load(f)
     return render_template("quiz_preview.html", quiz = quiz_)
 
+@app.route("/quiz_share", methods=['GET','POST'])
+def quiz_share():
+    error =""
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    quiz_id = data.get('quiz_id', '').strip()
+
+    quiz_filename = f"{quiz_id}.json"
+    quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
+    
+    try:
+        with open(f'testing_quiz/{quiz_filename}') as f:
+            quiz_ = json.load(f)
+    except FileNotFoundError:
+        quiz_["id"] = quiz_id
+    u_id = db.find_id_with_uname(username)
+
+    if(u_id ):
+        if u_id == session['user_id']:
+            error = "This is you..."
+        elif(not db.has_acess(u_id, quiz_id)):
+            db.share_quiz(u_id, quiz_id)
+        else:
+            error = "This user already has acces to this quiz"
+    else:
+        error = "This user does not exist"
+
+    if error:
+        return jsonify({"error": f"A problem occured when trying to share your quiz! <br> {error}."})
+    return jsonify({"success": f"Quiz successfully shared with {username}!"})
     
