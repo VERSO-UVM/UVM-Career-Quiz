@@ -68,7 +68,7 @@ def register():
 def quiz_builder(quiz):
     quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
     try:
-        with open(f'testing_quiz/{quiz}') as f:
+        with open(f'testing_quiz/{quiz}.json') as f:
             quiz_ = json.load(f)
     except FileNotFoundError as e:
         error = "So far this is just a way to bypass the problem of creating new quiz."
@@ -84,8 +84,7 @@ def save_quiz():
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
         db.save_quiz_in_the_db(quiz["id"], quiz["title"],session['user_id'])
-    quiz_ = quiz["id"] + ".json"
-    return jsonify({"redirect": url_for('quiz_builder', quiz=quiz_)})
+    return jsonify({"redirect": url_for('quiz_builder', quiz=quiz["id"])})
 
 
 @app.route('/drawflow_testing')
@@ -103,9 +102,9 @@ def quiz_selection():
     name =[]
     for filename in os.listdir(folder_path):
         if(db.has_acess(session['user_id'], filename[:-5])):
-            quiz.append(filename)
+            quiz.append(filename[:-5])
     for q in quiz:
-        name.append(db.find_name_with_id(q[:-5]))
+        name.append(db.find_name_with_id(q))
     return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)
 
 @app.route("/quiz_preview/<quiz>")
