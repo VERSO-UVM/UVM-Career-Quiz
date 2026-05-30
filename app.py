@@ -1,4 +1,5 @@
 from flask import Flask, render_template,request, session, redirect, url_for, jsonify
+import uuid
 import os
 import json
 import database_interaction as db 
@@ -78,6 +79,8 @@ def quiz_builder(quiz):
 @app.route('/save_quiz', methods=['GET','POST'])
 def save_quiz():
     quiz = request.get_json()
+    if(not quiz["id"]):
+        quiz["id"] = str(uuid.uuid4())
     with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
         json.dump(quiz, f, indent=2)
         db.save_quiz_in_the_db(quiz["id"], quiz["title"],session['user_id'])

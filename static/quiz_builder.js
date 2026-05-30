@@ -236,7 +236,6 @@ function saveQuiz() {
         .then(response => response.json())
         .then(data => {
             if (data.redirect) {
-                // This is what actually moves the user to the new page
                 window.location.href = data.redirect;
             }
         });
@@ -426,8 +425,6 @@ function render() {
     if (quiz.title) {
         document.title = quiz.title;
     }
-    if (!quiz.id)
-        quiz.id = uid();
     getQuizInfo();
     renderCategory();
 }
