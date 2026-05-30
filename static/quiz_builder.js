@@ -491,12 +491,36 @@ async function loadAccessList() {
 
     const response = await fetch(`/quiz_share?quiz_id=${quiz.id}`);
     const result = await response.json();
-    if (!result.users || result.users.length === 0) {
-        list.innerHTML = '<li class="access_list_empty">No one else has access yet.</li>';
-    } else {
-        list.innerHTML = result.users.map(u => `<li class="access_list_item">${u}</li>`).join('');
-    }
+    const isCreator = result.current_user === result.creator;
 
+    if (!result.users || result.users.length === 0) {
+        list.innerHTML = `<li class="access_list_empty">No one else has access yet.</li>`;
+    } else {
+        list.innerHTML = result.users.map(u => {
+            const isYou = u === result.current_user;
+            const isOwner = u === result.creator;
+            const tag = isOwner ? ' (creator)' : '';
+            const youTag = isYou ? ' (you)' : '';
+            const revokeBtn = isCreator && !isOwner
+                ? `<button class="revoke_btn" onclick="revokeAccess('${u}')">Remove</button>`
+                : '';
+            return `<li class="access_list_item">${u}${tag}${youTag}${revokeBtn}</li>`;
+        }).join('');
+    }
+}
+async function revokeAccess(username) {
+    const msg = document.getElementById('share_message');
+    const response = await fetch('/quiz_revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, quiz_id: quiz.id })
+    });
+    const result = await response.json();
+    msg.style.display = 'block';
+    msg.style.color = result.error ? 'red' : 'green';
+    msg.innerHTML = result.error || result.success;
+    if (!result.error) 
+        loadAccessList();
 }
 // to here 
 // are function related to the share overlay button 

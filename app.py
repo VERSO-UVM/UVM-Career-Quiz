@@ -117,9 +117,18 @@ def quiz_preview(quiz):
 def quiz_share():
 
     if request.method == 'GET':
+        users_ = []
         quiz_id = request.args.get('quiz_id', '').strip()
         users = db.user_with_acess(quiz_id)
-        return jsonify({"users": [u[0] for u in users] if users else []})
+        creator = db.find_creator(quiz_id)
+        if users:
+            for u in users:
+                users_.append(db.find_uname_with_id(u[0]))
+        return jsonify({
+            "users": users_,
+            "creator": creator,
+            "current_user": session['username']
+        })
     
     error =""
     data = request.get_json()
@@ -141,4 +150,19 @@ def quiz_share():
     if error:
         return jsonify({"error": f"A problem occured when trying to share your quiz! <br> {error}."})
     return jsonify({"success": f"Quiz successfully shared with {username}!"})
+
+@app.route('/quiz_revoke', methods=['POST'])
+def quiz_revoke():
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    quiz_id = data.get('quiz_id', '').strip()
+
+    if session['username'] != db.find_creator(quiz_id):
+        return jsonify({"error": "Only the creator can remove access."})
+
+    u_id = db.find_id_with_uname(username)
+
+
+    db.remove_access(u_id, quiz_id)
+    return jsonify({"success": f"Access removed for {username}."})
     

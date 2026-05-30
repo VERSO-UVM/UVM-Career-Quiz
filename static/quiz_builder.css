@@ -677,3 +677,35 @@ main#empty_state {
     font-style: italic;
     padding: 4px 0;
 }
+
+
+.access_list_item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.access_tag {
+    font-size: 11px;
+    font-family: 'DM Serif Display', Georgia, serif;
+    padding: 2px 7px;
+    border-radius: 3px;
+}
+
+
+.revoke_btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid gray;
+    color: gray;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 12px;
+    border-radius: 3px;
+}
+
+.revoke_btn:hover {
+    border-color: red;
+    color: red;
+}

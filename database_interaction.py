@@ -22,7 +22,7 @@ def user_creation(cur):
 #Create the quiz table
 def quiz_creation(cur):
     cur.execute('''DROP TABLE IF EXISTS QUIZ''')
-    cur.execute('''CREATE TABLE QUIZ(q_ID TEXT NOT NULL UNIQUE, name TEXT NOT NULL,PRIMARY KEY("q_ID"))''')
+    cur.execute('''CREATE TABLE QUIZ(q_ID TEXT NOT NULL UNIQUE, name TEXT NOT NULL,owner_id TEXT NOT NULL, PRIMARY KEY("q_ID"))''')
 
 #Create the acess table
 def acess_creation(cur):
@@ -59,6 +59,17 @@ def find_id_with_uname(username):
     else :
         return ""
 
+#reverse of the above function
+def find_uname_with_id(u_id):
+    conn, cur = connecting_to_sql()
+    cur.execute("SELECT Username FROM USER WHERE u_ID = ?", (u_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return ""
+
 #Share a quiz with another user
 def share_quiz(u_id, q_id):
     conn, cur = connecting_to_sql()
@@ -76,7 +87,7 @@ def save_quiz_in_the_db(q_id, q_title, u_ID):
     if row :
         cur.execute("UPDATE QUIZ SET name = ? WHERE q_id = ?", (q_title, q_id))
     else: 
-        cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id, q_title))
+        cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id, q_title, u_ID))
         cur.execute("INSERT INTO ACESS (q_id, u_id) VALUES(?,?) ", (q_id, u_ID))
     conn.commit()
     conn.close()
@@ -101,7 +112,26 @@ def user_with_acess(q_id):
         return row
     else: 
         return ""
-                
+
+
+# Return the username of the quiz creator
+def find_creator(q_id):
+    conn, cur = connecting_to_sql()
+    cur.execute("SELECT Username FROM USER JOIN QUIZ ON USER.u_ID = QUIZ.owner_id WHERE QUIZ.q_ID = ?", (q_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row :
+        return row[0]
+    else :
+        return ""
+
+# Remove a user's access to a quiz
+def remove_access(u_id, q_id):
+    conn, cur = connecting_to_sql()
+    cur.execute("DELETE FROM ACESS WHERE u_ID = ? AND q_ID = ?", (u_id, q_id))
+    conn.commit()
+    conn.close()
+
 #Call the first 4 function in this file to create the Database. Careful as stated above it wipe all and every data in the DB except for training one
 def create_db():
     id_1 = "1"
@@ -122,8 +152,8 @@ def create_db():
     cur.execute("INSERT INTO USER (u_ID, Username, Password, Email) VALUES (?,?,?,?)", (id_2, u_name_2, u_pass_2,u_mail_2))
     conn.commit()
     quiz_creation(cur)
-    cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id_1, name_1))
-    cur.execute("INSERT INTO QUIZ (q_ID, name) VALUES (?,?)", (q_id_2, name_2))
+    cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_1, name_1, id_1))
+    cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_2, name_2, id_2))
     conn.commit()
     acess_creation(cur)
     cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_1, q_id_1))
