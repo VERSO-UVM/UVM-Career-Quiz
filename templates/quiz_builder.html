@@ -21,6 +21,7 @@
             <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
             <button onclick="previewQuiz()" class="preview_btn">Preview</button>
             <button class="share_btn" onclick="openShare()">Share</button>
+            <button class ="delete_btn" onclick ="deleteQuiz()"> Delete</button>
         </div>
 
     </header>
@@ -46,7 +47,7 @@
         <main id="question_editor" style="display: none;">
             <div id="editor_header">
                 <h2 id="editor_category_title">category name</h2>
-                <button id="close_editor" onclick="closeEditor()">✕ Close</button>
+                <button id="close_editor" onclick="closeEditor()">X Close</button>
             </div>
             <div id="questions_list"></div>
             <button class="add_question_btn" onclick="addQuestion(active_category_Id)">Add a question</button>
@@ -81,6 +82,8 @@
             </div>
         </div>
     </div>
+
+    
     <script>
         let quiz = {{ quiz | tojson }} || {
             title: '',

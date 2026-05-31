@@ -535,5 +535,8 @@ function previewQuiz() {
         alert("Please choose a title and save your quiz before trying to preview it")
 }
 
+function deleteQuiz(){
+    alert("Will have to implement this. As it stand, I plan to have this be similar to the share, as in : It will spawn an overlay, where only the creator of the quiz (and later on we can have different'Class' of contributor like admin, writer, viewer ,etc) will be able to delete the quiz." )
+}
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();

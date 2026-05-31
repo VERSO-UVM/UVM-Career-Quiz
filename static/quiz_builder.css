@@ -616,6 +616,22 @@ main#empty_state {
     background: rgb(30, 95, 69);
 }
 
+.delete_btn {
+    background: #154734;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    height: 56px;
+    padding: 10px;
+    border-left: 3px solid rgb(3, 56, 35);
+}
+
+.delete_btn:hover{
+    background: rgb(30, 95, 69);
+}
+
 
 
 .share_header h2 {
