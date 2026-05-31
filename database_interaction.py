@@ -98,7 +98,7 @@ def has_acess(u_ID, q_ID):
     conn, cur = connecting_to_sql()
     query = "SELECT * FROM ACESS WHERE q_ID = ? AND u_ID = ?"
     cur.execute(query,(q_ID, u_ID))
-    row = cur.fetchall()
+    row = cur.fetchone()
     conn.close()
     return row
 

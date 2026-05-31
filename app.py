@@ -63,16 +63,22 @@ def register():
 
 
 # Allow the user to create and make modification to quizzes.
-#As it stand the cooperative aspect is a bit forlorn, will need to add option for sharing for example.
 @app.route('/quiz_builder/<quiz>', methods=['GET', 'POST'])
 def quiz_builder(quiz):
-    quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
-    try:
-        with open(f'testing_quiz/{quiz}.json') as f:
-            quiz_ = json.load(f)
-    except FileNotFoundError as e:
-        error = "So far this is just a way to bypass the problem of creating new quiz."
-    return render_template('quiz_builder.html', quiz =quiz_)
+    if session['user_id'] :
+        quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
+        try:
+            with open(f'testing_quiz/{quiz}.json') as f:
+                quiz_ = json.load(f)
+            if db.has_acess(session["user_id"],quiz):
+                quiz_ = quiz_ 
+            else : 
+                quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
+        except FileNotFoundError as e:
+            error = "So far this is just a way to bypass the problem of creating new quiz."
+        return render_template('quiz_builder.html', quiz =quiz_)
+    else :
+        return redirect("/")
 
 
 #Button on the quiz builder page, allow a user to save a quiz in our server. As it stand there is no option to delete the quiz. We will need to work on that
@@ -97,21 +103,28 @@ def drawflow_testing():
 #Allow the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a bruteforce strategy, but it should work (or at least it has so far)
 @app.route("/quiz_selection", methods=['GET', 'POST'])
 def quiz_selection():
-    folder_path = './testing_quiz'
-    quiz = []
-    name =[]
-    for filename in os.listdir(folder_path):
-        if(db.has_acess(session['user_id'], filename[:-5])):
-            quiz.append(filename[:-5])
-    for q in quiz:
-        name.append(db.find_name_with_id(q))
-    return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)
+    if session["user_id"]:
+        folder_path = './testing_quiz'
+        quiz = []
+        name =[]
+        for filename in os.listdir(folder_path):
+            if(db.has_acess(session['user_id'], filename[:-5])):
+                quiz.append(filename[:-5])
+        for q in quiz:
+            name.append(db.find_name_with_id(q))
+        return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)
+    else : 
+        return redirect("/")
 
 @app.route("/quiz_preview/<quiz>")
 def quiz_preview(quiz):
-    with open(f'testing_quiz/{quiz}.json') as f:
-        quiz_ = json.load(f)
-    return render_template("quiz_preview.html", quiz = quiz_)
+    if session["user_id"]:
+        with open(f'testing_quiz/{quiz}.json') as f:
+            quiz_ = json.load(f)
+        return render_template("quiz_preview.html", quiz = quiz_)
+    else : 
+        return redirect("/")
+
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
