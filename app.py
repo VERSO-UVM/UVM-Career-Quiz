@@ -128,41 +128,43 @@ def quiz_preview(quiz):
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
-
-    if request.method == 'GET':
-        users_ = []
-        quiz_id = request.args.get('quiz_id', '').strip()
-        users = db.user_with_acess(quiz_id)
-        creator = db.find_creator(quiz_id)
-        if users:
-            for u in users:
-                users_.append(db.find_uname_with_id(u[0]))
-        return jsonify({
-            "users": users_,
-            "creator": creator,
-            "current_user": session['username']
-        })
+    if session["user_id"]:
+        if request.method == 'GET':
+            users_ = []
+            quiz_id = request.args.get('quiz_id', '').strip()
+            users = db.user_with_acess(quiz_id)
+            creator = db.find_creator(quiz_id)
+            if users:
+                for u in users:
+                    users_.append(db.find_uname_with_id(u[0]))
+            return jsonify({
+                "users": users_,
+                "creator": creator,
+                "current_user": session['username']
+            })
     
-    error =""
-    data = request.get_json()
-    username = data.get('username', '').strip()
-    quiz_id = data.get('quiz_id', '').strip()
+        error =""
+        data = request.get_json()
+        username = data.get('username', '').strip()
+        quiz_id = data.get('quiz_id', '').strip()
 
-    u_id = db.find_id_with_uname(username)
+        u_id = db.find_id_with_uname(username)
 
-    if(u_id ):
-        if u_id == session['user_id']:
-            error = "This is you..."
-        elif(not db.has_acess(u_id, quiz_id)):
-            db.share_quiz(u_id, quiz_id)
+        if(u_id ):
+            if u_id == session['user_id']:
+               error = "This is you..."
+            elif(not db.has_acess(u_id, quiz_id)):
+                db.share_quiz(u_id, quiz_id)
+            else:
+                error = "This user already has acces to this quiz"
         else:
-            error = "This user already has acces to this quiz"
-    else:
-        error = "This user does not exist"
+            error = "This user does not exist"
 
-    if error:
-        return jsonify({"error": f"A problem occured when trying to share your quiz! <br> {error}."})
-    return jsonify({"success": f"Quiz successfully shared with {username}!"})
+        if error:
+            return jsonify({"error": f"A problem occured when trying to share your quiz! <br> {error}."})
+        return jsonify({"success": f"Quiz successfully shared with {username}!"})
+    else: 
+        return redirect("/")
 
 @app.route('/quiz_revoke', methods=['POST'])
 def quiz_revoke():
