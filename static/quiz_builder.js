@@ -436,6 +436,19 @@ function openShare() {
     loadAccessList();
 }
 
+function openBranching() {
+    document.getElementById('branching_overlay').style.display = 'flex';
+
+    const hasNodes = Object.keys(editor.export().drawflow.Home.data).length > 0;
+    if (!hasNodes) {
+        loadQuizIntoDrawflow();
+    }
+}
+
+function closeBranching() {
+    document.getElementById('branching_overlay').style.display = 'none';
+}
+
 function closeShare() {
     document.getElementById('share_overlay').style.display = 'none';
 }
@@ -519,7 +532,7 @@ async function revokeAccess(username) {
     msg.style.display = 'block';
     msg.style.color = result.error ? 'red' : 'green';
     msg.innerHTML = result.error || result.success;
-    if (!result.error) 
+    if (!result.error)
         loadAccessList();
 }
 // to here 
@@ -535,8 +548,227 @@ function previewQuiz() {
         alert("Please choose a title and save your quiz before trying to preview it")
 }
 
-function deleteQuiz(){
-    alert("Will have to implement this. As it stand, I plan to have this be similar to the share, as in : It will spawn an overlay, where only the creator of the quiz (and later on we can have different'Class' of contributor like admin, writer, viewer ,etc) will be able to delete the quiz." )
+function deleteQuiz() {
+    alert("Will have to implement this. As it stand, I plan to have this be similar to the share, as in : It will spawn an overlay, where only the creator of the quiz (and later on we can have different'Class' of contributor like admin, writer, viewer ,etc) will be able to delete the quiz.")
 }
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();
+
+
+
+
+
+
+
+
+
+
+// Branching section:
+var id = document.getElementById("drawflow");
+const editor = new Drawflow(id);
+editor.reroute = true;
+editor.start();
+editor.editor_mode = 'edit';
+
+const questionTemplate = `
+    <div class="question-node">
+      <input class="question-title drawflow-input" type="text" placeholder="Question text" />
+      <div class="answers">
+        <div class="answer" data-output="output_1">
+          <input type="text" class="drawflow-input" placeholder="Option 1" />
+          <button class="remove-answer" onclick="removeAnswer(this)">-</button>
+        </div>
+        <div class="answer" data-output="output_2">
+          <input type="text" class="drawflow-input" placeholder="Option 2" />
+          <button class="remove-answer" onclick="removeAnswer(this)">-</button>
+        </div>
+      </div>
+      <button class="add-answer" onclick="addAnswer(this)">+</button>
+    </div>
+`;
+
+const endTemplate = `
+    <div class="end-node">
+      <input class="end-title drawflow-input" type="text" placeholder="Result" />
+    </div>
+`;
+
+function addAnswer(btn) {
+    const answers = btn.previousElementSibling;
+    const nodeEl = btn.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+
+    const outputKey = addOutputToNode(nodeId);
+
+    const div = document.createElement('div');
+    div.classList.add('answer');
+    div.dataset.output = outputKey;
+    div.innerHTML = `
+        <input type="text" class="drawflow-input" placeholder="Option" />
+        <button class="remove-answer" onclick="removeAnswer(this)">-</button>`;
+    answers.appendChild(div);
+
+    renumberAnswers(nodeEl);
+}
+
+function removeAnswer(btn) {
+    const answer = btn.parentElement;
+    const nodeEl = btn.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+
+    const answers = answer.parentElement;
+    if (answers.children.length <= 1) return;
+
+    const outputKey = answer.dataset.output;
+    removeOutputFromNode(nodeId, outputKey);
+    answer.remove();
+    renumberAnswers(nodeEl);
+}
+
+function removeOutputFromNode(nodeId, outputKey) {
+    const node = editor.getNodeFromId(nodeId);
+
+    // remove connections first
+    const connections = [...(node.outputs[outputKey]?.connections || [])];
+    connections.forEach(conn => {
+        editor.removeSingleConnection(nodeId, conn.node, outputKey, conn.output);
+    });
+
+    // remove the DOM circle
+    const outputEl = document.querySelector(`#node-${nodeId} .outputs .${outputKey}`);
+    if (outputEl) outputEl.remove();
+
+    delete node.outputs[outputKey];
+
+    updateAllConnections();
+}
+
+function addOutputToNode(nodeId) {
+    const node = editor.getNodeFromId(nodeId);
+    const outputKeys = Object.keys(node.outputs);
+    const maxNum = outputKeys.reduce((max, key) => {
+        const num = parseInt(key.replace('output_', ''));
+        return num > max ? num : max;
+    }, 0);
+    const outputKey = `output_${maxNum + 1}`;
+    editor.addNodeOutput(nodeId);
+
+    updateAllConnections();
+    return outputKey;
+}
+
+function updateAllConnections() {
+    // delay so it has a chance to update!
+    setTimeout(() => {
+        const data = editor.export();
+        Object.keys(data.drawflow.Home.data).forEach(nodeId => {
+            editor.updateConnectionNodes(`node-${nodeId}`);
+        });
+    }, 10);
+}
+
+document.querySelectorAll('.node-type').forEach(el => {
+    el.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('node-type', e.target.dataset.node);
+    });
+});
+
+document.getElementById('drawflow').addEventListener('dragover', e => e.preventDefault());
+
+document.getElementById('drawflow').addEventListener('drop', e => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('node-type');
+    if (!type) return;
+
+    const precanvas = editor.precanvas;
+    const zoom = editor.zoom;
+
+    let pos_x = e.clientX * (precanvas.clientWidth / (precanvas.clientWidth * zoom))
+        - (precanvas.getBoundingClientRect().x * (precanvas.clientWidth / (precanvas.clientWidth * zoom)));
+
+    let pos_y = e.clientY * (precanvas.clientHeight / (precanvas.clientHeight * zoom))
+        - (precanvas.getBoundingClientRect().y * (precanvas.clientHeight / (precanvas.clientHeight * zoom)));
+
+    if (type == 'question') {
+        editor.addNode('question', 1, 2, pos_x, pos_y, 'question', {}, questionTemplate);
+    } else if (type == 'end') {
+        editor.addNode('end', 1, 0, pos_x, pos_y, 'end', {}, endTemplate);
+    }
+});
+
+editor.on('connectionCreated', function (info) {
+    const node = editor.getNodeFromId(info.output_id);
+    const connections = node.outputs[info.output_class].connections; // was .info
+
+    if (connections.length > 1) {
+        const old = connections[0];
+        editor.removeSingleConnection(info.output_id, old.node, info.output_class, old.output);
+    }
+
+    document.getElementById('node-' + info.input_id).getElementsByClassName(info.input_class)[0].classList.add('inputConnected');
+});
+
+editor.on("connectionRemoved", function (info) {
+    const node = editor.getNodeFromId(info.input_id);
+    const connections = node.inputs[info.input_class].connections; // was outputs, and .info
+
+    if (connections.length === 0) {
+        document.getElementById('node-' + info.input_id).getElementsByClassName(info.input_class)[0].classList.remove('inputConnected');
+    }
+});
+
+function renumberAnswers(nodeEl) {
+    const answers = nodeEl.querySelectorAll('.answer input');
+    answers.forEach((input, i) => {
+        input.placeholder = `Option ${i + 1}`;
+    });
+}
+
+function loadQuizIntoDrawflow() {
+    editor.clearModuleSelected();
+
+    const nodeIds = [];
+
+    quiz.categories.forEach((cat, i) => {
+        
+        // figuring out spacing betwen auto generated nodes.
+        const x = i * 350 + 50;
+        // to center
+        const y = 200;
+
+        const answersHtml = cat.items.map((q, j) => `
+            <div class="answer" data-output="output_${j + 1}">
+                <input type="text" class="drawflow-input" placeholder="Option ${j + 1}" value="${q.text || ''}" />
+                <button class="remove-answer" onclick="removeAnswer(this)">-</button>
+            </div>
+        `).join('');
+
+        const template = `
+            <div class="question-node">
+                <input class="question-title drawflow-input" type="text" placeholder="Question text" value="${cat.name || ''}" />
+                <div class="answers">${answersHtml}</div>
+                <button class="add-answer" onclick="addAnswer(this)">+</button>
+            </div>
+        `;
+
+        const nodeId = editor.addNode(
+            'question', 1, cat.items.length || 1,
+            x, y,
+            'question', {}, template
+        );
+
+        nodeIds.push(nodeId);
+    });
+
+    // wait for nodes to be loaded first then connect all of them
+    setTimeout(() => {
+        nodeIds.forEach((nodeId, i) => {
+            if (nodeIds[i + 1]) {
+                const node = editor.getNodeFromId(nodeId);
+                Object.keys(node.outputs).forEach(outputKey => {
+                    editor.addConnection(nodeId, nodeIds[i + 1], outputKey, 'input_1');
+                });
+            }
+        });
+    }, 100);
+}
