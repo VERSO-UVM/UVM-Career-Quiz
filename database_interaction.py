@@ -132,6 +132,10 @@ def remove_access(u_id, q_id):
     conn.commit()
     conn.close()
 
+def delete_quiz(q_id):
+    conn,cur = connecting_to_sql()
+    cur.execute("DELETE FROM ACESS WHERE q_id = ?", (q_id,))
+    cur.execute("DELETE FROM QUIZ ")
 #Call the first 4 function in this file to create the Database. Careful as stated above it wipe all and every data in the DB except for training one
 def create_db():
     id_1 = "1"

@@ -180,4 +180,15 @@ def quiz_revoke():
 
     db.remove_access(u_id, quiz_id)
     return jsonify({"success": f"Access removed for {username}."})
+
+
+@app.route("/quiz_delete", methods =['POST'])
+def quiz_delete():
+    data = request.get_json()
+    quiz_id = data.get('quiz_id', ''.strip())
+
+    if session['username'] != db.find_creator(quiz_id):
+        return jsonify({"error" : "Only the creator, and people with the allowed permision, can delete a quiz."})
     
+    db.delete_quiz()
+    return jsonify({"sucess" : "Your quiz has been deleted."})

@@ -519,7 +519,7 @@ async function revokeAccess(username) {
     msg.style.display = 'block';
     msg.style.color = result.error ? 'red' : 'green';
     msg.innerHTML = result.error || result.success;
-    if (!result.error) 
+    if (!result.error)
         loadAccessList();
 }
 // to here 
@@ -535,8 +535,12 @@ function previewQuiz() {
         alert("Please choose a title and save your quiz before trying to preview it")
 }
 
-function deleteQuiz(){
-    alert("Will have to implement this. As it stand, I plan to have this be similar to the share, as in : It will spawn an overlay, where only the creator of the quiz (and later on we can have different'Class' of contributor like admin, writer, viewer ,etc) will be able to delete the quiz." )
+async function deleteQuiz() {
+    const response = await fetch('/quiz_delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({quiz_id: quiz.id })
+    });
 }
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();
