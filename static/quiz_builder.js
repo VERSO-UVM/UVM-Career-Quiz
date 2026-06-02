@@ -307,7 +307,7 @@ function setQuestionType(cat_Id, q_Id, new_type) {
  * @param {*} q_Id question to which we add an answer
  * @returns here to break out of the function in case of unexpected behavior 
  */
-function addAnswer(cat_Id, q_Id) {
+function addAnswer_(cat_Id, q_Id) {
     const category = quiz.categories.find(b => b.id === cat_Id);
     if (!category)
         return;
@@ -392,7 +392,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
                 </div>
             `).join('')}
         </div>
-        <button class="add_answer_btn" onclick="addAnswer('${cat_Id}', '${q_Id}')">Add answer</button>
+        <button class="add_answer_btn" onclick="addAnswer_('${cat_Id}', '${q_Id}')">Add answer</button>
     ` : `
         <div class="open_text_preview">
             <p>Respondents will type a free-form answer.</p>
@@ -555,6 +555,13 @@ async function deleteQuiz() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({quiz_id: quiz.id })
     });
+    const result = await response.json()
+    if (result.error){
+        alert(error)
+    }
+    else{
+        window.location.href = result.redirect;
+    }
 }
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();

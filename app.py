@@ -93,10 +93,6 @@ def save_quiz():
     return jsonify({"redirect": url_for('quiz_builder', quiz=quiz["id"])})
 
 
-@app.route('/drawflow_testing')
-def drawflow_testing():
-    return render_template('drawflow_testing.html')
-
 
 
 
@@ -190,5 +186,10 @@ def quiz_delete():
     if session['username'] != db.find_creator(quiz_id):
         return jsonify({"error" : "Only the creator, and people with the allowed permision, can delete a quiz."})
     
-    db.delete_quiz()
-    return jsonify({"sucess" : "Your quiz has been deleted."})
+    worked = db.delete_quiz(quiz_id)
+    if worked:
+        path = f"testing_quiz/{quiz_id}.json"
+        os.remove(path)
+        return jsonify({"redirect": url_for('quiz_selection')})
+    else: 
+        return jsonify({"error" : "A problem happened while trying to delete your quiz"})

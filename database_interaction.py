@@ -135,7 +135,19 @@ def remove_access(u_id, q_id):
 def delete_quiz(q_id):
     conn,cur = connecting_to_sql()
     cur.execute("DELETE FROM ACESS WHERE q_id = ?", (q_id,))
-    cur.execute("DELETE FROM QUIZ ")
+    cur.execute("DELETE FROM QUIZ WHERE q_id = ?" ,(q_id,))
+    conn.commit()
+    cur.execute("SELECT * FROM ACESS WHERE q_id = ? ", (q_id,))
+    test1 = cur.fetchall()
+    cur.execute("SELECT * FROM QUIZ WHERE q_id = ? ", (q_id,))
+    test2 = cur.fetchall()
+    conn.close()
+    if not (test1 and test2):
+        return True
+    else:
+        return False
+    
+
 #Call the first 4 function in this file to create the Database. Careful as stated above it wipe all and every data in the DB except for training one
 def create_db():
     id_1 = "1"
