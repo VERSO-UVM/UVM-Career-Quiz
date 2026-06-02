@@ -7,6 +7,11 @@
     <title>Quiz Creation</title>
     <link rel="icon" href="/static/asset/favicon/favicon.ico">
     <link rel="stylesheet" href="{{ url_for('static', filename='quiz_builder.css') }}">
+
+    <!-- branching styles -->
+    <link rel="stylesheet" href="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='drawflow.css') }}">
+
     <!-- This is only allowing us to BUILD the quiz itself, as for hosting, running the quiz, and exporting it 
       this is still very much a work in progress (can it be called that when we have nothing yet?) -->
 </head>
@@ -21,7 +26,8 @@
             <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
             <button onclick="previewQuiz()" class="preview_btn">Preview</button>
             <button class="share_btn" onclick="openShare()">Share</button>
-            <button class ="delete_btn" onclick ="deleteQuiz()"> Delete</button>
+            <button class="share_btn" onclick="openBranching()">Edit Branching</button>
+            <button class="delete_btn" onclick="deleteQuiz()"> Delete</button>
         </div>
 
     </header>
@@ -83,7 +89,32 @@
         </div>
     </div>
 
-    
+    <div id="branching_overlay">
+        <div id="branching_content">
+            <div class="share_header">
+                <h2>Drag and drop to decide on the branching logic of your quiz below.</h2>
+                <button class="close_btn" onclick="closeBranching()">x</button>
+            </div>
+            <div id="branching-section">
+                <div id="sidebar">
+                    <div id="nodes">
+                        <div class="node-type" draggable="true" data-node="question">Question</div>
+                        <div class="node-type" draggable="true" data-node="end">End</div>
+                    </div>
+                    <div>
+                        <button id="jsonbtn" onclick="compileBranchingIntoQuiz()">Save branching</button>
+
+                    </div>
+
+                </div>
+                <div id="drawflow"></div>
+
+            
+            </div>
+        </div>
+    </div>
+
+
     <script>
         let quiz = {{ quiz | tojson }} || {
             title: '',
@@ -94,7 +125,9 @@
         document.getElementById('quiz-title').value = quiz.title;
         document.getElementById('quiz-desc').value = quiz.desc;
     </script>
+    <script src="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.js"></script>
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
+    
 </body>
 
 </html>

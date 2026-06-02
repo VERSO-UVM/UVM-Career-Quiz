@@ -1,6 +1,18 @@
-body{
+.drawflow-input {
+    all: revert;
+    color: black;
+    max-width: 100%;
+    overflow-x: scroll;
+}
+
+#drawflow button {
+    all: revert;
+}
+
+#branching-section{
     display: flex;
     margin:0;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 
@@ -16,7 +28,7 @@ body{
 
 }
 
-p {
+#branching-section p {
     overflow-wrap: break-word;
 }
 
@@ -27,9 +39,12 @@ p {
 }
 
 .node-type {
-    background-color: rgb(105, 174, 105);
-    padding: 10px;
-    border-radius: 16px;
+    background-color: #164734;
+    padding: 10px 16px;
+    align-content: center;
+    
+    color: white;
+    border-radius: 4px;
     
 }
 
@@ -54,6 +69,8 @@ p {
     flex-shrink: 0; /* stops button from being pushed out */
 }
 
+
+
 .answer input {
     flex:1;
     min-width: 0;
@@ -61,20 +78,17 @@ p {
 
 #drawflow {
     flex:1;
-    height: 100vh;
-    background-color: rgb(206, 206, 206);
+    background-color: rgb(225, 225, 225);
     margin:0;
 }
 
-
-
-
-.drawflow .drawflow-node .inputConnected {
+.drawflow .drawflow-node .inputs .input.inputConnected {
     width: 0;
     height: 0;
     border-style: solid;
     border-width: 12px 0 12px 12px;
     border-color: transparent transparent transparent #007bff;
     background: transparent;
-    border-radius: 0px;
+    border-radius: 0;
 }
+
