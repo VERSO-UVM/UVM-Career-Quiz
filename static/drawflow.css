@@ -2,7 +2,6 @@
     all: revert;
     color: black;
     max-width: 100%;
-    overflow-x: scroll;
 }
 
 #drawflow button {
@@ -81,6 +80,10 @@
     background-color: rgb(225, 225, 225);
     margin:0;
 }
+.drawflow .drawflow-node {
+    width: 250px;
+}
+
 
 .drawflow .drawflow-node .inputs .input.inputConnected {
     width: 0;

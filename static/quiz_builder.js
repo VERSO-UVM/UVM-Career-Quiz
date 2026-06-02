@@ -388,6 +388,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
                         placeholder="answer ${String.fromCharCode(65 + i)}"
                         oninput="changeAnswerText('${cat_Id}', '${q_Id}', '${opt.id}', this.value)"
                     />
+                    <span class="answer-leadsto-indicator"></span>
                     <button class="remove_answer" onclick="removeAnswer('${cat_Id}', '${q_Id}', '${opt.id}')">✕</button>
                 </div>
             `).join('')}
@@ -414,6 +415,17 @@ function renderAnswerPanel(cat_Id, q_Id) {
             <div id="answer_config">${answers_html}</div>
         </div>
     `;
+    
+    // if multiple choice, show the leadstos
+    if (is_mc) {
+        const allQuestions = quiz.categories.flatMap(cat => cat.items);
+        question.answer.forEach((a, i) => {
+            const indicators = document.querySelectorAll('#answer_panel .answer-leadsto-indicator');
+            const target = allQuestions.find(q => q.id === a.leads_to);
+            if (indicators[i]) indicators[i].textContent = target ? `⇒ ${target.text || '(unnamed)'}` : '';
+        });
+    }
+
 }
 
 
@@ -588,14 +600,14 @@ const questionTemplate = `
       <div class="answers">
         <div class="answer" data-output="output_1">
           <input type="text" class="drawflow-input" placeholder="Option 1" />
-          <button class="remove-answer" onclick="removeAnswer(this)">-</button>
+          <button class="remove-answer" onclick="removeNodeAnswer(this)">-</button>
         </div>
         <div class="answer" data-output="output_2">
           <input type="text" class="drawflow-input" placeholder="Option 2" />
-          <button class="remove-answer" onclick="removeAnswer(this)">-</button>
+          <button class="remove-answer" onclick="removeNodeAnswer(this)">-</button>
         </div>
       </div>
-      <button class="add-answer" onclick="addAnswer(this)">+</button>
+      <button class="add-answer" onclick="addNodeAnswer(this)">+</button>
     </div>
 `;
 
@@ -605,58 +617,18 @@ const endTemplate = `
     </div>
 `;
 
-function addAnswer(btn) {
+function getQuizQuestion(nodeId) {
+    const node = editor.getNodeFromId(nodeId);
+    const allQuestions = quiz.categories.flatMap(cat => cat.items);
+    return allQuestions.find(q => q.id === node.data.question_id) || null;
+}
+
+function addNodeAnswer(btn) {
     const answers = btn.previousElementSibling;
     const nodeEl = btn.closest('.drawflow-node');
     const nodeId = nodeEl.id.replace('node-', '');
-
-    const outputKey = addOutputToNode(nodeId);
-
-    const div = document.createElement('div');
-    div.classList.add('answer');
-    div.dataset.output = outputKey;
-    div.innerHTML = `
-        <input type="text" class="drawflow-input" placeholder="Option" />
-        <button class="remove-answer" onclick="removeAnswer(this)">-</button>`;
-    answers.appendChild(div);
-
-    renumberAnswers(nodeEl);
-}
-
-function removeAnswer(btn) {
-    const answer = btn.parentElement;
-    const nodeEl = btn.closest('.drawflow-node');
-    const nodeId = nodeEl.id.replace('node-', '');
-
-    const answers = answer.parentElement;
-    if (answers.children.length <= 1) return;
-
-    const outputKey = answer.dataset.output;
-    removeOutputFromNode(nodeId, outputKey);
-    answer.remove();
-    renumberAnswers(nodeEl);
-}
-
-function removeOutputFromNode(nodeId, outputKey) {
     const node = editor.getNodeFromId(nodeId);
 
-    // remove connections first
-    const connections = [...(node.outputs[outputKey]?.connections || [])];
-    connections.forEach(conn => {
-        editor.removeSingleConnection(nodeId, conn.node, outputKey, conn.output);
-    });
-
-    // remove the DOM circle
-    const outputEl = document.querySelector(`#node-${nodeId} .outputs .${outputKey}`);
-    if (outputEl) outputEl.remove();
-
-    delete node.outputs[outputKey];
-
-    updateAllConnections();
-}
-
-function addOutputToNode(nodeId) {
-    const node = editor.getNodeFromId(nodeId);
     const outputKeys = Object.keys(node.outputs);
     const maxNum = outputKeys.reduce((max, key) => {
         const num = parseInt(key.replace('output_', ''));
@@ -665,18 +637,50 @@ function addOutputToNode(nodeId) {
     const outputKey = `output_${maxNum + 1}`;
     editor.addNodeOutput(nodeId);
 
-    updateAllConnections();
-    return outputKey;
+    const question = getQuizQuestion(nodeId);
+    if (question) {
+        question.answer.push({ id: uid(), text: '', leads_to: null });
+    }
+
+    const div = document.createElement('div');
+    div.classList.add('answer');
+    div.dataset.output = outputKey;
+    div.innerHTML = `
+        <input type="text" class="drawflow-input" placeholder="Option ${maxNum + 1}" oninput="updateAnswerText(this)"/>
+        <button class="remove-answer" onclick="removeNodeAnswer(this)">-</button>`;
+    answers.appendChild(div);
+
+    renumberAnswers(nodeEl);
 }
 
-function updateAllConnections() {
-    // delay so it has a chance to update!
-    setTimeout(() => {
-        const data = editor.export();
-        Object.keys(data.drawflow.Home.data).forEach(nodeId => {
-            editor.updateConnectionNodes(`node-${nodeId}`);
-        });
-    }, 10);
+function removeNodeAnswer(btn) {
+    const answer = btn.parentElement;
+    const nodeEl = btn.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+    const answers = answer.parentElement;
+
+    if (answers.children.length <= 1) return;
+
+    const outputKey = answer.dataset.output;
+    const node = editor.getNodeFromId(nodeId);
+
+    const connections = [...(node.outputs[outputKey]?.connections || [])];
+    connections.forEach(conn => {
+        editor.removeSingleConnection(nodeId, conn.node, outputKey, conn.output);
+    });
+
+    const outputEl = document.querySelector(`#node-${nodeId} .outputs .${outputKey}`);
+    if (outputEl) outputEl.remove();
+    delete node.outputs[outputKey];
+
+    const answerIndex = parseInt(outputKey.replace('output_', '')) - 1;
+    const question = getQuizQuestion(nodeId);
+    if (question) {
+        question.answer.splice(answerIndex, 1);
+    }
+
+    answer.remove();
+    renumberAnswers(nodeEl);
 }
 
 document.querySelectorAll('.node-type').forEach(el => {
@@ -710,7 +714,7 @@ document.getElementById('drawflow').addEventListener('drop', e => {
 
 editor.on('connectionCreated', function (info) {
     const node = editor.getNodeFromId(info.output_id);
-    const connections = node.outputs[info.output_class].connections; // was .info
+    const connections = node.outputs[info.output_class].connections;
 
     if (connections.length > 1) {
         const old = connections[0];
@@ -718,15 +722,38 @@ editor.on('connectionCreated', function (info) {
     }
 
     document.getElementById('node-' + info.input_id).getElementsByClassName(info.input_class)[0].classList.add('inputConnected');
+
+    const answerIndex = parseInt(info.output_class.replace('output_', '')) - 1;
+    const targetNode = editor.getNodeFromId(info.input_id);
+    const question = getQuizQuestion(info.output_id);
+    if (question?.answer[answerIndex]) {
+        question.answer[answerIndex].leads_to = targetNode.data.question_id || null;
+    }
+
+    const allQuestions = quiz.categories.flatMap(cat => cat.items);
+    const target = allQuestions.find(q => q.id === targetNode.data.question_id);
+    const indicators = document.querySelectorAll('#answer_panel .answer-leadsto-indicator');
+    if (indicators[answerIndex])
+        indicators[answerIndex].textContent = target ? `⇒ ${target.text || '(unnamed)'}` : '';
 });
 
 editor.on("connectionRemoved", function (info) {
     const node = editor.getNodeFromId(info.input_id);
-    const connections = node.inputs[info.input_class].connections; // was outputs, and .info
+    const connections = node.inputs[info.input_class].connections;
 
     if (connections.length === 0) {
         document.getElementById('node-' + info.input_id).getElementsByClassName(info.input_class)[0].classList.remove('inputConnected');
     }
+
+    const answerIndex = parseInt(info.output_class.replace('output_', '')) - 1;
+    const question = getQuizQuestion(info.output_id);
+    if (question?.answer[answerIndex]) {
+        question.answer[answerIndex].leads_to = null;
+    }
+
+    const indicators = document.querySelectorAll('#answer_panel .answer-leadsto-indicator');
+    if (indicators[answerIndex])
+        indicators[answerIndex].textContent = "";
 });
 
 function renumberAnswers(nodeEl) {
@@ -739,48 +766,110 @@ function renumberAnswers(nodeEl) {
 function loadQuizIntoDrawflow() {
     editor.clearModuleSelected();
 
+    const allQuestions = quiz.categories.flatMap(cat => cat.items);
     const nodeIds = [];
 
-    quiz.categories.forEach((cat, i) => {
-        
-        // figuring out spacing betwen auto generated nodes.
+    allQuestions.forEach((q, i) => {
         const x = i * 350 + 50;
-        // to center
+        // TODO: position nodes in a tree structure! when its linear it makes everything hard to visually parse.
+        // not sure how to tackle that tbh... programmatically decide y value based on number of leadsto somehow maybe?
         const y = 200;
 
-        const answersHtml = cat.items.map((q, j) => `
-            <div class="answer" data-output="output_${j + 1}">
-                <input type="text" class="drawflow-input" placeholder="Option ${j + 1}" value="${q.text || ''}" />
-                <button class="remove-answer" onclick="removeAnswer(this)">-</button>
-            </div>
-        `).join('');
+        const answers_html = q.answer.map((a, j) => `
+    <div class="answer" data-output="output_${j + 1}">
+        <input type="text" class="drawflow-input" placeholder="Option ${j + 1}" value="${a.text || ''}" oninput="updateAnswerText(this)"/>
+        <button class="remove-answer" onclick="removeNodeAnswer(this)">-</button>
+    </div>
+`).join('');
 
         const template = `
-            <div class="question-node">
-                <input class="question-title drawflow-input" type="text" placeholder="Question text" value="${cat.name || ''}" />
-                <div class="answers">${answersHtml}</div>
-                <button class="add-answer" onclick="addAnswer(this)">+</button>
-            </div>
-        `;
+    <div class="question-node">
+        <input class="question-title drawflow-input" type="text" placeholder="Question text" value="${q.text || ''}" oninput="updateQuestionText(this)"/>
+        <div class="answers">${answers_html}</div>
+        <button class="add-answer" onclick="addNodeAnswer(this)">+</button>
+    </div>
+`;
 
+        const numOutputs = q.answer.length;
         const nodeId = editor.addNode(
-            'question', 1, cat.items.length || 1,
+            'question', 1, numOutputs,
             x, y,
-            'question', {}, template
+            'question', { question_id: q.id }, template
         );
 
         nodeIds.push(nodeId);
     });
 
-    // wait for nodes to be loaded first then connect all of them
     setTimeout(() => {
+        const questionToNode = {};
         nodeIds.forEach((nodeId, i) => {
-            if (nodeIds[i + 1]) {
-                const node = editor.getNodeFromId(nodeId);
-                Object.keys(node.outputs).forEach(outputKey => {
-                    editor.addConnection(nodeId, nodeIds[i + 1], outputKey, 'input_1');
-                });
-            }
+            const node = editor.getNodeFromId(nodeId);
+            questionToNode[node.data.question_id] = nodeId;
+        });
+
+        allQuestions.forEach((q, i) => {
+            const sourceNodeId = questionToNode[q.id];
+            q.answer.forEach((a, j) => {
+                const outputKey = `output_${j + 1}`;
+                if (a.leads_to && questionToNode[a.leads_to]) {
+                    editor.addConnection(sourceNodeId, questionToNode[a.leads_to], outputKey, 'input_1');
+                } else if (!a.leads_to && nodeIds[i + 1]) {
+                    editor.addConnection(sourceNodeId, nodeIds[i + 1], outputKey, 'input_1');
+                }
+            });
         });
     }, 100);
+}
+
+editor.on('nodeCreated', function (nodeId) {
+    const node = editor.getNodeFromId(nodeId);
+    if (node.name !== 'question') return;
+    if (node.data.question_id) return;
+
+    const q_id = uid();
+    const newQuestion = {
+        id: q_id, text: '', type: 'mc',
+        answer: [
+            { id: uid(), text: '', leads_to: null },
+            { id: uid(), text: '', leads_to: null }
+        ]
+    };
+
+    editor.drawflow.drawflow.Home.data[nodeId].data.question_id = q_id;
+    quiz.categories[0].items.push(newQuestion);
+
+    const answers_html = newQuestion.answer.map((a, j) => `
+        <div class="answer" data-output="output_${j + 1}">
+            <input type="text" class="drawflow-input" placeholder="Option ${j + 1}" value="" oninput="updateAnswerText(this)"/>
+            <button class="remove-answer" onclick="removeNodeAnswer(this)">-</button>
+        </div>
+    `).join('');
+
+    const nodeEl = document.querySelector(`#node-${nodeId} .drawflow_content_node`);
+    nodeEl.innerHTML = `
+        <div class="question-node">
+            <input class="question-title drawflow-input" type="text" placeholder="Question text" oninput="updateQuestionText(this)"/>
+            <div class="answers">${answers_html}</div>
+            <button class="add-answer" onclick="addNodeAnswer(this)">+</button>
+        </div>
+    `;
+});
+
+function updateQuestionText(input) {
+    const nodeEl = input.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+    const question = getQuizQuestion(nodeId);
+    if (question) question.text = input.value;
+}
+
+function updateAnswerText(input) {
+    const nodeEl = input.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+    const question = getQuizQuestion(nodeId);
+    if (!question) return;
+
+    const answerEl = input.closest('.answer');
+    const outputKey = answerEl.dataset.output;
+    const answerIndex = parseInt(outputKey.replace('output_', '')) - 1;
+    if (question.answer[answerIndex]) question.answer[answerIndex].text = input.value;
 }
