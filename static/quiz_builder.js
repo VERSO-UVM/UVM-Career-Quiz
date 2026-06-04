@@ -281,7 +281,7 @@ function closeAnswerPanel() {
 /**
  * Allow a user to change the type of a question
  * @param {*} cat_Id category of the question
- * @param {*} q_Id question to which we change the type of (right now you have two choice, we want to expand upon that)
+ * @param {*} q_Id question to which we change the type of (right now you have two choice, we want to expand upon that) We may have a 3rd soon
  * @param {*} new_type the new type of the question
  * @returns here to break out of the function in case of unexpected behavior 
  */
@@ -296,6 +296,8 @@ function setQuestionType(cat_Id, q_Id, new_type) {
     if (new_type === 'text')
         question.answer = [];
     if (new_type === 'mc' && !question.answer.length)
+        question.answer = [{ id: uid(), text: '' }];
+    if (new_type === 'sldr' && !question.answer.length)
         question.answer = [{ id: uid(), text: '' }];
     renderAnswerPanel(cat_Id, q_Id);
 }
@@ -375,9 +377,10 @@ function renderAnswerPanel(cat_Id, q_Id) {
 
     const is_text = question.type === 'text';
     const is_mc = question.type === 'mc';
+    const is_sldr = question.type === 'sldr';
 
     // TODO maybe find a fix for this ? as it stand it wont stop until it cannot find ASCII character, however it mean at one point you stop having capital letter and just have char 
-    const answers_html = is_mc ? `
+    const answers_html = is_mc || is_sldr? `
         <div class="answers_list">
             ${question.answer.map((opt, i) => `
                 <div class="answer_item">
@@ -411,6 +414,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
             <div class="type_picker">
                 <button class="type_btn${is_text ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'text')">Open text</button>
                 <button class="type_btn${is_mc ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'mc')">Multiple choice</button>
+                <button class="type_btn${is_sldr ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'sldr')">Slider</button>
             </div>
             <div id="answer_config">${answers_html}</div>
         </div>
