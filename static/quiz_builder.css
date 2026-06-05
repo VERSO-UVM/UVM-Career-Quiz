@@ -547,66 +547,68 @@ main#empty_state {
 }
 
 .share_overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
 }
 
 #branching_overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1001;
-  justify-content: center;
-  align-items: center;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    justify-content: center;
+    align-items: center;
 }
+
 #branching_content {
-  background-color: white;
-  width: 100%;
-  margin:100px;
-  height:100%;
-  max-height: calc(100vh - 150px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 20px;
+    background-color: white;
+    width: 100%;
+    margin: 100px;
+    height: 100%;
+    max-height: calc(100vh - 150px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 20px;
 
 }
+
 #branching-section {
-    height: calc(100% - 40px) ;
+    height: calc(100% - 40px);
 }
 
 .share_content {
-  background-color: white;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 20px;
+    background-color: white;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 20px;
 }
 
 
 .share_header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid white;
-  padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid white;
+    padding-bottom: 10px;
 }
 
 .close_btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
 }
 
 
@@ -654,7 +656,7 @@ main#empty_state {
     border-left: 3px solid rgb(3, 56, 35);
 }
 
-.delete_btn:hover{
+.delete_btn:hover {
     background: rgb(30, 95, 69);
 }
 
@@ -750,4 +752,94 @@ main#empty_state {
 .revoke_btn:hover {
     border-color: red;
     color: red;
+}
+
+.delete_overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete_content {
+    background-color: white;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+}
+
+
+.delete_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid white;
+    padding-bottom: 10px;
+}
+
+.close_btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+
+.delete_btn_accept {
+    flex: 1;
+    background: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    height: 56px;
+    padding: 10px;
+}
+
+.delete_btn_accept:hover {
+    background: rgb(218, 57, 57);
+}
+
+.delete_actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.delete_btn_reject {
+    flex : 1;
+    background: #154734;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    text-align: left;
+}
+
+.delete_btn_reject:hover {
+    background: rgb(30, 95, 69);
+}
+
+
+
+.delete_header h2 {
+    font-size: 16px;
+    color: #154734;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.delete_content label {
+    font-size: 16px;
+    color: gray;
 }

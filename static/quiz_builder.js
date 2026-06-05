@@ -429,7 +429,7 @@ function render() {
     renderCategory();
 }
 
-//from here
+
 function openShare() {
     document.getElementById('share_overlay').style.display = 'flex';
     document.getElementById('share_message').style.display = 'none';
@@ -454,12 +454,19 @@ function closeShare() {
 }
 
 window.onclick = function (event) {
-    var overlay = document.getElementById('share_overlay');
-    if (event.target == overlay) {
-        overlay.style.display = 'none';
+    var overlay_share = document.getElementById('share_overlay');
+    var overlay_display = document.getElementById('branching')
+    if (event.target == overlay_share) {
+        overlay_share.style.display = 'none';
+    }
+    if(event.target == overlay_display){
+        overlay_display.stile.display = 'none';
     }
 }
-
+document.getElementById('delete_overlay').addEventListener('click', function(e) {
+    if (e.target === this) 
+        closeDelete();
+});
 /**
  * Submit the share request
  * @returns here to break in case someone doesnt choose a username
@@ -533,11 +540,9 @@ async function revokeAccess(username) {
     msg.style.color = result.error ? 'red' : 'green';
     msg.innerHTML = result.error || result.success;
     if (!result.error)
-    if (!result.error)
         loadAccessList();
 }
-// to here 
-// are function related to the share overlay button 
+
 
 /**
  * Allow for a preview of the quiz. I did this instead of the simple url_for, as it allowed for easier verification that the quiz had been saved at least once.
@@ -549,18 +554,32 @@ function previewQuiz() {
         alert("Please choose a title and save your quiz before trying to preview it")
 }
 
+function openDelete() {
+    document.getElementById('delete_overlay').style.display = 'flex';
+}
+
+function closeDelete() {
+    document.getElementById('delete_overlay').style.display = 'none';
+}
+
 async function deleteQuiz() {
+    if (!quiz.title && window.location.href.includes("new_quiz")) {
+        alert("Your quiz has not even been saved once, and as such does not need to be deleted, you can just refresh the page.")
+        closeDelete()
+        return
+    }
     const response = await fetch('/quiz_delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({quiz_id: quiz.id })
+        body: JSON.stringify({ quiz_id: quiz.id })
     });
     const result = await response.json()
-    if (result.error){
-        alert(error)
-    }
-    else{
+    if (!result.error) {
         window.location.href = result.redirect;
+
+    }
+    else {
+        alert(result.error)
     }
 }
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
@@ -742,7 +761,7 @@ function loadQuizIntoDrawflow() {
     const nodeIds = [];
 
     quiz.categories.forEach((cat, i) => {
-        
+
         // figuring out spacing betwen auto generated nodes.
         const x = i * 350 + 50;
         // to center
