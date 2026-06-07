@@ -816,7 +816,7 @@ main#empty_state {
 }
 
 .delete_btn_reject {
-    flex : 1;
+    flex: 1;
     background: #154734;
     color: white;
     padding: 8px 14px;
@@ -846,7 +846,7 @@ main#empty_state {
 }
 
 .answer-leadsto-indicator {
-    font-size:x-small;
+    font-size: x-small;
     overflow-x: scroll;
     background-color: rgb(225, 225, 225);
     padding: 4px 6px;
@@ -855,4 +855,53 @@ main#empty_state {
     font-family: Arial, Helvetica, sans-serif;
     color: rgba(0, 0, 0, 0.75);
     max-width: 35%;
+}
+
+
+
+.role_badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-weight: bold;
+    color: white;
+}
+
+
+header .role_badge {
+    font-size: 12px;
+    padding: 4px 12px;
+    margin-left: 6px;
+    border-left: 3px solid rgba(255, 255, 255, 0.2);
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+
+.role_select,
+.role_select_inline {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 4px 8px;
+    color: #154734;
+    background: white;
+    cursor: pointer;
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+
+.role_select_inline {
+    margin: 0;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+.role_select:focus,
+.role_select_inline:focus {
+    outline: 2px solid #154734;
 }

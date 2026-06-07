@@ -12,6 +12,8 @@ app.secret_key = "flask_is_making_me_do_this"
 #TODO / CONCERN do we need to have a banner regarding privacy policy?
 
 
+def get_role(quiz_id):
+    return db.get_role(session["user_id"], quiz_id)
 
 #Simple page, allow the user to choose between login in and registering. Set all session item to none in order to "Reset" the user and log them out
 @app.route("/")
@@ -63,34 +65,48 @@ def register():
 
 
 # Allow the user to create and make modification to quizzes.
-@app.route('/quiz_builder/<quiz>', methods=['GET', 'POST'])
+@app.route("/quiz_builder/<quiz>", methods=["GET", "POST"])
 def quiz_builder(quiz):
-    if session['user_id'] :
-        quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
-        try:
-            with open(f'testing_quiz/{quiz}.json') as f:
-                quiz_ = json.load(f)
-            if db.has_acess(session["user_id"],quiz):
-                quiz_ = quiz_ 
-            else : 
-                quiz_ = {"title": "", "desc": "", "id": "", "categories": []}
-        except FileNotFoundError as e:
-            error = "So far this is just a way to bypass the problem of creating new quiz."
-        return render_template('quiz_builder.html', quiz =quiz_)
-    else :
+    if not session["username"]:
         return redirect("/")
-
+ 
+    role = get_role(quiz)
+ 
+    if not role:
+        
+        if os.path.exists(f"testing_quiz/{quiz}.json"):
+            return redirect(url_for("quiz_selection"))
+        role = db.ROLE_CREATOR
+ 
+    quiz_ = {"title": "", "desc": "", "id": quiz, "categories": []}
+    try:
+        with open(f"testing_quiz/{quiz}.json") as f:
+            quiz_ = json.load(f)
+    except FileNotFoundError:
+         error = "So far this is just a way to bypass the problem of creating new quiz." 
+ 
+    return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
 
 #Button on the quiz builder page, allow a user to save a quiz in our server. As it stand there is no option to delete the quiz. We will need to work on that
 @app.route('/save_quiz', methods=['GET','POST'])
 def save_quiz():
-    quiz = request.get_json()
-    if(not quiz["id"]):
-        quiz["id"] = str(uuid.uuid4())
-    with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
-        json.dump(quiz, f, indent=2)
-        db.save_quiz_in_the_db(quiz["id"], quiz["title"],session['user_id'])
-    return jsonify({"redirect": url_for('quiz_builder', quiz=quiz["id"])})
+    if session["user_id"]:
+
+        quiz = request.get_json()
+
+        if(not quiz["id"]):
+            quiz["id"] = str(uuid.uuid4())
+
+        
+        if get_role(quiz["id"]) and not db.can_edit(get_role(quiz["id"])):
+            return jsonify({"error" : "You do not have the permision to edit this quiz"}) 
+        
+        with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
+            json.dump(quiz, f, indent=2)
+            db.save_quiz_in_the_db(quiz["id"], quiz["title"],session['user_id'])
+        return jsonify({"redirect": url_for('quiz_builder', quiz=quiz["id"])})
+    
+    return redirect("/")
 
 
 
@@ -104,7 +120,7 @@ def quiz_selection():
         quiz = []
         name =[]
         for filename in os.listdir(folder_path):
-            if(db.has_acess(session['user_id'], filename[:-5])):
+            if(db.has_access(session['user_id'], filename[:-5])):
                 quiz.append(filename[:-5])
         for q in quiz:
             name.append(db.find_name_with_id(q))
@@ -115,9 +131,13 @@ def quiz_selection():
 @app.route("/quiz_preview/<quiz>")
 def quiz_preview(quiz):
     if session["user_id"]:
-        with open(f'testing_quiz/{quiz}.json') as f:
-            quiz_ = json.load(f)
-        return render_template("quiz_preview.html", quiz = quiz_)
+        role = get_role(quiz)
+        if role:
+            with open(f'testing_quiz/{quiz}.json') as f:
+                quiz_ = json.load(f)
+            return render_template("quiz_preview.html", quiz = quiz_)
+        else:
+            redirect("/quiz_selection")
     else : 
         return redirect("/")
 
@@ -126,31 +146,50 @@ def quiz_preview(quiz):
 def quiz_share():
     if session["user_id"]:
         if request.method == 'GET':
-            users_ = []
-            quiz_id = request.args.get('quiz_id', '').strip()
-            users = db.user_with_acess(quiz_id)
-            creator = db.find_creator(quiz_id)
-            if users:
-                for u in users:
-                    users_.append(db.find_uname_with_id(u[0]))
+            quiz_id = request.args.get("quiz_id", "").strip()
+            u_role = get_role(quiz_id)
+            raw = db.user_with_access(quiz_id) or []
+            users_list = []
+            for row in raw:
+                username = db.find_uname_with_id(row[0])
+                role = row[2] if len(row) > 1 else db.ROLE_READER
+                users_list.append({
+                    "username": username,
+                    "role": role,
+                    "can_revoke": (
+                        db.can_revoke(u_role)
+                        and role != db.ROLE_CREATOR
+                        and username != session["username"]
+                    )
+                })
             return jsonify({
-                "users": users_,
-                "creator": creator,
-                "current_user": session['username']
-            })
+                "users": users_list,
+                "actor_role": u_role,
+                "can_share": db.can_share(u_role),
+                "current_user": session["username"]
+                })
     
         error =""
         data = request.get_json()
         username = data.get('username', '').strip()
         quiz_id = data.get('quiz_id', '').strip()
-
+        new_role   = data.get("role", db.ROLE_READER)
+ 
+        u_role = get_role(quiz_id)
+        if not db.can_share(u_role):
+            return jsonify({"error": "You do not have permission to share this quiz."})
+ 
+        
+        if not db.can_promote(u_role, new_role):
+            return jsonify({"error": f"You cannot assign the '{new_role}' role."})
+ 
         u_id = db.find_id_with_uname(username)
 
         if(u_id ):
             if u_id == session['user_id']:
                error = "This is you..."
-            elif(not db.has_acess(u_id, quiz_id)):
-                db.share_quiz(u_id, quiz_id)
+            elif(not db.has_access(u_id, quiz_id)):
+                db.share_quiz(u_id, quiz_id, new_role)
             else:
                 error = "This user already has acces to this quiz"
         else:
@@ -162,34 +201,74 @@ def quiz_share():
     else: 
         return redirect("/")
 
+
+@app.route("/quiz_update_role", methods=["POST"])
+def quiz_update_role():
+    if session["username"]:
+ 
+        data     = request.get_json()
+        username = data.get("username", "").strip()
+        quiz_id  = data.get("quiz_id",  "").strip()
+        new_role = data.get("role",     "").strip()
+    
+        u_role = get_role(quiz_id)
+        if not db.can_share(u_role):
+            return jsonify({"error": "You do not have permission to change roles."})
+    
+        target_id   = db.find_id_with_uname(username)
+        target_role = db.get_role(target_id, quiz_id)
+    
+        
+        if target_role == db.ROLE_CREATOR:
+            return jsonify({"error": "The creator's role cannot be changed."})
+    
+        if not db.can_promote(u_role, new_role):
+            return jsonify({"error": f"You cannot assign the '{new_role}' role. As it is higher or similar to your own rank"})
+    
+        try:
+            db.update_role(target_id, quiz_id, new_role)
+        except ValueError as e:
+            return jsonify({"error": str(e)})
+    
+        return jsonify({"success": f"Role updated to {new_role} for {username}."})
+    redirect("/")
+
 @app.route('/quiz_revoke', methods=['POST'])
 def quiz_revoke():
-    data = request.get_json()
-    username = data.get('username', '').strip()
-    quiz_id = data.get('quiz_id', '').strip()
+    if session["username"]:
+        data = request.get_json()
+        username = data.get('username', '').strip()
+        quiz_id = data.get('quiz_id', '').strip()
 
-    if session['username'] != db.find_creator(quiz_id):
-        return jsonify({"error": "Only the creator can remove access."})
-
-    u_id = db.find_id_with_uname(username)
-
-
-    db.remove_access(u_id, quiz_id)
-    return jsonify({"success": f"Access removed for {username}."})
+        u_role = get_role(quiz_id)
+        if not db.can_revoke(u_role):
+            return jsonify({"error": "Only creators and admins can remove access."})
+        
+        target_id   = db.find_id_with_uname(username)
+        target_role = db.get_role(target_id, quiz_id)
+        
+        if target_role == db.ROLE_CREATOR:
+            return jsonify({"error": "The creator's access cannot be revoked."})
+        
+        db.remove_access(target_id, quiz_id)
+        return jsonify({"success": f"Access removed for {username}."})
+    return redirect("/")
 
 
 @app.route("/quiz_delete", methods =['POST'])
 def quiz_delete():
-    data = request.get_json()
-    quiz_id = data.get('quiz_id', ''.strip())
+    if session["username"]:
+        data = request.get_json()
+        quiz_id = data.get('quiz_id', ''.strip())
 
-    if session['username'] != db.find_creator(quiz_id):
-        return jsonify({"error" : "Only the creator, and people with the allowed permision, can delete a quiz."})
-    
-    worked = db.delete_quiz(quiz_id)
-    if worked:
-        path = f"testing_quiz/{quiz_id}.json"
-        os.remove(path)
-        return jsonify({"redirect": url_for('quiz_selection')})
-    else: 
-        return jsonify({"error" : "A problem happened while trying to delete your quiz"})
+        if session['username'] != db.find_creator(quiz_id):
+            return jsonify({"error" : "Only the creator can delete the quiz."})
+        
+        worked = db.delete_quiz(quiz_id)
+        if worked:
+            path = f"testing_quiz/{quiz_id}.json"
+            os.remove(path)
+            return jsonify({"redirect": url_for('quiz_selection')})
+        else: 
+            return jsonify({"error" : "A problem happened while trying to delete your quiz"})
+    redirect("/")

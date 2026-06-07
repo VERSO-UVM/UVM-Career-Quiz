@@ -1,7 +1,7 @@
 // class variable, alongside quiz (a dictionary), which is defined in quiz_builder.html
 let active_category_Id = null;
 let active_question_Id = null;
-
+const _role = (typeof USER_ROLE !== 'undefined') ? USER_ROLE : 'reader';
 
 /**
  * helper function, create a random string to id the div
@@ -498,8 +498,7 @@ async function submitShare() {
         const response = await fetch("/quiz_share", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: username, quiz_id: quiz.id })
-        });
+            body: JSON.stringify({ username: username, quiz_id: quiz.id,role: document.getElementById('share_role')?.value || 'reader' })});
 
         const result = await response.json();
         msg.style.display = 'block';
@@ -524,25 +523,53 @@ async function submitShare() {
  */
 async function loadAccessList() {
     const list = document.getElementById('access_list');
-
+    list.innerHTML = '<li class="access_list_loading">Loading…</li>';
+ 
     const response = await fetch(`/quiz_share?quiz_id=${quiz.id}`);
     const result = await response.json();
-    const isCreator = result.current_user === result.creator;
-
+ 
     if (!result.users || result.users.length === 0) {
         list.innerHTML = `<li class="access_list_empty">No one else has access yet.</li>`;
-    } else {
-        list.innerHTML = result.users.map(u => {
-            const isYou = u === result.current_user;
-            const isOwner = u === result.creator;
-            const tag = isOwner ? ' (creator)' : '';
-            const youTag = isYou ? ' (you)' : '';
-            const revokeBtn = isCreator && !isOwner
-                ? `<button class="revoke_btn" onclick="revokeAccess('${u}')">Remove</button>`
-                : '';
-            return `<li class="access_list_item">${u}${tag}${youTag}${revokeBtn}</li>`;
-        }).join('');
+        return;
     }
+ 
+    list.innerHTML = result.users.map(entry => {
+        const isYou  = entry.username === result.current_user;
+        const youTag = isYou ? ' <em>(you)</em>' : '';
+ 
+        
+        const roleBadge = `<span class="access_tag role_badge--${entry.role}">${entry.role}</span>`;
+ 
+        
+        let rolePicker = '';
+        if (result.can_share && entry.role !== 'creator' && !isYou) {
+            const opts = ['reader','editor','admin']
+                .filter(r => {
+                    // admin actors cannot assign admin
+                    if (_role === 'admin' && r === 'admin') return false;
+                    return true;
+                })
+                .map(r => `<option value="${r}"${r === entry.role ? ' selected' : ''}>${r}</option>`)
+                .join('');
+            rolePicker = `
+                <select class="role_select_inline"
+                        onchange="changeUserRole('${entry.username}', this.value, this)">
+                    ${opts}
+                </select>`;
+        }
+ 
+        // Revoke button
+        const revokeBtn = entry.can_revoke
+            ? `<button class="revoke_btn" onclick="revokeAccess('${entry.username}')">Remove</button>`
+            : '';
+ 
+        return `<li class="access_list_item">
+            <span>${entry.username}${youTag}</span>
+            ${roleBadge}
+            ${rolePicker}
+            ${revokeBtn}
+        </li>`;
+    }).join('');
 }
 async function revokeAccess(username) {
     const msg = document.getElementById('share_message');
@@ -559,7 +586,20 @@ async function revokeAccess(username) {
         loadAccessList();
 }
 
-
+async function changeUserRole(username, newRole, selectEl) {
+    const msg = document.getElementById('share_message');
+    const response = await fetch('/quiz_update_role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, quiz_id: quiz.id, role: newRole })
+    });
+    const result = await response.json();
+    msg.style.display = 'block';
+    msg.style.color = result.error ? 'red' : 'green';
+    msg.innerHTML = result.error || result.success;
+    if (result.error && selectEl) 
+        loadAccessList(); // revert picker on error
+}
 /**
  * Allow for a preview of the quiz. I did this instead of the simple url_for, as it allowed for easier verification that the quiz had been saved at least once.
  */
