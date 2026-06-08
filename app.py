@@ -2,6 +2,7 @@ from flask import Flask, render_template,request, session, redirect, url_for, js
 import uuid
 import os
 import json
+import time
 import database_interaction as db 
 import log_in
 
@@ -87,7 +88,7 @@ def quiz_builder(quiz):
     return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
 
 #Button on the quiz builder page, allow a user to save a quiz in our server.
-@app.route('/save_quiz', methods=['GET','POST'])
+@app.route('/save_quiz', methods=['POST'])
 def save_quiz():
     if session["user_id"]:
 
@@ -100,10 +101,18 @@ def save_quiz():
         if get_role(quiz["id"]) and not db.can_edit(get_role(quiz["id"])):
             return jsonify({"error" : "You do not have the permision to edit this quiz"}) 
         
-        with open(f'testing_quiz/{quiz["id"]}.json', 'w') as f:
+        path = f'testing_quiz/{quiz["id"]}.json'
+
+        if os.path.exists(path):
+            with open(path) as f:
+                saved = json.load(f)
+            if saved.get('last_modified') != quiz.get('last_modified'):
+                return jsonify({"error": "This quiz was modified by someone else. Please refresh and redo your changes."})
+
+
+        quiz['last_modified'] = time.time()
+        with open(path, 'w') as f:
             json.dump(quiz, f, indent=2)
-            db.save_quiz_in_the_db(quiz["id"], quiz["title"],session['user_id'])
-        return jsonify({"redirect": url_for('quiz_builder', quiz=quiz["id"])})
     
     return redirect("/")
 
