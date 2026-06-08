@@ -64,6 +64,30 @@ function renderQuestionPage(page) {
         const val = responses[item.id] || '';
         body = `<textarea class="open-textarea" placeholder="Type your answer here"
       oninput="setText('${item.id}',this.value)">${esc(val)}</textarea>`;
+    } else if (item.type === 'sldr') {
+        const options = item.answer;
+        if (!options.length) {
+            body = `<p class="inline-note">No answer options have been defined yet.</p>`;
+        } else {
+            body = `<div class="slider-container">
+            <input
+              type="range"
+              min="0"
+              max="${options.length - 1}"
+              step="1"
+              value="0"
+              id="notchedSlider"
+              class="slider">
+                <div class="slider-notches">
+                    ${'<span></span>'.repeat(options.length)}
+                </div>
+            </div>` +
+                options.map((option, i) => {
+                    const label = option.text || `Option ${String.fromCharCode(65 + i)}`;
+                    return 
+                }).join('') +
+            `</div>`;
+        }
     } else {
         body = `<p class="inline-note">Question type not yet configured.</p>`;
     }
@@ -150,6 +174,15 @@ function loadQuiz() {
  * @param {*} optId the option to the quiz
  */
 function selectMC(qId, optId) {
+    responses[qId] = optId;
+    render();
+}
+/**
+ * Choose the answer to a slider question
+ * @param {*} qId the question
+ * @param {*} optId the option to the quiz
+ */
+ function selectSLDR(qId, optId) {
     responses[qId] = optId;
     render();
 }
