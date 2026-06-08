@@ -1,6 +1,7 @@
 // class variable, alongside quiz (a dictionary), which is defined in quiz_builder.html
 let active_category_Id = null;
 let active_question_Id = null;
+isDirty = false;
 const _role = (typeof USER_ROLE !== 'undefined') ? USER_ROLE : 'reader';
 
 /**
@@ -10,6 +11,12 @@ function uid() {
     return Math.random().toString(36).slice(2, 9);
 }
 
+function markDirty() { 
+    isDirty = true; 
+}
+function markClean() { 
+    isDirty = false; 
+}
 
 /**
  * get the quiz information from the two element named in the same way
@@ -33,6 +40,7 @@ function addCategory() {
     }
     quiz.categories.push({ id, name: 'Category ' + (quiz.categories.length + 1), items: [] });
     render();
+    markDirty()
 }
 
 /**
@@ -48,6 +56,7 @@ function changeCategoryName(id, new_name) {
             document.getElementById('editor_category_title').textContent = new_name;
         }
     }
+    markDirty()
 }
 /**
  * Remove a specific category (and it's eventual childs) from the dict
@@ -68,7 +77,7 @@ function removeCategory(id) {
         active_category_Id = null;
         closeEditor();
     }
-
+    markDirty()
     render();
 }
 
@@ -124,6 +133,7 @@ function addQuestion(cat_Id) {
     const q_Id = uid();
     category.items.push({ id: q_Id, text: '', type: '', answer: [] });
     renderQuestions(cat_Id);
+    markDirty()
 }
 
 /**
@@ -142,6 +152,7 @@ function removeQuestion(cat_Id, q_Id) {
         closeAnswerPanel();
     }
     renderQuestions(cat_Id);
+    markDirty()
 }
 
 
@@ -159,6 +170,7 @@ function changeQuestionText(cat_Id, q_Id, new_Text) {
     const question = category.items.find(q => q.id === q_Id);
     if (question)
         question.text = new_Text;
+    markDirty()
 }
 
 /**
@@ -239,6 +251,7 @@ function saveQuiz() {
                 window.location.href = data.redirect;
             }
         });
+    markClean();
 }
 
 
@@ -300,6 +313,7 @@ function setQuestionType(cat_Id, q_Id, new_type) {
     if (new_type === 'sldr' && !question.answer.length)
         question.answer = [{ id: uid(), text: '' }];
     renderAnswerPanel(cat_Id, q_Id);
+    markDirty()
 }
 
 
@@ -318,6 +332,7 @@ function addAnswer_(cat_Id, q_Id) {
         return;
     question.answer.push({ id: uid(), text: '' });
     renderAnswerPanel(cat_Id, q_Id);
+    markDirty()
 }
 
 
@@ -337,6 +352,7 @@ function removeAnswer(cat_Id, q_Id, opt_Id) {
         return;
     question.answer = question.answer.filter(o => o.id !== opt_Id);
     renderAnswerPanel(cat_Id, q_Id);
+    markDirty()
 }
 
 
@@ -358,6 +374,7 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
     const answer = question.answer.find(o => o.id === opt_Id);
     if (answer)
         answer.text = new_text;
+    markDirty()
 }
 
 
@@ -380,7 +397,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
     const is_sldr = question.type === 'sldr';
 
     // TODO maybe find a fix for this ? as it stand it wont stop until it cannot find ASCII character, however it mean at one point you stop having capital letter and just have char 
-    const answers_html = is_mc || is_sldr? `
+    const answers_html = is_mc || is_sldr ? `
         <div class="answers_list">
             ${question.answer.map((opt, i) => `
                 <div class="answer_item">
@@ -419,7 +436,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
             <div id="answer_config">${answers_html}</div>
         </div>
     `;
-    
+
     // if multiple choice, show the leadstos
     if (is_mc) {
         const allQuestions = quiz.categories.flatMap(cat => cat.items);
@@ -475,12 +492,12 @@ window.onclick = function (event) {
     if (event.target == overlay_share) {
         overlay_share.style.display = 'none';
     }
-    if(event.target == overlay_display){
+    if (event.target == overlay_display) {
         overlay_display.stile.display = 'none';
     }
 }
-document.getElementById('delete_overlay').addEventListener('click', function(e) {
-    if (e.target === this) 
+document.getElementById('delete_overlay').addEventListener('click', function (e) {
+    if (e.target === this)
         closeDelete();
 });
 /**
@@ -498,7 +515,8 @@ async function submitShare() {
         const response = await fetch("/quiz_share", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: username, quiz_id: quiz.id,role: document.getElementById('share_role')?.value || 'reader' })});
+            body: JSON.stringify({ username: username, quiz_id: quiz.id, role: document.getElementById('share_role')?.value || 'reader' })
+        });
 
         const result = await response.json();
         msg.style.display = 'block';
@@ -524,26 +542,26 @@ async function submitShare() {
 async function loadAccessList() {
     const list = document.getElementById('access_list');
     list.innerHTML = '<li class="access_list_loading">Loading…</li>';
- 
+
     const response = await fetch(`/quiz_share?quiz_id=${quiz.id}`);
     const result = await response.json();
- 
+
     if (!result.users || result.users.length === 0) {
         list.innerHTML = `<li class="access_list_empty">No one else has access yet.</li>`;
         return;
     }
- 
+
     list.innerHTML = result.users.map(entry => {
-        const isYou  = entry.username === result.current_user;
+        const isYou = entry.username === result.current_user;
         const youTag = isYou ? ' <em>(you)</em>' : '';
- 
-        
+
+
         const roleBadge = `<span class="access_tag role_badge--${entry.role}">${entry.role}</span>`;
- 
-        
+
+
         let rolePicker = '';
         if (result.can_share && entry.role !== 'creator' && !isYou) {
-            const opts = ['reader','editor','admin']
+            const opts = ['reader', 'editor', 'admin']
                 .filter(r => {
                     // admin actors cannot assign admin
                     if (_role === 'admin' && r === 'admin') return false;
@@ -557,12 +575,12 @@ async function loadAccessList() {
                     ${opts}
                 </select>`;
         }
- 
+
         // Revoke button
         const revokeBtn = entry.can_revoke
             ? `<button class="revoke_btn" onclick="revokeAccess('${entry.username}')">Remove</button>`
             : '';
- 
+
         return `<li class="access_list_item">
             <span>${entry.username}${youTag}</span>
             ${roleBadge}
@@ -597,7 +615,7 @@ async function changeUserRole(username, newRole, selectEl) {
     msg.style.display = 'block';
     msg.style.color = result.error ? 'red' : 'green';
     msg.innerHTML = result.error || result.success;
-    if (result.error && selectEl) 
+    if (result.error && selectEl)
         loadAccessList(); // revert picker on error
 }
 /**
@@ -936,3 +954,12 @@ function updateAnswerText(input) {
     const answerIndex = parseInt(outputKey.replace('output_', '')) - 1;
     if (question.answer[answerIndex]) question.answer[answerIndex].text = input.value;
 }
+
+
+
+window.addEventListener('beforeunload', (event) => {
+    if (isDirty) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});

@@ -125,6 +125,11 @@
         }
       ],
       "name": "Hi"
+    },
+    {
+      "id": "2rl8s7b",
+      "name": "Category 3",
+      "items": []
     }
   ],
   "desc": "here for testing purpose (presently a placeholder for the fact I haven't implemented the id system yet)",

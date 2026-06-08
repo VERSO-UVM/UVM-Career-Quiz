@@ -45,6 +45,7 @@ def quiz_creation(cur):
 
 #Create the access table
 def access_creation(cur):
+    cur.execute('''DROP TABLE IF EXISTS ACESS''')
     cur.execute('''DROP TABLE IF EXISTS ACCESS''')
     cur.execute('''CREATE TABLE ACCESS(u_ID TEXT NOT NULL, q_id TEXT NOT NULL, role TEXT NOT NULL)''')
 
