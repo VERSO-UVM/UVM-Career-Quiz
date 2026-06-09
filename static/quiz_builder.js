@@ -11,11 +11,11 @@ function uid() {
     return Math.random().toString(36).slice(2, 9);
 }
 
-function markDirty() { 
-    isDirty = true; 
+function markDirty() {
+    isDirty = true;
 }
-function markClean() { 
-    isDirty = false; 
+function markClean() {
+    isDirty = false;
 }
 
 /**
@@ -852,31 +852,36 @@ function loadQuizIntoDrawflow() {
 
     allQuestions.forEach((q, i) => {
         const x = i * 350 + 50;
-        // TODO: position nodes in a tree structure! when its linear it makes everything hard to visually parse.
-        // not sure how to tackle that tbh... programmatically decide y value based on number of leadsto somehow maybe?
         const y = 200;
 
-        const answers_html = q.answer.map((a, j) => `
-    <div class="answer" data-output="output_${j + 1}">
-        <input type="text" class="drawflow-input" placeholder="Option ${j + 1}" value="${a.text || ''}" oninput="updateAnswerText(this)"/>
-        <button class="remove-answer" onclick="removeNodeAnswer(this)">-</button>
-    </div>
-`).join('');
+        let nodeId;
 
-        const template = `
-    <div class="question-node">
-        <input class="question-title drawflow-input" type="text" placeholder="Question text" value="${q.text || ''}" oninput="updateQuestionText(this)"/>
-        <div class="answers">${answers_html}</div>
-        <button class="add-answer" onclick="addNodeAnswer(this)">+</button>
-    </div>
-`;
+        if (q.type == 'text') {
+            const template = `
+                <div class="end-node">
+                    <input class="end-title drawflow-input" type="text" placeholder="Result" value="${q.text || ''}" />
+                </div>
+            `;
+            nodeId = editor.addNode('end', 1, 0, x, y, 'end', { question_id: q.id }, template);
+        } else {
+            const answers_html = q.answer.map((a, j) => `
+                <div class="answer" data-output="output_${j + 1}">
+                    <input type="text" class="drawflow-input" placeholder="Option ${j + 1}" value="${a.text || ''}" oninput="updateAnswerText(this)"/>
+                    <button class="remove-answer" onclick="removeNodeAnswer(this)">-</button>
+                </div>
+            `).join('');
 
-        const numOutputs = q.answer.length;
-        const nodeId = editor.addNode(
-            'question', 1, numOutputs,
-            x, y,
-            'question', { question_id: q.id }, template
-        );
+            const template = `
+                <div class="question-node">
+                    <input class="question-title drawflow-input" type="text" placeholder="Question text" value="${q.text || ''}" oninput="updateQuestionText(this)"/>
+                    <div class="answers">${answers_html}</div>
+                    <button class="add-answer" onclick="addNodeAnswer(this)">+</button>
+                </div>
+            `;
+
+            const numOutputs = q.answer.length;
+            nodeId = editor.addNode('question', 1, numOutputs, x, y, 'question', { question_id: q.id }, template);
+        }
 
         nodeIds.push(nodeId);
     });
@@ -889,21 +894,53 @@ function loadQuizIntoDrawflow() {
         });
 
         allQuestions.forEach((q, i) => {
+            if (q.type == 'text') return;
             const sourceNodeId = questionToNode[q.id];
             q.answer.forEach((a, j) => {
                 const outputKey = `output_${j + 1}`;
                 if (a.leads_to && questionToNode[a.leads_to]) {
                     editor.addConnection(sourceNodeId, questionToNode[a.leads_to], outputKey, 'input_1');
-                } else if (!a.leads_to && nodeIds[i + 1]) {
-                    editor.addConnection(sourceNodeId, nodeIds[i + 1], outputKey, 'input_1');
                 }
             });
         });
     }, 100);
+    document.querySelectorAll('.drawflow-node.end .end-title').forEach(input => {
+        input.addEventListener('input', () => {
+            const nodeEl = input.closest('.drawflow-node');
+            const nodeId = nodeEl.id.replace('node-', '');
+            const q = getQuizQuestion(nodeId);
+            if (q) q.text = input.value;
+        });
+    });
 }
 
 editor.on('nodeCreated', function (nodeId) {
     const node = editor.getNodeFromId(nodeId);
+
+    if (node.name === 'end') {
+        if (node.data.question_id) return;
+
+        const q_id = uid();
+        const newQuestion = {
+            id: q_id, text: '', type: 'text', answer: []
+        };
+
+        editor.drawflow.drawflow.Home.data[nodeId].data.question_id = q_id;
+
+        // for now adding to the first category, not sure best way to handle this though.
+        quiz.categories[0].items.push(newQuestion);
+
+        const nodeEl = document.querySelector(`#node-${nodeId} .drawflow_content_node`);
+        const input = nodeEl.querySelector('.end-title');
+        if (input) {
+            input.addEventListener('input', () => {
+                const q = getQuizQuestion(nodeId);
+                if (q) q.text = input.value;
+            });
+        }
+        return;
+    }
+
     if (node.name !== 'question') return;
     if (node.data.question_id) return;
 
