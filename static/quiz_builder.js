@@ -1,7 +1,7 @@
 // class variable, alongside quiz (a dictionary), which is defined in quiz_builder.html
 let active_category_Id = null;
 let active_question_Id = null;
-isDirty = false;
+var isDirty = false;
 const _role = (typeof USER_ROLE !== 'undefined') ? USER_ROLE : 'reader';
 
 /**
@@ -247,11 +247,16 @@ function saveQuiz() {
     })
         .then(response => response.json())
         .then(data => {
-            if (data.redirect) {
-                window.location.href = data.redirect;
+            if (data.error) {
+                alert(data.error);
+            } else {
+                quiz.id = data.id; // update in-memory id
+                markClean();
+                if (window.location.href.includes("new_quiz")) {
+                    window.location.href = `/quiz_builder/${data.id}`;
+                }
             }
         });
-    markClean();
 }
 
 
@@ -488,12 +493,12 @@ function closeShare() {
 
 window.onclick = function (event) {
     var overlay_share = document.getElementById('share_overlay');
-    var overlay_display = document.getElementById('branching')
+    var overlay_display = document.getElementById('branching_overlay')
     if (event.target == overlay_share) {
         overlay_share.style.display = 'none';
     }
     if (event.target == overlay_display) {
-        overlay_display.stile.display = 'none';
+        overlay_display.style.display = 'none';
     }
 }
 document.getElementById('delete_overlay').addEventListener('click', function (e) {

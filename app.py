@@ -94,7 +94,7 @@ def save_quiz():
 
         quiz = request.get_json()
 
-        if(not quiz["id"]):
+        if quiz["id"] == "new_quiz" or not quiz["id"]:
             quiz["id"] = str(uuid.uuid4())
 
         
@@ -113,6 +113,9 @@ def save_quiz():
         quiz['last_modified'] = time.time()
         with open(path, 'w') as f:
             json.dump(quiz, f, indent=2)
+
+        db.save_quiz_in_the_db(quiz["id"], quiz["title"], session["user_id"])
+        return jsonify({"success": True, "id": quiz["id"]})
     
     return redirect("/")
 
