@@ -40,7 +40,7 @@ body {
     margin-bottom: 24px;
 }
 
-/*mc question stuff*/
+
 .options-list {
     display: flex;
     flex-direction: column;
@@ -102,23 +102,17 @@ body {
     font-size: 16px;
     color: black;
 }
-/*end of mc question stuff*/
-
-/*
-Testing stuff for slider question type -------------------------------------
-*/
 
 .slider-container {
     position: relative;
     width: 100%;
 }
   
-  /* Slider track */
 .slider {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 30px; /* Thicker track */
+    height: 30px;
     background: #ddd;
     border-radius: 10px;
     outline: none;
@@ -126,7 +120,6 @@ Testing stuff for slider question type -------------------------------------
     z-index: 2;
 }
   
-/* Large thumb */
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -147,7 +140,6 @@ Testing stuff for slider question type -------------------------------------
     box-shadow: 0 4px 8px rgba(0,0,0,0.25);
 }
 
-/* Notches */
 .slider-notches {
     position: absolute;
     display: flex;
@@ -168,19 +160,29 @@ Testing stuff for slider question type -------------------------------------
 }
 
 .slider-labels {
-    display: flex;
-    justify-content: space-between;
+    position: relative;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 13px;
 }
 
-.slider-label {
-    text-align: center;
-    font-size: 12px;
-    max-width: 80px;
+.slider-label, .slider-label-selected{
+    position: absolute;
+    transform: translateX(0%) rotate(45deg);
+    transform-origin: left bottom;
+    white-space: nowrap;
+    font-size: 15px;
+}
+.slider-label-selected {
+    font-weight: bold;
+    font-size: 20px;
+    color: rgb(89, 255, 0);
+    text-shadow: 
+    -1px -1px 0 #000,  
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
 }
 
-/*------------------------------------------*/
 .open-textarea {
     width: 100%;
     min-height: 100px;
