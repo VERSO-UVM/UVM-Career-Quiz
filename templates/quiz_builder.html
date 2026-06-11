@@ -23,11 +23,17 @@
             <a href="{{ url_for('quiz_selection') }}">
                 <button class="home_btn">Home</button>
             </a>
+            {% if user_role in ('creator','admin','editor') %}
             <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
+            {% endif %}
             <button onclick="previewQuiz()" class="preview_btn">Preview</button>
+            {% if user_role in ('creator','admin') %}
             <button class="share_btn" onclick="openShare()">Share</button>
+            {% endif %}
             <button class="share_btn" onclick="openBranching()">Edit Branching</button>
-            <button class="delete_btn" onclick="deleteQuiz()"> Delete</button>
+            {% if user_role == 'creator' %}
+            <button class="delete_btn" onclick="openDelete()">Delete</button>
+            {% endif %}
         </div>
 
     </header>
@@ -37,16 +43,18 @@
             <div class="quiz_info">
                 <p>Title</p>
                 <input class="quiz_input" id="quiz-title" placeholder="A fitting title for your quiz" value=""
-                    oninput="render()">
+                    oninput="render()" {% if user_role=='reader' %}readonly{% endif %}>
             </div>
             <div class="quiz_info">
                 <p>Subtitle / description</p>
-                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?"
-                    oninput="render()"></textarea>
+                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?" oninput="render()" {%
+                    if user_role=='reader' %}readonly{% endif %}></textarea>
             </div>
+            {% if user_role in ('creator','admin','editor') %}
             <div id="category_creation">
                 <button class="add_category" onclick="addCategory()">Add a category</button>
             </div>
+            {% endif %}
             <div id="category"></div>
         </aside>
 
@@ -56,7 +64,9 @@
                 <button id="close_editor" onclick="closeEditor()">X Close</button>
             </div>
             <div id="questions_list"></div>
+            {% if user_role in ('creator','admin','editor') %}
             <button class="add_question_btn" onclick="addQuestion(active_category_Id)">Add a question</button>
+            {% endif %}
         </main>
 
         <main id="empty_state">
@@ -83,9 +93,31 @@
                 </div>
                 <label for="share_username">Username of the person you want to share this quiz with : </label><br>
                 <input type="text" id="share_username" required placeholder="Jean Bon"><br>
+                <label for="share_role">Role:</label><br>
+                <select id="share_role" class="role_select">
+                    <option value="reader">Reader : view only</option>
+                    <option value="editor">Editor : edit content</option>
+                    {% if user_role == 'creator' %}
+                    <option value="admin">Admin : edit as well as share</option>
+                    {% endif %}
+                </select><br>
                 <p id="share_message" style="display:none;"></p><br>
                 <button class="share_btn_acept" onclick="submitShare()">Share</button>
             </div>
+        </div>
+    </div>
+
+    <div id="delete_overlay" class="delete_overlay">
+        <div class="delete_content">
+            <div class="share_header">
+                <h2>Are you completly sure you want to delete this quiz?</h2>
+                <button class="close_btn" onclick="closeDelete()">x</button>
+            </div>
+            <div class="delete_actions">
+                <button class="delete_btn_reject" onclick="closeDelete()">No</button>
+                <button class="delete_btn_accept" onclick="deleteQuiz()">Yes, absolutely</button>
+            </div>
+
         </div>
     </div>
 
@@ -101,15 +133,10 @@
                         <div class="node-type" draggable="true" data-node="question">Question</div>
                         <div class="node-type" draggable="true" data-node="end">End</div>
                     </div>
-                    <div>
-                        <button id="jsonbtn" onclick="compileBranchingIntoQuiz()">Save branching</button>
-
-                    </div>
-
                 </div>
                 <div id="drawflow"></div>
 
-            
+
             </div>
         </div>
     </div>
@@ -122,12 +149,14 @@
             id: '',
             categories: []
         };
+        const USER_ROLE = {{ user_role | tojson }};
+
         document.getElementById('quiz-title').value = quiz.title;
         document.getElementById('quiz-desc').value = quiz.desc;
     </script>
     <script src="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.js"></script>
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
-    
+
 </body>
 
 </html>
