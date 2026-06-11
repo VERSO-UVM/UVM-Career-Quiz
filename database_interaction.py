@@ -6,13 +6,32 @@ To be used by an admin to wipe all data
 
 import sqlite3
 
+ROLE_CREATOR = "creator"
+ROLE_ADMIN   = "admin"
+ROLE_EDITOR  = "editor"
+ROLE_READER  = "reader"
+ROLE_RANK = { ROLE_CREATOR:4, 
+              ROLE_ADMIN:3, 
+              ROLE_EDITOR:2, 
+              ROLE_READER:1 }
 
 #As it stand you cannot carry sql statement between python file, therefore it will allow us to connect to the DB
 def connecting_to_sql():
     conn = sqlite3.connect("carrer_quiz.db")
     cur = conn.cursor()
     return conn,cur
-
+def can_edit(role):   
+    return role in (ROLE_CREATOR, ROLE_ADMIN, ROLE_EDITOR)
+def can_share(role): 
+    return role in (ROLE_CREATOR, ROLE_ADMIN)
+def can_delete(role): 
+    return role == ROLE_CREATOR
+def can_revoke(role): 
+    return role in (ROLE_CREATOR, ROLE_ADMIN)
+def can_promote(actor_role, target_role):
+    if target_role == ROLE_CREATOR: 
+        return False
+    return ROLE_RANK.get(actor_role,0) > ROLE_RANK.get(target_role,0)
     
 # Create the user table
 def user_creation(cur):
@@ -24,10 +43,11 @@ def quiz_creation(cur):
     cur.execute('''DROP TABLE IF EXISTS QUIZ''')
     cur.execute('''CREATE TABLE QUIZ(q_ID TEXT NOT NULL UNIQUE, name TEXT NOT NULL,owner_id TEXT NOT NULL, PRIMARY KEY("q_ID"))''')
 
-#Create the acess table
-def acess_creation(cur):
+#Create the access table
+def access_creation(cur):
     cur.execute('''DROP TABLE IF EXISTS ACESS''')
-    cur.execute('''CREATE TABLE ACESS(u_ID TEXT NOT NULL, q_id TEXT NOT NULL )''')
+    cur.execute('''DROP TABLE IF EXISTS ACCESS''')
+    cur.execute('''CREATE TABLE ACCESS(u_ID TEXT NOT NULL, q_id TEXT NOT NULL, role TEXT NOT NULL)''')
 
 
 #Find the name of a quiz with it's ID
@@ -71,9 +91,9 @@ def find_uname_with_id(u_id):
         return ""
 
 #Share a quiz with another user
-def share_quiz(u_id, q_id):
+def share_quiz(u_id, q_id, role):
     conn, cur = connecting_to_sql()
-    cur.execute("INSERT INTO ACESS (q_id, u_id) VALUES(?,?) ", (q_id, u_id))
+    cur.execute("INSERT INTO ACCESS (q_id, u_id,role) VALUES(?,?,?) ", (q_id, u_id,role))
     conn.commit()
     conn.close()
 
@@ -88,23 +108,38 @@ def save_quiz_in_the_db(q_id, q_title, u_ID):
         cur.execute("UPDATE QUIZ SET name = ? WHERE q_id = ?", (q_title, q_id))
     else: 
         cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id, q_title, u_ID))
-        cur.execute("INSERT INTO ACESS (q_id, u_id) VALUES(?,?) ", (q_id, u_ID))
+        cur.execute("INSERT INTO ACCESS (q_id, u_id, role) VALUES(?,?,?) ", (q_id, u_ID, 'creator'))
     conn.commit()
     conn.close()
 
-
-#Return whether or not a User has acess to a quiz or not
-def has_acess(u_ID, q_ID):
+#return the role of a user for a specific uiz
+def get_role(u_id, q_id):
     conn, cur = connecting_to_sql()
-    query = "SELECT * FROM ACESS WHERE q_ID = ? AND u_ID = ?"
+    cur.execute("SELECT role FROM ACCESS WHERE u_ID = ? AND q_ID = ?",(u_id, q_id))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0] 
+    else :
+        ""
+
+def update_role(u_id, q_id, new_role):
+    conn,cur = connecting_to_sql()
+    cur.execute("UPDATE ACCESS SET role=? WHERE u_ID=? AND q_ID=?",(new_role, u_id, q_id))
+    conn.commit()
+    conn.close()
+#Return whether or not a User has access to a quiz or not
+def has_access(u_ID, q_ID):
+    conn, cur = connecting_to_sql()
+    query = "SELECT * FROM ACCESS WHERE q_ID = ? AND u_ID = ?"
     cur.execute(query,(q_ID, u_ID))
     row = cur.fetchone()
     conn.close()
     return row
 
-def user_with_acess(q_id):
+def user_with_access(q_id):
     conn, cur = connecting_to_sql()
-    query = "SELECT * FROM ACESS WHERE q_ID = ?"
+    query = "SELECT * FROM ACCESS WHERE q_ID = ?"
     cur.execute(query,(q_id,))
     row = cur.fetchall()
     conn.close()
@@ -128,16 +163,16 @@ def find_creator(q_id):
 # Remove a user's access to a quiz
 def remove_access(u_id, q_id):
     conn, cur = connecting_to_sql()
-    cur.execute("DELETE FROM ACESS WHERE u_ID = ? AND q_ID = ?", (u_id, q_id))
+    cur.execute("DELETE FROM ACCESS WHERE u_ID = ? AND q_ID = ?", (u_id, q_id))
     conn.commit()
     conn.close()
 
 def delete_quiz(q_id):
     conn,cur = connecting_to_sql()
-    cur.execute("DELETE FROM ACESS WHERE q_id = ?", (q_id,))
+    cur.execute("DELETE FROM ACCESS WHERE q_id = ?", (q_id,))
     cur.execute("DELETE FROM QUIZ WHERE q_id = ?" ,(q_id,))
     conn.commit()
-    cur.execute("SELECT * FROM ACESS WHERE q_id = ? ", (q_id,))
+    cur.execute("SELECT * FROM ACCESS WHERE q_id = ? ", (q_id,))
     test1 = cur.fetchall()
     cur.execute("SELECT * FROM QUIZ WHERE q_id = ? ", (q_id,))
     test2 = cur.fetchall()
@@ -171,10 +206,10 @@ def create_db():
     cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_1, name_1, id_1))
     cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_2, name_2, id_2))
     conn.commit()
-    acess_creation(cur)
-    cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_1, q_id_1))
-    cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_2, q_id_1))
-    cur.execute("INSERT INTO ACESS (u_ID, q_ID) VALUES (?,?)", (id_2, q_id_2))
+    access_creation(cur)
+    cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_1, q_id_1, ROLE_CREATOR))
+    cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_2, q_id_1, ROLE_READER))
+    cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_2, q_id_2, ROLE_CREATOR))
     conn.commit()
     conn.close()
 
