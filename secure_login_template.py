@@ -18,6 +18,7 @@ import string
 # Memory size = 2 Gib  
 class SecureLogin:
     def __init__(self, password: str):
+        self.password = password
         #User.username=username
         #User.password=password
         pass
@@ -29,7 +30,7 @@ class SecureLogin:
         password = ""
         def __init__(self, username, email, password):
             self.username = username
-            self.email = email
+            self.email =email
             self.password=password
         
         def get_username(self):
@@ -80,14 +81,8 @@ class SecureLogin:
             return (primary, secondary)
     
 
-    def check_password(self, user_password: str,db_hash: str,  db_salt: str)-> bool:
-        if hash(user_password+db_salt+self.PEPPER_STRING, db_salt, 
-                memory_cost=self.MIN_MEMORY_SIZE, 
-                time_cost=self.ITERATIONS, 
-                parallelism=self.PARALLELISM, 
-                variant='id') == db_hash:
-            return True
-        return False
+
+    
                 
 #HELPERS
     
@@ -133,8 +128,14 @@ class SecureLogin:
     def password_creation_send(self):
         return self._hash_password()
         
-        
-
+    def check_password(self, user_password: str,db_hash: str,  db_salt: str)-> bool:
+        if hash(user_password+db_salt+self.PEPPER_STRING, db_salt, 
+                memory_cost=self.MIN_MEMORY_SIZE, 
+                time_cost=self.ITERATIONS, 
+                parallelism=self.PARALLELISM, 
+                variant='id') == db_hash:
+            return True
+        return False
 
 
 
@@ -152,4 +153,118 @@ if __name__ == "__main__":
 
 
     
- 
+ #-------------------------------------------------------------------------------
+ #TODO: merge login.py testing
+ #TODO WILL HAVE TO CREATE A LOG IN SYSTEM THAT IS SECURE --> HASH TABLE AND THE SUCH --> FOR NOW WE"LL JUST BE STORING AND RETRIEVING THING IN THE DB AS PLAINTEXT
+# when we have the server we'll switch to hashtable (or before maybe)
+import sqlite3
+import uuid
+
+
+# all good
+#As it stand you cannot carry sql statement between python file, therefore it will allow us to connect to the DB
+def connecting_to_sql():
+    conn = sqlite3.connect("carrer_quiz.db")
+    cur = conn.cursor()
+    return conn,cur
+
+#Log in a User into the System
+#TODO as mentioned in the header, has it stand it's very unsafe (storing info in plain text). We need to change this and use a hash table
+#--------------------------------------------------------------------------------------
+# login user (username, password) -> \
+def user_login(username, password):
+    conn, cur = connecting_to_sql()
+    query = """
+    SELECT * FROM USER WHERE Username = ?;
+    """
+    cur.execute(query, (username,))
+    user = cur.fetchone()
+    if(not user):
+        conn.close()
+        return -1
+    query = """
+    SELECT PasswordHash, Salt FROM USER WHERE Username = ?
+    """
+    cur.execute(query, (username,))
+    password_hash, salt = cur.fetchone()
+    scan = SecureLogin(password)
+    if not scan.check_password(password, password_hash, salt):
+        conn.close()
+        return -1
+    else:
+        conn.close()
+        return user[0]
+
+
+        """
+connect to sql server
+check to see if user does exist,
+if so: fetch from user :: password hash, salt
+pull down from env pepper, 
+hash user password against db salt and env pepper
+compare stored hash to inputted
+if success pass success
+        """
+#------------------------------------------------------------------------------
+
+
+#Register a user into the system.
+#TODO same as the above function
+
+#------------------------------------------------------------------------------------------------
+def register_user(username, email, password):
+    conn, cur = connecting_to_sql()
+    query = """
+            SELECT * FROM USER WHERE Username = ?
+            """
+    cur.execute(query, (username,))
+    user = cur.fetchone()
+    if (user):
+        conn.close()
+        return -1
+    else :
+        query = """
+            SELECT * FROM USER WHERE email = ?
+            """
+        cur.execute(query, (email,))
+        user = cur.fetchone()
+        if (user):
+            conn.close()
+            return -2
+        user = True
+        while(user):
+            id = str(uuid.uuid4())
+            query = """
+                SELECT * FROM USER WHERE u_id = ?
+                """
+            cur.execute(query, (username,))
+            user = cur.fetchone()
+        query = """
+            INSERT INTO USER (u_ID, Username, PasswordHash, Salt, Email) VALUES (?,?,?,?,?);
+        """
+        login = SecureLogin(password)
+        password_hash, salt = login.password_creation_send()
+        cur.execute(query, (id, username, password_hash, salt, email))
+        conn.commit()
+        conn.close()
+        return id
+
+
+
+
+
+
+
+    # registering user (username email password) -> 
+    """
+connect to sql
+check for username exists, check for email exists
+if not, 
+    user entered password, create salt fetch pepper, hash password
+
+    insert into db := username, email, password hash, salt
+    commit connection, close connection 
+
+    """
+
+#------------------------------------------------------------------------------------------------
