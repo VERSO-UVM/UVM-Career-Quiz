@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Creation</title>
+    <link rel="icon" href="/static/asset/favicon/favicon.ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_builder.css') }}">
+
+    <!-- branching styles -->
+    <link rel="stylesheet" href="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='drawflow.css') }}">
+
+    <!-- This is only allowing us to BUILD the quiz itself, as for hosting, running the quiz, and exporting it 
+      this is still very much a work in progress (can it be called that when we have nothing yet?) -->
+</head>
+
+<body>
+    <header>
+        <h1>Quiz builder</h1>
+        <div class="header_actions">
+            <a href="{{ url_for('quiz_selection') }}">
+                <button class="home_btn">Home</button>
+            </a>
+            {% if user_role in ('creator','admin','editor') %}
+            <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
+            {% endif %}
+            <button onclick="previewQuiz()" class="preview_btn">Preview</button>
+            {% if user_role in ('creator','admin') %}
+            <button class="share_btn" onclick="openShare()">Share</button>
+            {% endif %}
+            <button class="share_btn" onclick="openBranching()">Edit Branching</button>
+            {% if user_role == 'creator' %}
+            <button class="delete_btn" onclick="openDelete()">Delete</button>
+            {% endif %}
+        </div>
+
+    </header>
+
+    <div id="app_layout">
+        <aside>
+            <div class="quiz_info">
+                <p>Title</p>
+                <input class="quiz_input" id="quiz-title" placeholder="A fitting title for your quiz" value=""
+                    oninput="render()" {% if user_role=='reader' %}readonly{% endif %}>
+            </div>
+            <div class="quiz_info">
+                <p>Subtitle / description</p>
+                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?" oninput="render()" {%
+                    if user_role=='reader' %}readonly{% endif %}></textarea>
+            </div>
+            {% if user_role in ('creator','admin','editor') %}
+            <div id="category_creation">
+                <button class="add_category" onclick="addCategory()">Add a category</button>
+            </div>
+            {% endif %}
+            <div id="category"></div>
+        </aside>
+
+        <main id="question_editor" style="display: none;">
+            <div id="editor_header">
+                <h2 id="editor_category_title">category name</h2>
+                <button id="close_editor" onclick="closeEditor()">X Close</button>
+            </div>
+            <div id="questions_list"></div>
+            {% if user_role in ('creator','admin','editor') %}
+            <button class="add_question_btn" onclick="addQuestion(active_category_Id)">Add a question</button>
+            {% endif %}
+        </main>
+
+        <main id="empty_state">
+            <div id="empty_hint">
+                <p>Select a category to start adding questions</p>
+            </div>
+        </main>
+        <div id="answer_panel" style="display: none;"></div>
+    </div>
+
+
+
+    <div id="share_overlay" class="share_overlay">
+        <div class="share_content">
+            <div class="share_header">
+                <h2>Search for the person you want to share with below</h2>
+                <button class="close_btn" onclick="closeShare()">x</button>
+            </div>
+            <div>
+                <div id="access_list_section">
+                    <p class="access_list_label">People with access:</p>
+                    <ul id="access_list">
+                    </ul>
+                </div>
+                <label for="share_username">Username of the person you want to share this quiz with : </label><br>
+                <input type="text" id="share_username" required placeholder="Jean Bon"><br>
+                <label for="share_role">Role:</label><br>
+                <select id="share_role" class="role_select">
+                    <option value="reader">Reader : view only</option>
+                    <option value="editor">Editor : edit content</option>
+                    {% if user_role == 'creator' %}
+                    <option value="admin">Admin : edit as well as share</option>
+                    {% endif %}
+                </select><br>
+                <p id="share_message" style="display:none;"></p><br>
+                <button class="share_btn_acept" onclick="submitShare()">Share</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete_overlay" class="delete_overlay">
+        <div class="delete_content">
+            <div class="share_header">
+                <h2>Are you completly sure you want to delete this quiz?</h2>
+                <button class="close_btn" onclick="closeDelete()">x</button>
+            </div>
+            <div class="delete_actions">
+                <button class="delete_btn_reject" onclick="closeDelete()">No</button>
+                <button class="delete_btn_accept" onclick="deleteQuiz()">Yes, absolutely</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="branching_overlay">
+        <div id="branching_content">
+            <div class="share_header">
+                <h2>Drag and drop to decide on the branching logic of your quiz below.</h2>
+                <button class="close_btn" onclick="closeBranching()">✕</button>
+            </div>
+            <div id="branching-section">
+                <div id="sidebar">
+                    <div id="nodes">
+                        <div class="node-type" draggable="true" data-node="question">Question</div>
+                        <div class="node-type" draggable="true" data-node="end">End</div>
+                    </div>
+                </div>
+                <div id="drawflow"></div>
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let quiz = {{ quiz | tojson }} || {
+            title: '',
+            desc: '',
+            id: '',
+            categories: []
+        };
+        const USER_ROLE = {{ user_role | tojson }};
+
+        document.getElementById('quiz-title').value = quiz.title;
+        document.getElementById('quiz-desc').value = quiz.desc;
+    </script>
+    <script src="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.js"></script>
+    <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
+
+</body>
+
+</html>

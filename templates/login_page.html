@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Page</title>
+    <link rel="icon" href="/static/asset/favicon/favicon.ico">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>
+            Welcome!
+        </h1>
+    </header>
+    <main>
+        <div id="choice">
+            <a href="{{ url_for('quiz_login') }}"><button>Log in</button></a>
+            <a href="{{ url_for('register') }}"><button>I do not have an account yet</button></a>
+        </div>
+
+    </main>
+</body>
+
+</html>

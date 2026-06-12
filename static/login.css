@@ -1,0 +1,54 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: lightgray;
+
+}
+
+header {
+    background: #154734;
+    color: whitesmoke;
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+}
+
+
+a {
+  color: inherit;
+}
+
+a:hover {
+  color: gray;
+}
+
+
+div{
+  display: flex;
+  justify-content: center;
+  flex-direction: column; 
+  align-items: center; 
+  gap:10px;
+  height : 90vh
+}
+#choice{
+  flex-direction: row;
+}
+
+button {
+  background-color: #154734;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+
+}
+

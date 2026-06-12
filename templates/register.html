@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="icon" href="/static/asset/favicon/favicon.ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_login.css') }}">
+
+</head>
+
+<body>
+    <header>
+        <h1>Register Here</h1>
+        <a href="{{ url_for('login_page') }}">
+            <button class="home_btn">Get Back to the log in page</button>
+        </a>
+    </header>
+    <div>
+        {% if error %}
+        <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('register') }}">
+
+            <label for ="email">Email</label><br>
+            <input type="email" id ="email" name ="email" required> <br>
+
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br>
+
+            <button type="submit">Register</button>
+            <a href="{{ url_for('quiz_login') }}">
+                <button class="home_btn" type="button">Log in</button>
+            </a>
+        </form>
+
+    </div>
+</body>
+
+</html>
