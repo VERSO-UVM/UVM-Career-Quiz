@@ -67,25 +67,25 @@ def register():
 # Allow the user to create and make modification to quizzes.
 @app.route("/quiz_builder/<quiz>", methods=["GET", "POST"])
 def quiz_builder(quiz):
-    if not session["username"]:
-        return redirect("/")
+    if session["user_id"]:
  
-    role = get_role(quiz)
- 
-    if not role:
-        
-        if os.path.exists(f"testing_quiz/{quiz}.json"):
-            return redirect(url_for("quiz_selection"))
-        role = db.ROLE_CREATOR
- 
-    quiz_ = {"title": "", "desc": "", "id": quiz, "categories": []}
-    try:
-        with open(f"testing_quiz/{quiz}.json") as f:
-            quiz_ = json.load(f)
-    except FileNotFoundError:
-         error = "So far this is just a way to bypass the problem of creating new quiz." 
- 
-    return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
+        role = get_role(quiz)
+    
+        if not role:
+            
+            if os.path.exists(f"testing_quiz/{quiz}.json"):
+                return redirect(url_for("quiz_selection"))
+            role = db.ROLE_CREATOR
+    
+        quiz_ = {"title": "", "desc": "", "id": quiz, "categories": []}
+        try:
+            with open(f"testing_quiz/{quiz}.json") as f:
+                quiz_ = json.load(f)
+        except FileNotFoundError:
+            error = "So far this is just a way to bypass the problem of creating new quiz." 
+    
+        return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
+    return redirect("/")
 
 #Button on the quiz builder page, allow a user to save a quiz in our server.
 @app.route('/save_quiz', methods=['POST'])
@@ -115,7 +115,7 @@ def save_quiz():
             json.dump(quiz, f, indent=2)
 
         db.save_quiz_in_the_db(quiz["id"], quiz["title"], session["user_id"])
-        return jsonify({"success": True, "id": quiz["id"]})
+        return jsonify({"success": True, "id": quiz["id"], "last_modified": quiz["last_modified"]})
     
     return redirect("/")
 
