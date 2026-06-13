@@ -150,6 +150,13 @@ def quiz_preview(quiz):
     else : 
         return redirect("/")
 
+@app.route("/available_quizzes", methods=['GET','POST'])
+def show_available_quizzes():
+    if session["user_id"]:
+        return render_template("available_quizzes.html")
+    else:
+        return redirect("/")
+
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
@@ -281,3 +288,5 @@ def quiz_delete():
         else: 
             return jsonify({"error" : "A problem happened while trying to delete your quiz"})
     redirect("/")
+
+
