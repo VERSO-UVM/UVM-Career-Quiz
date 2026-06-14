@@ -1,0 +1,369 @@
+{
+  "categories": [
+    {
+      "id": "3bn9c31",
+      "items": [
+        {
+          "answer": [
+            {
+              "id": "zeczju4",
+              "leads_to": "bvdy90w",
+              "text": "Yes"
+            },
+            {
+              "id": "g9svmz4",
+              "leads_to": "bvdy90w",
+              "text": "No"
+            }
+          ],
+          "id": "u0kiecz",
+          "text": "Are you a student? ",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "yio79fa",
+              "leads_to": "9koq704",
+              "text": "I am looking for help getting started (guidance on major choice and/or explore career resources)."
+            },
+            {
+              "id": "sscm989",
+              "leads_to": "9koq704",
+              "text": "I am ready to jump in with resume prep, finding opportunities, and the like (I am all good with my major)."
+            }
+          ],
+          "id": "4ooszh1",
+          "text": "Which of the following best describe you ? ",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "1aefm5u",
+              "leads_to": "a31px36",
+              "text": "Great! I feel confident about my choice and like my classes."
+            },
+            {
+              "id": "6mrbvnt",
+              "leads_to": "8hyz7f1",
+              "text": "Good, and I am contemplating a minor."
+            },
+            {
+              "id": "n4yg5qc",
+              "leads_to": "jtdju2y",
+              "text": "I'm not sure. I'd like some help figuring it out."
+            }
+          ],
+          "id": "9koq704",
+          "text": "Okay great - this is the perfect place to start. How are you feeling about your major?",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "hoo5qhw",
+              "leads_to": "a31px36",
+              "text": "Placeholder 1"
+            },
+            {
+              "id": "4p8nm99",
+              "leads_to": "a31px36",
+              "text": "placeholder2"
+            }
+          ],
+          "id": "7n51fvz",
+          "text": "We're going to add support for text based question in the future but it's not there now ",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "g31sbqi",
+              "leads_to": "yh0p7s3",
+              "text": " Let's move right along then..."
+            }
+          ],
+          "id": "a31px36",
+          "text": "We love to hear that!",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "5xyu007",
+              "leads_to": "yh0p7s3",
+              "text": "At the end of this survey, we'll include a link of handy resources to help you choose. You might also find talking with an Academic Advisor, classmates and friends to be useful. "
+            }
+          ],
+          "id": "8hyz7f1",
+          "text": "A minor is a great idea!",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "h9hwe8s",
+              "leads_to": "yh0p7s3",
+              "text": "While neither your Major nor your Minor will define you or your future, it is important to select a course of study that engages you so that you set yourself up to excel.  Look for links to explore at the end. "
+            }
+          ],
+          "id": "jtdju2y",
+          "text": "Okay, that's fair. ",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "yez1vla",
+              "leads_to": "py0me17",
+              "text": "Great! Just needs some polishing."
+            },
+            {
+              "id": "gru8qry",
+              "leads_to": "fzhh75j",
+              "text": "It's coming along"
+            },
+            {
+              "id": "rd6clza",
+              "leads_to": "gtvlaci",
+              "text": "It's non-existent"
+            }
+          ],
+          "id": "yh0p7s3",
+          "text": "How do you feel about your resume right now?",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "xnlvfpa",
+              "leads_to": "jc1sslg",
+              "text": "We'd be happy to take a look and offer some feedback. You can bring your working draft to our drop-in hours for an in-person review or submit your draft to our Brightspace site for virtual feedback.   Links for both options will be in your recommendations at the end. "
+            }
+          ],
+          "id": "py0me17",
+          "text": "Good to hear!",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "8g9xb17",
+              "leads_to": "jc1sslg",
+              "text": "Our online Guide to Resumes has tips and examples that you may find useful.   Also, you can bring your resume to drop-in hours for in-person feedback, or submit your draft to our Brightspace site for virtual feedback.   We'll include links at the end. "
+            }
+          ],
+          "id": "fzhh75j",
+          "text": "Nice! It's great that you started :)",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "w1z6j10",
+              "leads_to": "jc1sslg",
+              "text": "Our online Guide to Resumes has tips and examples to help you get started. We'll include a link to it at the end. "
+            }
+          ],
+          "id": "gtvlaci",
+          "text": "No sweat!",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "lp8bftb",
+              "leads_to": "4ooszh1",
+              "text": ""
+            }
+          ],
+          "id": "bvdy90w",
+          "result_body": "We will ask you for feedback at the end of this survey.",
+          "text": "We appreciate your curiosity! The rest of this survey will mimic the student experience. ",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "i8crgmi",
+              "leads_to": "5vclacn",
+              "text": "Career Interest Groups make networking easy!   Career Interest Groups are... ready-made virtual networks of peers, alums, faculty & staff eager to help easy to join & obligation-free (join, switch, leave at any time) relevant opportunities and resources right in your inbox"
+            }
+          ],
+          "id": "jc1sslg",
+          "text": "Did you know that up to 85% of jobs/internships are found through networking? So, let's get started. ",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "es9br45",
+              "leads_to": "upq8ks6",
+              "text": "too bad"
+            },
+            {
+              "id": "rqqo4wz",
+              "leads_to": "upq8ks6",
+              "text": "we'll have to work on that"
+            }
+          ],
+          "id": "5vclacn",
+          "text": "This entire section has been skipped, as it consist of ",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "svaf2sp",
+              "leads_to": "t0h46us",
+              "text": "Yes (or at least I should be...)"
+            },
+            {
+              "id": "upasub3",
+              "leads_to": "fegxzsv",
+              "text": "Not yet."
+            }
+          ],
+          "id": "upq8ks6",
+          "text": "Finally, let's talk about finding opportunities (jobs, internships and more).  Are you looking for a part-time or work-study right now?",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "yx5k0jt",
+              "leads_to": "fegxzsv",
+              "text": ""
+            }
+          ],
+          "id": "t0h46us",
+          "result_body": "p, you want to connect with the Student Employment Office (SEO). Their on-line jobs board (JobX) is the best place to begin searching for on-campus and work-study jobs. Look for links to these at the end.\n\n\nYou can also search UVM's main career platform: Handshake...\n ",
+          "text": "Student Employement office",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "ayjo4ie",
+              "leads_to": "u4vvqgj",
+              "text": "Yes, I have completed the Career Interest Survey and begun working on my profile."
+            },
+            {
+              "id": "8b6xw8z",
+              "leads_to": "nnpeobg",
+              "text": "It sounds familiar. I might have logged in before??"
+            },
+            {
+              "id": "f5xqidt",
+              "leads_to": "nnpeobg",
+              "text": "Not yet...tell me more."
+            }
+          ],
+          "id": "fegxzsv",
+          "text": "Whether you are looking now or just planning for the future, it's a good idea to become familiar with Handshake - our job & internship database.  Have you heard of Handshake?",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "y0s7zye",
+              "leads_to": "vj26zkg",
+              "text": ""
+            }
+          ],
+          "id": "u4vvqgj",
+          "result_body": "The next step is to create & save searches using filters so that you'll get notified of opportunities meeting your criteria. We'll include a link to a super short video showing you how to do this in your recommendations.  ",
+          "text": "Look at you, rock star!",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "7v19f35",
+              "leads_to": "vj26zkg",
+              "text": ""
+            }
+          ],
+          "id": "nnpeobg",
+          "result_body": "We do not support text that long yet, we'll have to work on that",
+          "text": "Handshake is is the leading college-to-career network for more than 650K employers worldwide!",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "xpxu3di",
+              "leads_to": "5hkon21",
+              "text": "College of Agriculture & Life Sciences (CALS)"
+            },
+            {
+              "id": "oa4fnon",
+              "leads_to": "5hkon21",
+              "text": "College of Arts & Sciences (CAS)"
+            },
+            {
+              "id": "f8gj19u",
+              "leads_to": "5hkon21",
+              "text": "College of Engineering & Mathematical Sciences (CEMS)"
+            },
+            {
+              "id": "o9a02tj",
+              "leads_to": "5hkon21",
+              "text": "College of Education & Social Services (CESS)"
+            },
+            {
+              "id": "939yzln",
+              "leads_to": "5hkon21",
+              "text": "College of Nursing & Health Sciences (CNHS)"
+            },
+            {
+              "id": "hudtb2j",
+              "leads_to": "5hkon21",
+              "text": "Grossman School of Business (GSB)"
+            },
+            {
+              "id": "3rf6s83",
+              "leads_to": "5hkon21",
+              "text": "Rubenstein School of Environment & Natural Resources (RSENR)"
+            }
+          ],
+          "id": "vj26zkg",
+          "text": "We just need your school/college to customize your recommendations.",
+          "type": "mc"
+        },
+        {
+          "answer": [
+            {
+              "id": "8o7fqyq",
+              "leads_to": "3aweedc",
+              "text": ""
+            }
+          ],
+          "id": "5hkon21",
+          "result_body": "This will be implemented at a later date",
+          "text": "Once again, the next set of question require question type that have not been set up yet.",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "abwc3o3",
+              "leads_to": null,
+              "text": ""
+            }
+          ],
+          "id": "3aweedc",
+          "result_body": "Thank you for taking the time to complete this. Check your email for your specific recommendations. \n\nYou might have some specific concerns that are beyond this survey. \n \nWe recommend visiting the Career Center so that we can help you find what you need and get where you want to go. \n\nhttps://www.uvm.edu/career/drop-ins",
+          "text": "Whew! Finished!",
+          "type": "result"
+        }
+      ],
+      "name": "Category 1"
+    }
+  ],
+  "desc": "This is an example of what our quiz builder can do in comparison to qualtrics. The long term goal is for this quiz to be similar to the one in qualtrics, but better. Missing :\n- Purely text based category (no answer needed) \n- Image?",
+  "id": "5d8256bb-d74c-46a6-9c97-30145f95b580",
+  "last_modified": 1781465369.362204,
+  "title": "Carrer Quiz 1"
+}
