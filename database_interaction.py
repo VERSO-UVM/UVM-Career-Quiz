@@ -149,6 +149,20 @@ def user_with_access(q_id):
         return ""
 
 
+def quizzes_for_user(u_id):
+    conn, cur = connecting_to_sql()
+    query = """
+        SELECT QUIZ.q_ID, QUIZ.name
+        FROM ACCESS
+        JOIN QUIZ ON ACCESS.q_ID = QUIZ.q_ID
+        WHERE ACCESS.u_ID = ?
+    """
+    cur.execute(query, (u_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return [{"id": row[0], "name": row[1] or ""} for row in rows]
+
+
 # Return the username of the quiz creator
 def find_creator(q_id):
     conn, cur = connecting_to_sql()

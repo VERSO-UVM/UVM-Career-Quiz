@@ -5,6 +5,7 @@ import json
 import time
 import database_interaction as db 
 import log_in
+import user_quizzes
 
 
 app = Flask(__name__)
@@ -153,7 +154,18 @@ def quiz_preview(quiz):
 @app.route("/available_quizzes", methods=['GET','POST'])
 def show_available_quizzes():
     if session["user_id"]:
-        return render_template("available_quizzes.html")
+        assigned_quizzes = db.quizzes_for_user(session["user_id"])
+        completed_quizzes = []
+        try:
+            to_do, completed = user_quizzes.fetch_curr_user(session.get('username', ''), True)
+            completed_quizzes = [
+                {"id": q.get_quiz_id(), "name": db.find_name_with_id(q.get_quiz_id())}
+                for q in completed
+            ]
+        except Exception:
+            completed_quizzes = []
+
+        return render_template("available_quizzes.html", assigned_quizzes=assigned_quizzes, completed_quizzes=completed_quizzes)
     else:
         return redirect("/")
 
