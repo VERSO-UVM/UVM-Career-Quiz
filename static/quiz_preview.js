@@ -219,15 +219,16 @@ function resolveLeadsTo(leads_to) {
 }
 
 function nextQuestion(qId) {
+    const item = pages[cur].item;
+    const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(i => i.answer);
+
     const answerId = responses[qId];
-    const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(item => item.answer);
-    const leads_to = allAnswers.find(a => a.id === answerId)?.leads_to;
-    console.log('nextQuestion called, qId=', qId, 'responses[qId]=', responses[qId], 'cur before=', cur);
+    const answer = allAnswers.find(a => a.id === answerId) || item.answer?.[0];
+    const leads_to = answer?.leads_to;
 
     history.push(cur);
     cur = resolveLeadsTo(leads_to);
     render();
-    console.log('cur after=', cur);
     window.scrollTo({ top: 0 });
 }
 
