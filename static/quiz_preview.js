@@ -1,6 +1,7 @@
 let pages = [];
 let cur = 0;
 let responses = {};
+let history = [];
 
 /**
  * @param {*} quiz the quiz that is being previewed 
@@ -16,21 +17,56 @@ function buildPages(quiz) {
     return list;
 }
 
-
 /**
  * Update the footer each time a question is answered, is reponsible for the bar filling at the bottom 
  * Allow the user to have a sense of how many question there are instead of trudging onward without any idea of what is awaiting them
  */
 function updateFooter() {
     const total = pages.length;
-    const answered = Object.values(responses).filter(v => v !== '' && v !== null && v !== undefined).length;
-    const percent = total ? Math.round((answered / total) * 100) : 0;
-    const remaining = pages.slice(cur).length;
+    const traveled = history.length;
 
-    document.getElementById('footer-fill').style.width = percent + '%';
-    document.getElementById('footer-label').textContent = `${answered} of ${total} question(s) answered`;
-    document.getElementById('footer-remain').textContent =
-        remaining > 0 ? `${remaining} remaining` : (total ? 'All done!' : '');
+    if (cur >= pages.length) {
+        document.getElementById('footer-fill').style.width = '100%';
+        document.getElementById('footer-label').textContent = `${traveled} question(s) answered`;
+        document.getElementById('footer-remain').textContent = 'All done!';
+        return;
+    }
+    console.log(isPathDeterminate(cur));
+    if (isPathDeterminate(cur)) {
+        const answered = Object.values(responses).filter(v => v !== '' && v !== null && v !== undefined).length;
+        const percent = total ? Math.round((answered / total) * 100) : 0;
+        const remaining = total - answered;
+        document.getElementById('footer-fill').style.width = percent + '%';
+        document.getElementById('footer-label').textContent = `${answered} of ${total} question(s) answered`;
+        document.getElementById('footer-remain').textContent = remaining > 0 ? `${remaining} remaining` : 'All done!';
+    } else {
+        const percent = Math.round((traveled / (traveled + 1)) * 100);
+        document.getElementById('footer-fill').style.width = percent + '%';
+        document.getElementById('footer-label').textContent = `${traveled} question(s) answered`;
+        document.getElementById('footer-remain').textContent = '';
+    }
+}
+
+// check if the path ahead of an index has branching or is linear.
+function isPathDeterminate(startIdx) {
+    let idx = startIdx;
+    const visited = new Set();
+    while (idx >= 0 && idx < pages.length) {
+        if (visited.has(idx)) return false;
+        visited.add(idx);
+        const answers = pages[idx].item.answer || [];
+        const destinations = [];
+        for (const a of answers) {
+            const dest = resolveLeadsTo(a.leads_to);
+            if (!destinations.includes(dest)) destinations.push(dest);
+        }
+        if (destinations.length > 1) return false;
+        if (destinations.length === 0) { idx++; continue; }
+        const next = destinations[0];
+        if (next >= pages.length) break;
+        idx = next;
+    }
+    return true;
 }
 
 
@@ -49,16 +85,16 @@ function renderQuestionPage(page) {
         if (!options.length) {
             body = `<p class="inline-note">No answer options have been defined yet.</p>`;
         } else {
-            body = 
+            body =
                 `<div class="options-list">` +
-                    options.map((option, i) => {
-                        const label = option.text || `Option ${String.fromCharCode(65 + i)}`;
-                        const sel = responses[item.id] === option.id;
-                        return `<div class="radio-row${sel ? ' selected' : ''}" onclick="selectMC('${item.id}','${option.id}')">
+                options.map((option, i) => {
+                    const label = option.text || `Option ${String.fromCharCode(65 + i)}`;
+                    const sel = responses[item.id] === option.id;
+                    return `<div class="radio-row${sel ? ' selected' : ''}" onclick="selectMC('${item.id}','${option.id}')">
                                     <div class="radio-circle"><div class="radio-dot"></div></div>
                                     <span class="radio-label">${esc(label)}</span>
                                 </div>`;
-                    }).join('') +
+                }).join('') +
                 `</div>`;
         }
     } else if (item.type === 'text') {
@@ -75,8 +111,8 @@ function renderQuestionPage(page) {
             const currentIndex = options.findIndex(opt => opt.id === currentResponseId);
             const sliderValue = currentIndex !== -1 ? currentIndex : 0;
 
-            body = 
-            `<div class="slider-container">
+            body =
+                `<div class="slider-container">
                 <input
                     type="range"
                     min="0"
@@ -91,7 +127,7 @@ function renderQuestionPage(page) {
                     ${'<span></span>'.repeat(options.length)}
                 </div>
             </div>`+
-            `<div class="slider-labels" style="--count:${options.length}">
+                `<div class="slider-labels" style="--count:${options.length}">
                 ${options.map((option, i) => {
                     const label = option.text || `Option ${String.fromCharCode(65 + i)}`;
                     const sel = currentResponseId ? currentResponseId == option.id : i === 0;
@@ -104,6 +140,11 @@ function renderQuestionPage(page) {
                 }).join('')}
             </div>`
         }
+    } else if (item.type === 'result') {
+        body = `
+        <div class="result-display">
+            ${item.result_body ? `<p class="result-body">${esc(item.result_body)}</p>` : ''}
+        </div>`;
     } else {
         body = `<p class="inline-note">Question type not yet configured.</p>`;
     }
@@ -127,7 +168,10 @@ function renderSummary() {
  * Render the page each time it is needed to render
  * @returns is here in order to escape after a certain condition
  */
+let renderDepth = 0;
 function render() {
+    renderDepth++;
+    if (renderDepth > 50) { console.error('RENDER RECURSION'); renderDepth--; return; }
     const app = document.getElementById('app');
     const isSummary = cur >= pages.length;
     const bnav = document.getElementById('bottom-nav');
@@ -143,11 +187,16 @@ function render() {
     bnav.style.display = 'flex';
     const page = pages[cur];
 
-    document.getElementById('btn-back').disabled = (cur === 0);
+    document.getElementById('btn-back').disabled = (history.length === 0);
+    document.getElementById('btn-back').onclick = () => goBack();
+
     document.getElementById('btn-next').textContent = (cur === pages.length - 1) ? 'Finish' : 'Next';
-    document.getElementById('nav-pager').textContent = `Question ${pages.findIndex(p => p.item.id === page.item.id) + 1} of ${pages.length}`;
+    document.getElementById('btn-next').onclick = () => nextQuestion(pages[cur].item.id);
+    document.getElementById('btn-next').disabled = !isCurrentAnswered();
+
 
     app.innerHTML = renderQuestionPage(page);
+    renderDepth--;
 }
 
 /**
@@ -161,6 +210,35 @@ function go(dir) {
     window.scrollTo({ top: 0 });
 }
 
+function resolveLeadsTo(leads_to) {
+    if (!leads_to) {
+        return pages.length;
+    }
+    const index = pages.findIndex(p => p.item.id == leads_to);
+    return index !== -1 ? index : pages.length;
+}
+
+function nextQuestion(qId) {
+    const answerId = responses[qId];
+    const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(item => item.answer);
+    const leads_to = allAnswers.find(a => a.id === answerId)?.leads_to;
+    console.log('nextQuestion called, qId=', qId, 'responses[qId]=', responses[qId], 'cur before=', cur);
+
+    history.push(cur);
+    cur = resolveLeadsTo(leads_to);
+    render();
+    console.log('cur after=', cur);
+    window.scrollTo({ top: 0 });
+}
+
+function goBack() {
+    if (history.length === 0) return;
+    cur = history.pop();
+    render();
+    window.scrollTo({ top: 0 });
+}
+
+
 
 
 /**
@@ -169,6 +247,7 @@ function go(dir) {
 function restart() {
     responses = {};
     cur = 0;
+    history = [];
     render();
     window.scrollTo({ top: 0 });
 }
@@ -214,6 +293,21 @@ function selectSLDR(qId, sliderValue, optionsArray) {
 function setText(qId, val) {
     responses[qId] = val;
     updateFooter();
+    document.getElementById('btn-next').disabled = !isCurrentAnswered();
+}
+
+function isCurrentAnswered() {
+    const item = pages[cur]?.item;
+    if (!item) return true;
+
+    if (item.type == 'mc' || item.type == 'sldr') {
+        return responses[item.id] != undefined && responses[item.id] != null && responses[item.id] != '';
+    }
+    if (item.type == 'text') {
+        return (responses[item.id] || '').trim() != '';
+    }
+    // fallback for things without answers like result!
+    return true;
 }
 
 /**

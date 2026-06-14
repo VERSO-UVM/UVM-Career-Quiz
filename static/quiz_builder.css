@@ -472,6 +472,12 @@ main#empty_state {
     width: auto;
 }
 
+.result_body {
+    all: revert;
+    field-sizing: content;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
 .answer_input::placeholder {
     color: gray;
 }

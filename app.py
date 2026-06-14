@@ -115,7 +115,7 @@ def save_quiz():
             json.dump(quiz, f, indent=2)
 
         db.save_quiz_in_the_db(quiz["id"], quiz["title"], session["user_id"])
-        return jsonify({"success": True, "id": quiz["id"]})
+        return jsonify({"success": True, "id": quiz["id"], "last_modified": quiz["last_modified"]})
     
     return redirect("/")
 
