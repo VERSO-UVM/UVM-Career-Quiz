@@ -236,6 +236,9 @@ function saveQuiz() {
         alert("You have not chosen the name of your quiz. Please do so before saving it");
         return;
     }
+
+    applySequentialLeadsTo();
+    
     const jsonString = JSON.stringify(quiz, null, 2);
 
     fetch('/save_quiz', {
@@ -258,6 +261,23 @@ function saveQuiz() {
                 }
             }
         });
+}
+
+// generates leadsto value based on sequential order if it has none yet.
+function applySequentialLeadsTo() {
+    const allQuestions = quiz.categories.flatMap(cat => cat.items);
+
+    allQuestions.forEach((question, index) => {
+        const nextQuestion = allQuestions[index + 1];
+
+        if (!question.answer) return;
+
+        question.answer.forEach(answer => {
+            if (!answer.leads_to) {
+                answer.leads_to = nextQuestion ? nextQuestion.id : null;
+            }
+        });
+    });
 }
 
 
@@ -318,6 +338,8 @@ function setQuestionType(cat_Id, q_Id, new_type) {
         question.answer = [{ id: uid(), text: '' }];
     if (new_type === 'sldr' && !question.answer.length)
         question.answer = [{ id: uid(), text: '' }];
+    if (new_type === 'result' && !question.answer.length)
+        question.answer = [{ id: uid(), text: '', leads_to: null }];
     renderAnswerPanel(cat_Id, q_Id);
     markDirty()
 }
@@ -401,6 +423,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
     const is_text = question.type === 'text';
     const is_mc = question.type === 'mc';
     const is_sldr = question.type === 'sldr';
+    const is_result = question.type === 'result'
 
     // TODO maybe find a fix for this ? as it stand it wont stop until it cannot find ASCII character, however it mean at one point you stop having capital letter and just have char 
     const answers_html = is_mc || is_sldr ? `
@@ -420,6 +443,10 @@ function renderAnswerPanel(cat_Id, q_Id) {
             `).join('')}
         </div>
         <button class="add_answer_btn" onclick="addAnswer_('${cat_Id}', '${q_Id}')">Add answer</button>
+    `: is_result ? `
+           <div class="open_text_preview">
+        <textarea class="result_body" placeholder="Body text (optional)" oninput="changeResultBody('${cat_Id}', '${q_Id}', this.value)">${question.result_body || ''}</textarea>
+    </div>
     ` : `
         <div class="open_text_preview">
             <p>Respondents will type a free-form answer.</p>
@@ -438,6 +465,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
                 <button class="type_btn${is_text ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'text')">Open text</button>
                 <button class="type_btn${is_mc ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'mc')">Multiple choice</button>
                 <button class="type_btn${is_sldr ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'sldr')">Slider</button>
+                <button class="type_btn${is_result ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'result')">Result</button>
             </div>
             <div id="answer_config">${answers_html}</div>
         </div>
@@ -449,12 +477,20 @@ function renderAnswerPanel(cat_Id, q_Id) {
         question.answer.forEach((a, i) => {
             const indicators = document.querySelectorAll('#answer_panel .answer-leadsto-indicator');
             const target = allQuestions.find(q => q.id === a.leads_to);
-            if (indicators[i]) indicators[i].textContent = target ? `⇒ ${target.text || '(unnamed)'}` : '';
+            if (indicators[i]) indicators[i].textContent = target ? `⇒ ${target.text || '(unnamed)'} ` : '';
         });
     }
 
 }
 
+function changeResultBody(cat_Id, q_Id, new_text) {
+    const category = quiz.categories.find(b => b.id === cat_Id);
+    if (!category) return;
+    const question = category.items.find(q => q.id === q_Id);
+    if (!question) return;
+    question.result_body = new_text;
+    markDirty();
+}
 
 /**
  * Broke off render into multiple functions in order to avoid cluttering, and for an easier experience reading the code
@@ -475,8 +511,13 @@ function openShare() {
     loadAccessList();
 }
 
+let drawflowSnapshot = null;
+let drawflowDirty = false;
+
 function openBranching() {
     document.getElementById('branching_overlay').style.display = 'flex';
+    // snapshot quiz state before any drawflow edits
+    drawflowSnapshot = JSON.parse(JSON.stringify(quiz));
 
     const hasNodes = Object.keys(editor.export().drawflow.Home.data).length > 0;
     if (!hasNodes) {
@@ -485,6 +526,11 @@ function openBranching() {
 }
 
 function closeBranching() {
+    if (drawflowSnapshot) {
+        if (!confirm('Are you sure you want to close? Unsaved changes will be lost.')) return;
+        quiz.categories = drawflowSnapshot.categories;
+        drawflowSnapshot = null;
+    }
     document.getElementById('branching_overlay').style.display = 'none';
 }
 
@@ -492,15 +538,57 @@ function closeShare() {
     document.getElementById('share_overlay').style.display = 'none';
 }
 
+function saveDrawflowChanges() {
+    // read every node's current DOM state and write to quiz
+    const allNodes = editor.export().drawflow.Home.data;
+
+    for (const nodeId in allNodes) {
+        const node = allNodes[nodeId];
+        const question = getQuizQuestion(nodeId);
+        if (!question) continue;
+
+        const nodeEl = document.querySelector(`#node-${nodeId} .drawflow_content_node`);
+        if (!nodeEl) continue;
+
+        if (node.name === 'question') {
+            const titleInput = nodeEl.querySelector('.question-title');
+            if (titleInput) question.text = titleInput.value;
+
+            const answerInputs = nodeEl.querySelectorAll('.answer input');
+            answerInputs.forEach((input, i) => {
+                if (question.answer[i]) question.answer[i].text = input.value;
+            });
+        } else if (node.name === 'result') {
+            const titleInput = nodeEl.querySelector('.end-title');
+            const bodyInput = nodeEl.querySelector('.end-body');
+            if (titleInput) question.text = titleInput.value;
+            if (bodyInput) question.result_body = bodyInput.value;
+        }
+    }
+    drawflowSnapshot = null;
+    markDirty();
+
+    if (active_question_Id && active_category_Id) {
+        renderAnswerPanel(active_category_Id, active_question_Id);
+    }
+    renderCategory();
+    if (active_category_Id) {
+        renderQuestions(active_category_Id);
+    }
+
+    document.getElementById('branching_overlay').style.display = 'none';
+}
+
 window.onclick = function (event) {
     var overlay_share = document.getElementById('share_overlay');
     var overlay_display = document.getElementById('branching_overlay')
     if (event.target == overlay_share) {
         overlay_share.style.display = 'none';
-    }
+    } 
     if (event.target == overlay_display) {
-        overlay_display.style.display = 'none';
+    closeBranching();
     }
+
 }
 document.getElementById('delete_overlay').addEventListener('click', function (e) {
     if (e.target === this)
@@ -573,26 +661,26 @@ async function loadAccessList() {
                     if (_role === 'admin' && r === 'admin') return false;
                     return true;
                 })
-                .map(r => `<option value="${r}"${r === entry.role ? ' selected' : ''}>${r}</option>`)
+                .map(r => `< option value = "${r}"${r === entry.role ? ' selected' : ''}> ${r}</option > `)
                 .join('');
             rolePicker = `
-                <select class="role_select_inline"
-                        onchange="changeUserRole('${entry.username}', this.value, this)">
-                    ${opts}
-                </select>`;
+        < select class="role_select_inline"
+    onchange = "changeUserRole('${entry.username}', this.value, this)" >
+        ${opts}
+                </select > `;
         }
 
         // Revoke button
         const revokeBtn = entry.can_revoke
-            ? `<button class="revoke_btn" onclick="revokeAccess('${entry.username}')">Remove</button>`
+            ? `< button class="revoke_btn" onclick = "revokeAccess('${entry.username}')" > Remove</button > `
             : '';
 
-        return `<li class="access_list_item">
-            <span>${entry.username}${youTag}</span>
+        return `< li class="access_list_item" >
+        <span>${entry.username}${youTag}</span>
             ${roleBadge}
             ${rolePicker}
             ${revokeBtn}
-        </li>`;
+        </li > `;
     }).join('');
 }
 async function revokeAccess(username) {
@@ -700,7 +788,8 @@ const questionTemplate = `
 
 const endTemplate = `
     <div class="end-node">
-      <input class="end-title drawflow-input" type="text" placeholder="Result" />
+        <input class="end-title drawflow-input" type="text" placeholder="Result title" oninput="updateResultText(this)"/>
+        <textarea class="end-body drawflow-input" placeholder="Result body (optional)" oninput="updateResultBody(this)"></textarea>
     </div>
 `;
 
@@ -794,12 +883,13 @@ document.getElementById('drawflow').addEventListener('drop', e => {
 
     if (type == 'question') {
         editor.addNode('question', 1, 2, pos_x, pos_y, 'question', {}, questionTemplate);
-    } else if (type == 'end') {
-        editor.addNode('end', 1, 0, pos_x, pos_y, 'end', {}, endTemplate);
+    } else if (type == 'result') {
+        editor.addNode('result', 1, 1, pos_x, pos_y, 'result', {}, endTemplate);
     }
 });
 
 editor.on('connectionCreated', function (info) {
+    drawflowDirty = true;
     const node = editor.getNodeFromId(info.output_id);
     const connections = node.outputs[info.output_class].connections;
 
@@ -825,6 +915,7 @@ editor.on('connectionCreated', function (info) {
 });
 
 editor.on("connectionRemoved", function (info) {
+    drawflowDirty = true;
     const node = editor.getNodeFromId(info.input_id);
     const connections = node.inputs[info.input_class].connections;
 
@@ -862,13 +953,13 @@ function loadQuizIntoDrawflow() {
 
         let nodeId;
 
-        if (q.type == 'text') {
+        if (q.type == 'result') {
             const template = `
                 <div class="end-node">
-                    <input class="end-title drawflow-input" type="text" placeholder="Result" value="${q.text || ''}" />
-                </div>
-            `;
-            nodeId = editor.addNode('end', 1, 0, x, y, 'end', { question_id: q.id }, template);
+                    <input class="end-title drawflow-input" type="text" placeholder="Result title" value="${q.text || ''}" oninput="updateResultText(this)"/>
+                    <textarea class="end-body drawflow-input" placeholder="Result body (optional)" oninput="updateResultBody(this)">${q.result_body || ''}</textarea>
+                 </div>`;
+            nodeId = editor.addNode('result', 1, 1, x, y, 'result', { question_id: q.id }, template);
         } else {
             const answers_html = q.answer.map((a, j) => `
                 <div class="answer" data-output="output_${j + 1}">
@@ -900,7 +991,6 @@ function loadQuizIntoDrawflow() {
         });
 
         allQuestions.forEach((q, i) => {
-            if (q.type == 'text') return;
             const sourceNodeId = questionToNode[q.id];
             q.answer.forEach((a, j) => {
                 const outputKey = `output_${j + 1}`;
@@ -910,40 +1000,21 @@ function loadQuizIntoDrawflow() {
             });
         });
     }, 100);
-    document.querySelectorAll('.drawflow-node.end .end-title').forEach(input => {
-        input.addEventListener('input', () => {
-            const nodeEl = input.closest('.drawflow-node');
-            const nodeId = nodeEl.id.replace('node-', '');
-            const q = getQuizQuestion(nodeId);
-            if (q) q.text = input.value;
-        });
-    });
 }
 
 editor.on('nodeCreated', function (nodeId) {
     const node = editor.getNodeFromId(nodeId);
 
-    if (node.name === 'end') {
+    if (node.name === 'result') {
         if (node.data.question_id) return;
 
         const q_id = uid();
         const newQuestion = {
-            id: q_id, text: '', type: 'text', answer: []
+            id: q_id, text: '', result_body: '', type: 'result', answer: [{ id: uid(), text: '', leads_to: null }]
         };
 
         editor.drawflow.drawflow.Home.data[nodeId].data.question_id = q_id;
-
-        // for now adding to the first category, not sure best way to handle this though.
         quiz.categories[0].items.push(newQuestion);
-
-        const nodeEl = document.querySelector(`#node-${nodeId} .drawflow_content_node`);
-        const input = nodeEl.querySelector('.end-title');
-        if (input) {
-            input.addEventListener('input', () => {
-                const q = getQuizQuestion(nodeId);
-                if (q) q.text = input.value;
-            });
-        }
         return;
     }
 
@@ -980,6 +1051,7 @@ editor.on('nodeCreated', function (nodeId) {
 });
 
 function updateQuestionText(input) {
+    drawflowDirty = true;
     const nodeEl = input.closest('.drawflow-node');
     const nodeId = nodeEl.id.replace('node-', '');
     const question = getQuizQuestion(nodeId);
@@ -987,6 +1059,7 @@ function updateQuestionText(input) {
 }
 
 function updateAnswerText(input) {
+    drawflowDirty = true;
     const nodeEl = input.closest('.drawflow-node');
     const nodeId = nodeEl.id.replace('node-', '');
     const question = getQuizQuestion(nodeId);
@@ -998,6 +1071,21 @@ function updateAnswerText(input) {
     if (question.answer[answerIndex]) question.answer[answerIndex].text = input.value;
 }
 
+function updateResultText(input) {
+    drawflowDirty = true;
+    const nodeEl = input.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+    const question = getQuizQuestion(nodeId);
+    if (question) question.text = input.value;
+}
+
+function updateResultBody(input) {
+    drawflowDirty = true;
+    const nodeEl = input.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+    const question = getQuizQuestion(nodeId);
+    if (question) question.result_body = input.value;
+}
 
 
 window.addEventListener('beforeunload', (event) => {
