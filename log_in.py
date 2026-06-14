@@ -28,7 +28,7 @@ def login_user(username, password):
     SELECT * FROM USER WHERE Username = ?
     AND Password = ?;
     """
-
+    
     cur.execute(query, (username, password))
     user = cur.fetchone()
     if (not user):

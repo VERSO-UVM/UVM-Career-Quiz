@@ -4,3 +4,5 @@ carrer_quiz.db-journal
 carrer_quiz.db
 .DS_Store
 .vscode
+venv/
+
