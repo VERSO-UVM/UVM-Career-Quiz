@@ -7,7 +7,7 @@
 
 
 
-.drawflow-input:not(.question-title, .end-title) {
+.drawflow-input:not(.question-title, .end-title, .fr-title) {
   height: 15px;
   padding: 2px 4px;
   color: rgba(0, 0, 0, 0.8);
@@ -71,7 +71,7 @@
   gap:16px;
 }
 
-.question-title, .end-title{
+.question-title, .end-title, .fr-title {
   font-weight: bold;
   color:#164734;
   border-style: solid;
@@ -80,17 +80,16 @@
   border-width: 2px;
   font-size: larger;
   padding: 4px 8px;
+  width: calc(100% - 20px);
   field-sizing: content;
 }
 
-.drawflow .question-node .outputs {
-  margin-top: 20px;
+.drawflow .question .outputs {
+  transform: translateY(8.5px)
 }
-
-
-.drawflow .drawflow-node .output {
+.drawflow .question .output {
   position: relative;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .question-node {
     display:flex;
