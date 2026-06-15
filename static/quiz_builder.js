@@ -538,6 +538,43 @@ function closeShare() {
     document.getElementById('share_overlay').style.display = 'none';
 }
 
+function openAssign() {
+    document.getElementById('assign_overlay').style.display = 'flex';
+    document.getElementById('assign_message').style.display = 'none';
+}
+
+function closeAssign() {
+    document.getElementById('assign_overlay').style.display = 'none';
+}
+
+async function submitAssign() {
+    if (quiz.title && !window.location.href.includes("new_quiz")) {
+        const username = document.getElementById('assign_username').value.trim();
+        const msg = document.getElementById('assign_message');
+        if (!username) {
+            msg.style.display = 'block';
+            msg.style.color = 'red';
+            msg.innerHTML = 'Please enter a username before submitting';
+            return;
+        }
+
+        const response = await fetch('/assign_quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, quiz_id: quiz.id })
+        });
+        const result = await response.json();
+        msg.style.display = 'block';
+        msg.style.color = result.error ? 'red' : 'green';
+        msg.innerHTML = result.error || result.success;
+        if (!result.error) {
+            document.getElementById('assign_username').value = '';
+        }
+    }
+    else
+        alert("Please choose a title and save your quiz before trying to assign it")
+}
+
 function saveDrawflowChanges() {
     // read every node's current DOM state and write to quiz
     const allNodes = editor.export().drawflow.Home.data;
