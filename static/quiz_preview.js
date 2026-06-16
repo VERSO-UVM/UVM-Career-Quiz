@@ -153,14 +153,58 @@ function renderQuestionPage(page) {
     ${body}`;
 }
 
+/* ----------------- TEST CODE ----------------- */
+
+function getQuestionsAndAnswer(){
+    textAnswersAndQuestions = [];
+    count = 0;
+    const responseEntries = Object.entries(responses);
+
+    while(count != responseEntries.length){
+
+        answeredQuestionID = responseEntries[count][0];
+        selectedAnswerID = responseEntries[count][1];
+
+        page = pages[count]
+
+        singleResponseText = [];
+        if(page.item.id === answeredQuestionID){
+            singleResponseText.push(page.item.text);
+        } else {
+            singleResponseText.push("NO QUESTION");
+        }
+
+        specificAnswer = page.item.answer.find(ans => ans.id === selectedAnswerID);
+
+        if(specificAnswer){
+            singleResponseText.push(specificAnswer.text);
+        } else if (page.item.type === 'text'){
+            singleResponseText.push(selectedAnswerID);
+        } else {
+            singleResponseText.push("NO ANSWER WAS GIVEN");
+        }
+        textAnswersAndQuestions.push(singleResponseText);
+        count++;
+    }
+    return textAnswersAndQuestions;   
+}
+
+/* ----------------- TEST CODE END ----------------- */
+
+
+
 /**
  * Called at the end of the survey to indicate that it's done
  * @returns the page at the end of the survey
  */
 function renderSummary() {
+    listOfQuestionAndAnswers = getQuestionsAndAnswer()
     return `
     <div class="summary-wrap">
-      <h2 class="summary-title">Survey Complete</h2>
+      <h2 class="summary-title">${JSON.stringify(responses)}</h2>
+    </div>
+    <div class="summary-wrap">
+      <h2 class="summary-title">${JSON.stringify(listOfQuestionAndAnswers)}</h2>
     </div>`;
 }
 
@@ -239,9 +283,6 @@ function goBack() {
     window.scrollTo({ top: 0 });
 }
 
-
-
-
 /**
  * Restart the quiz after the quiz has been finished
  */
@@ -252,7 +293,6 @@ function restart() {
     render();
     window.scrollTo({ top: 0 });
 }
-
 
 /**
  * Load a quiz. Is called once when the page is first created
