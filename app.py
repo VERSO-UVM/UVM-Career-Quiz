@@ -230,6 +230,34 @@ def quiz_share():
         return redirect("/")
 
 
+
+@app.route('/assign_quiz', methods=['POST'])
+def assign_quiz():
+    if session.get('user_id'):
+        data = request.get_json() or {}
+        username = data.get('username', '').strip()
+        quiz_id = data.get('quiz_id', '').strip()
+
+        if not username or not quiz_id:
+            return jsonify({"error": "Missing username or quiz id."})
+
+        u_role = get_role(quiz_id)
+        if not db.can_share(u_role):
+            return jsonify({"error": "You do not have permission to assign this quiz."})
+
+        target_id = db.find_id_with_uname(username)
+        if not target_id:
+            return jsonify({"error": "This user does not exist"})
+
+        if db.has_access(target_id, quiz_id):
+            return jsonify({"error": "This user already has access to this quiz"})
+
+        # Assign as reader so the user can take the quiz
+        db.share_quiz(target_id, quiz_id, db.ROLE_READER)
+        return jsonify({"success": f"Quiz assigned to {username}."})
+    return redirect("/")
+
+
 @app.route("/quiz_update_role", methods=["POST"])
 def quiz_update_role():
     if session["username"]:
