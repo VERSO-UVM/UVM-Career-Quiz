@@ -310,6 +310,12 @@ def quiz_revoke():
         return jsonify({"success": f"Access removed for {username}."})
     return redirect("/")
 
+@app.route('/go_back')
+def go_back():
+    prev = session.get('previous_page')
+    if prev:
+        return redirect(prev)
+    return redirect("/quiz_selection")
 
 @app.route("/quiz_delete", methods =['POST'])
 def quiz_delete():
