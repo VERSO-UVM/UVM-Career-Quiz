@@ -268,6 +268,7 @@ function applySequentialLeadsTo() {
     const allQuestions = quiz.categories.flatMap(cat => cat.items);
 
     allQuestions.forEach((question, index) => {
+        if (question.type === 'result') return
         const nextQuestion = allQuestions[index + 1];
 
         if (!question.answer) return;
@@ -986,15 +987,116 @@ function renumberAnswers(nodeEl) {
     });
 }
 
+//TODO REVIEW THIS FUNCTION
+function computeAutoLayout(allQuestions) {
+    const idToQ = {};
+    allQuestions.forEach(q => idToQ[q.id] = q);
+
+    
+    const outgoing = {};   
+    const incoming = {};   
+    allQuestions.forEach(q => { outgoing[q.id] = []; incoming[q.id] = []; });
+
+    allQuestions.forEach(q => {
+        (q.answer || []).forEach(a => {
+            if (a.leads_to && idToQ[a.leads_to]) {
+                outgoing[q.id].push(a.leads_to);
+                incoming[a.leads_to].push(q.id);
+            }
+        });
+    });
+
+    
+    const layer = {};
+    const roots = allQuestions.filter(q => incoming[q.id].length === 0).map(q => q.id);
+    const startNodes = roots.length ? roots : [allQuestions[0]?.id].filter(Boolean);
+
+    startNodes.forEach(id => layer[id] = 0);
+
+    
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = allQuestions.length + 5;
+    while (changed && iterations < maxIterations) {
+        changed = false;
+        iterations++;
+        allQuestions.forEach(q => {
+            if (layer[q.id] === undefined) return;
+            outgoing[q.id].forEach(targetId => {
+                const candidate = layer[q.id] + 1;
+                if (layer[targetId] === undefined || candidate > layer[targetId]) {
+            
+                    if (candidate <= allQuestions.length) {
+                        layer[targetId] = candidate;
+                        changed = true;
+                    }
+                }
+            });
+        });
+    }
+
+    
+    allQuestions.forEach(q => { if (layer[q.id] === undefined) layer[q.id] = 0; });
+
+    
+    const layers = {};
+    allQuestions.forEach((q, i) => {
+        const l = layer[q.id];
+        if (!layers[l]) 
+            layers[l] = [];
+        layers[l].push(q.id);
+    });
+
+    
+    const positions = {};
+    const X_SPACING = 500;
+    const Y_SPACING = 280;
+    const X_OFFSET = 50;
+    const Y_OFFSET = 50;
+
+    const layerKeys = Object.keys(layers).map(Number).sort((a, b) => a - b);
+
+    layerKeys.forEach(l => {
+        let ids = layers[l];
+
+        if (l > 0) {
+            ids = ids.slice().sort((a, b) => {
+                const avgY = id => {
+                    const sources = incoming[id];
+                    if (!sources.length) 
+                        return Infinity;
+                    const ys = sources
+                        .filter(s => positions[s] !== undefined)
+                        .map(s => positions[s].y);
+                    if (!ys.length) 
+                        return Infinity;
+                    return ys.reduce((sum, v) => sum + v, 0) / ys.length;
+                };
+                return avgY(a) - avgY(b);
+            });
+        }
+
+        ids.forEach((id, idx) => {
+            positions[id] = {
+                x: X_OFFSET + l * X_SPACING,
+                y: Y_OFFSET + idx * Y_SPACING
+            };
+        });
+    });
+
+    return positions; 
+}
+
 function loadQuizIntoDrawflow() {
     editor.clearModuleSelected();
 
     const allQuestions = quiz.categories.flatMap(cat => cat.items);
     const nodeIds = [];
+    const positions = computeAutoLayout(allQuestions);
+
 
     allQuestions.forEach((q, i) => {
-        const x = i * 350 + 50;
-        const y = 200;
+        const { x, y } = positions[q.id] || { x: i * 350 + 50, y: 200 };
 
         let nodeId;
 

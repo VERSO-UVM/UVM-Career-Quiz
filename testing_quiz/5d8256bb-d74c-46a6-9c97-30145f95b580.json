@@ -41,17 +41,17 @@
           "answer": [
             {
               "id": "1aefm5u",
-              "leads_to": "a31px36",
+              "leads_to": "mzb8f1p",
               "text": "Great! I feel confident about my choice and like my classes."
             },
             {
               "id": "6mrbvnt",
-              "leads_to": "8hyz7f1",
+              "leads_to": "jpn9b9t",
               "text": "Good, and I am contemplating a minor."
             },
             {
               "id": "n4yg5qc",
-              "leads_to": "jtdju2y",
+              "leads_to": "8pmjogw",
               "text": "I'm not sure. I'd like some help figuring it out."
             }
           ],
@@ -62,112 +62,23 @@
         {
           "answer": [
             {
-              "id": "hoo5qhw",
-              "leads_to": "a31px36",
-              "text": "Placeholder 1"
-            },
-            {
-              "id": "4p8nm99",
-              "leads_to": "a31px36",
-              "text": "placeholder2"
-            }
-          ],
-          "id": "7n51fvz",
-          "text": "We're going to add support for text based question in the future but it's not there now ",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
-              "id": "g31sbqi",
-              "leads_to": "yh0p7s3",
-              "text": " Let's move right along then..."
-            }
-          ],
-          "id": "a31px36",
-          "text": "We love to hear that!",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
-              "id": "5xyu007",
-              "leads_to": "yh0p7s3",
-              "text": "At the end of this survey, we'll include a link of handy resources to help you choose. You might also find talking with an Academic Advisor, classmates and friends to be useful. "
-            }
-          ],
-          "id": "8hyz7f1",
-          "text": "A minor is a great idea!",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
-              "id": "h9hwe8s",
-              "leads_to": "yh0p7s3",
-              "text": "While neither your Major nor your Minor will define you or your future, it is important to select a course of study that engages you so that you set yourself up to excel.  Look for links to explore at the end. "
-            }
-          ],
-          "id": "jtdju2y",
-          "text": "Okay, that's fair. ",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
               "id": "yez1vla",
-              "leads_to": "py0me17",
+              "leads_to": "dn7cjur",
               "text": "Great! Just needs some polishing."
             },
             {
               "id": "gru8qry",
-              "leads_to": "fzhh75j",
+              "leads_to": "ueukpi2",
               "text": "It's coming along"
             },
             {
               "id": "rd6clza",
-              "leads_to": "gtvlaci",
+              "leads_to": "8fma18c",
               "text": "It's non-existent"
             }
           ],
           "id": "yh0p7s3",
           "text": "How do you feel about your resume right now?",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
-              "id": "xnlvfpa",
-              "leads_to": "jc1sslg",
-              "text": "We'd be happy to take a look and offer some feedback. You can bring your working draft to our drop-in hours for an in-person review or submit your draft to our Brightspace site for virtual feedback.   Links for both options will be in your recommendations at the end. "
-            }
-          ],
-          "id": "py0me17",
-          "text": "Good to hear!",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
-              "id": "8g9xb17",
-              "leads_to": "jc1sslg",
-              "text": "Our online Guide to Resumes has tips and examples that you may find useful.   Also, you can bring your resume to drop-in hours for in-person feedback, or submit your draft to our Brightspace site for virtual feedback.   We'll include links at the end. "
-            }
-          ],
-          "id": "fzhh75j",
-          "text": "Nice! It's great that you started :)",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
-              "id": "w1z6j10",
-              "leads_to": "jc1sslg",
-              "text": "Our online Guide to Resumes has tips and examples to help you get started. We'll include a link to it at the end. "
-            }
-          ],
-          "id": "gtvlaci",
-          "text": "No sweat!",
           "type": "mc"
         },
         {
@@ -186,18 +97,6 @@
         {
           "answer": [
             {
-              "id": "i8crgmi",
-              "leads_to": "5vclacn",
-              "text": "Career Interest Groups make networking easy!   Career Interest Groups are... ready-made virtual networks of peers, alums, faculty & staff eager to help easy to join & obligation-free (join, switch, leave at any time) relevant opportunities and resources right in your inbox"
-            }
-          ],
-          "id": "jc1sslg",
-          "text": "Did you know that up to 85% of jobs/internships are found through networking? So, let's get started. ",
-          "type": "mc"
-        },
-        {
-          "answer": [
-            {
               "id": "es9br45",
               "leads_to": "upq8ks6",
               "text": "too bad"
@@ -209,7 +108,7 @@
             }
           ],
           "id": "5vclacn",
-          "text": "This entire section has been skipped, as it consist of ",
+          "text": "This entire section has been skipped, as it consist of question that are not yet implemented",
           "type": "mc"
         },
         {
@@ -238,7 +137,7 @@
             }
           ],
           "id": "t0h46us",
-          "result_body": "p, you want to connect with the Student Employment Office (SEO). Their on-line jobs board (JobX) is the best place to begin searching for on-campus and work-study jobs. Look for links to these at the end.\n\n\nYou can also search UVM's main career platform: Handshake...\n ",
+          "result_body": "You want to connect with the Student Employment Office (SEO). Their on-line jobs board (JobX) is the best place to begin searching for on-campus and work-study jobs. Look for links to these at the end.\n\n\nYou can also search UVM's main career platform: Handshake...\n ",
           "text": "Student Employement office",
           "type": "result"
         },
@@ -286,7 +185,7 @@
             }
           ],
           "id": "nnpeobg",
-          "result_body": "We do not support text that long yet, we'll have to work on that",
+          "result_body": "More than just a job/internship database, Handshake helps you discover opportunities you might not have found otherwise.  Kind of like Netflix suggesting a RomCom because that was what you watched last Friday.\n\nPRO-TIP: Completing your Career Interest Survey is essential for Handshake's algorithm to work in customizing your experience.\n\nIt's worth taking the time to complete the survey and start your profile. You can also create & save searches so that you can kick back and relax while the opportunities come to you.  \n\nLook for Handshake links in your recommendations at the end to get you started.",
           "text": "Handshake is is the leading college-to-career network for more than 650K employers worldwide!",
           "type": "result"
         },
@@ -357,6 +256,97 @@
           "result_body": "Thank you for taking the time to complete this. Check your email for your specific recommendations. \n\nYou might have some specific concerns that are beyond this survey. \n \nWe recommend visiting the Career Center so that we can help you find what you need and get where you want to go. \n\nhttps://www.uvm.edu/career/drop-ins",
           "text": "Whew! Finished!",
           "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "qxk4lte",
+              "leads_to": "yh0p7s3",
+              "text": ""
+            }
+          ],
+          "id": "jpn9b9t",
+          "result_body": "At the end of this survey, we'll include a link of handy resources to help you choose. You might also find talking with an Academic Advisor, classmates and friends to be useful. ",
+          "text": "A minor is a great idea!",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "nq3llu9",
+              "leads_to": "yh0p7s3",
+              "text": ""
+            }
+          ],
+          "id": "mzb8f1p",
+          "result_body": " Let's move right along then...",
+          "text": "We love to hear that!",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "c6f9lp1",
+              "leads_to": "yh0p7s3",
+              "text": ""
+            }
+          ],
+          "id": "8pmjogw",
+          "result_body": "While neither your Major nor your Minor will define you or your future, it is important to select a course of study that engages you so that you set yourself up to excel.  Look for links to explore at the end. ",
+          "text": "Okay, that's fair.",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "jk4hth8",
+              "leads_to": "ktctu5c",
+              "text": ""
+            }
+          ],
+          "id": "dn7cjur",
+          "result_body": "We'd be happy to take a look and offer some feedback. You can bring your working draft to our drop-in hours for an in-person review or submit your draft to our Brightspace site for virtual feedback.   Links for both options will be in your recommendations at the end. ",
+          "text": "Good to hear!",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "78zwik2",
+              "leads_to": "ktctu5c",
+              "text": ""
+            }
+          ],
+          "id": "ueukpi2",
+          "result_body": "Our online Guide to Resumes has tips and examples that you may find useful.   Also, you can bring your resume to drop-in hours for in-person feedback, or submit your draft to our Brightspace site for virtual feedback.   We'll include links at the end. ",
+          "text": "Nice! It's great that you started :)",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "aa49nub",
+              "leads_to": "ktctu5c",
+              "text": ""
+            }
+          ],
+          "id": "8fma18c",
+          "result_body": "Our online Guide to Resumes has tips and examples to help you get started. We'll include a link to it at the end. ",
+          "text": "No sweat!",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "r8bs81l",
+              "leads_to": "5vclacn",
+              "text": ""
+            }
+          ],
+          "id": "ktctu5c",
+          "result_body": "Career Interest Groups make networking easy!   Career Interest Groups are... ready-made virtual networks of peers, alums, faculty & staff eager to help easy to join & obligation-free (join, switch, leave at any time) relevant opportunities and resources right in your inbox",
+          "text": "Did you know that up to 85% of jobs/internships are found through networking? So, let's get started. ",
+          "type": "result"
         }
       ],
       "name": "Category 1"
@@ -364,6 +354,6 @@
   ],
   "desc": "This is an example of what our quiz builder can do in comparison to qualtrics. The long term goal is for this quiz to be similar to the one in qualtrics, but better. Missing :\n- Purely text based category (no answer needed) \n- Image?",
   "id": "5d8256bb-d74c-46a6-9c97-30145f95b580",
-  "last_modified": 1781465369.362204,
+  "last_modified": 1781486387.3582017,
   "title": "Carrer Quiz 1"
 }
