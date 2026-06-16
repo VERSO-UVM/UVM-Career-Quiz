@@ -1,0 +1,134 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: lightgray;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+header {
+    background: #154734;
+    color: whitesmoke;
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+}
+
+main {
+    padding: 20px;
+}
+
+.assigned-quizzes {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 760px;
+    margin: 24px auto;
+}
+
+.assigned-quizzes h2 {
+    margin-bottom: 16px;
+    color: #154734;
+}
+
+.assigned-quizzes ul {
+    list-style: none;
+}
+
+.assigned-quizzes li {
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8e3;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f7f9f7;
+}
+
+.assigned-quizzes a {
+    color: #154734;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.assigned-quizzes a:hover {
+    text-decoration: underline;
+}
+
+.quiz-id {
+    color: #5d6f63;
+    font-size: 0.9rem;
+    margin-left: 12px;
+}
+
+@media (max-width: 640px) {
+    .assigned-quizzes {
+        margin: 16px;
+    }
+    .assigned-quizzes li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .quiz-id {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+}
+
+.home_btn{
+    background: #154734;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    height: 36px;
+    padding :8px 12px;
+    border-radius: 4px;
+}
+
+.home_btn:hover {
+    background: rgb(30, 95, 69);
+}
+
+.completed-quizzes {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    padding: 18px;
+    max-width: 760px;
+    margin: 8px auto 40px auto;
+}
+
+.completed-quizzes h2 {
+    margin-bottom: 12px;
+    color: #154734;
+}
+
+.completed-quizzes ul {
+    list-style: none;
+}
+
+.completed-quizzes li {
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: #f4f6f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.completed-name {
+    color: #2f4f3f;
+    font-weight: 600;
+}

@@ -42,11 +42,6 @@ def display_completed_quizzes():
     pass
         
 def assign_quiz_to_user(username, quiz_id):
-    if username:
-        fetch_curr_user(username, True)
-    """sql query add quiz_id to username"""
-    pass
-
 def remove_quiz_from_user():
     pass
 

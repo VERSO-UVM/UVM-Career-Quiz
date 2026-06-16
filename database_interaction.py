@@ -149,6 +149,20 @@ def user_with_access(q_id):
         return ""
 
 
+def quizzes_for_user(u_id):
+    conn, cur = connecting_to_sql()
+    query = """
+        SELECT QUIZ.q_ID, QUIZ.name
+        FROM ACCESS
+        JOIN QUIZ ON ACCESS.q_ID = QUIZ.q_ID
+        WHERE ACCESS.u_ID = ?
+    """
+    cur.execute(query, (u_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return [{"id": row[0], "name": row[1] or ""} for row in rows]
+
+
 # Return the username of the quiz creator
 def find_creator(q_id):
     conn, cur = connecting_to_sql()
@@ -205,11 +219,14 @@ def create_db():
     quiz_creation(cur)
     cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_1, name_1, id_1))
     cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_2, name_2, id_2))
+    cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", ("5d8256bb-d74c-46a6-9c97-30145f95b580", "Carrer Quiz 1", id_1))
     conn.commit()
     access_creation(cur)
     cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_1, q_id_1, ROLE_CREATOR))
     cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_2, q_id_1, ROLE_READER))
     cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_2, q_id_2, ROLE_CREATOR))
+    cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_1,"5d8256bb-d74c-46a6-9c97-30145f95b580", ROLE_CREATOR))
+    cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_2,"5d8256bb-d74c-46a6-9c97-30145f95b580", ROLE_ADMIN))
     conn.commit()
     conn.close()
 

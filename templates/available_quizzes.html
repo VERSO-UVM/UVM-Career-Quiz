@@ -11,8 +11,45 @@
 
 <body>
 	<header>
-		<h1> Quizzes available to you: </h1>
-		</header>
+		<h1>Quizzes available to you:</h1>
+		<a href="{{ url_for('quiz_selection') }}">
+			<button class="home_btn">Home</button>
+		</a>
+	</header>
+
+	<main>
+		<section class="assigned-quizzes">
+			<h2>Assigned Quizzes</h2>
+			{% if assigned_quizzes %}
+				<ul>
+					{% for quiz in assigned_quizzes %}
+						<li>
+							<a href="{{ url_for('quiz_preview', quiz=quiz.id) }}">{{ quiz.name or quiz.id }}</a>
+							<span class="quiz-id">({{ quiz.id }})</span>
+						</li>
+					{% endfor %}
+				</ul>
+			{% else %}
+				<p>You do not have any assigned quizzes yet.</p>
+			{% endif %}
+		</section>
+
+		<section class="completed-quizzes">
+			<h2>Completed Quizzes</h2>
+			{% if completed_quizzes %}
+				<ul>
+					{% for quiz in completed_quizzes %}
+						<li>
+							<span class="completed-name">{{ quiz.name or quiz.id }}</span>
+							<span class="quiz-id">({{ quiz.id }})</span>
+						</li>
+					{% endfor %}
+				</ul>
+			{% else %}
+				<p>You have not completed any quizzes yet.</p>
+			{% endif %}
+		</section>
+	</main>
 </body>
 </html>
 			
