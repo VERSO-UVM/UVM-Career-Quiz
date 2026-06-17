@@ -153,21 +153,18 @@ function renderQuestionPage(page) {
     ${body}`;
 }
 
+/* ----------------- TEST CODE END ####################################################################################################################################### */
+/* ----------------- TEST CODE END ####################################################################################################################################### */
 /* ----------------- TEST CODE ################################################################################# */
 
 function formatCompletedQuizData(){
-    // User name <-- I'll come back to this
-    // title of the quiz
-    // quiz id
-        // category names
-        // category id's
-            // every questions text
-            // every questions id
-                // text of every answer the user gave
-                // id of every answer the user gave
 
-    const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1],...]
+    // TODO: Have it store the Username of the person taking the quiz
+
+    const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
+    const questionIdIndex = 0;
     const optionIdIndex = 1;
+    const textResponseIndex = 1;
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
@@ -176,7 +173,6 @@ function formatCompletedQuizData(){
         quizCategories: []
     };
 
-    
     // Loop though all category types and load the name and id of each 
         // Load question text and ids 
             // Load answer text and id the user gave
@@ -193,13 +189,33 @@ function formatCompletedQuizData(){
             const question = {
                 text: ques.text,
                 id: ques.id,
+                type: ques.type,
                 UserAnswer: []
             };
-            // compare user response to the responseEntries optionID's
+
+            // Special case for 'text' questions since there not stored normally
+            if(ques.type === 'text'){
+                let userAnswer = null;
+                // Compare user response id to the answer id's
+                for(const response of responseEntries){
+                    if(ques.id === response[questionIdIndex]){
+                        userAnswer = {
+                            text: response[textResponseIndex],
+                            id: Math.random().toString(36).slice(2, 9)
+                        };
+                        break;
+                    }
+                }
+                if (userAnswer) {
+                    question.UserAnswer.push(userAnswer);
+                } 
+            }
+            // compare user response to the responseEntries optionID's for 'mc' and 'sldr'
             for (const ans of ques.answer){
                 let userAnswer = null;
                 // Compare user response id to the answer id's
                 for(const response of responseEntries){
+
                     if(ans.id === response[optionIdIndex]){
                         userAnswer = {
                             text: ans.text,
@@ -211,6 +227,9 @@ function formatCompletedQuizData(){
                     question.UserAnswer.push(userAnswer);
                 } 
             }
+
+
+
             category.questions.push(question);
         }
         usersQuizResponseData.quizCategories.push(category);
@@ -218,7 +237,8 @@ function formatCompletedQuizData(){
     return usersQuizResponseData;
 }
 
-
+/* ----------------- TEST CODE END ####################################################################################################################################### */
+/* ----------------- TEST CODE END ####################################################################################################################################### */
 /* ----------------- TEST CODE END ####################################################################################################################################### */
 
 
@@ -231,12 +251,12 @@ function renderSummary() {
     testData = formatCompletedQuizData();
     return `
     <div class="summary-wrap">
-      <h2 class="summary-title">Quiz Results JSON Preview</h2>
       
-      <pre style="background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; text-align: left; overflow-x: auto;">
-        <code>${JSON.stringify(testData, null, 2)}</code>
-      </pre>
-      
+        <h2 class="summary-title">Quiz Results JSON Preview</h2>
+        <pre style="margin-top: 400px; background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; text-align: left; overflow-x: auto;">
+          <code>${JSON.stringify(testData, null, 1)}</code>
+        </pre>
+  
     </div>
     `;
 
