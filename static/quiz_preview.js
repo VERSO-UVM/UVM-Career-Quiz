@@ -153,43 +153,73 @@ function renderQuestionPage(page) {
     ${body}`;
 }
 
-/* ----------------- TEST CODE ----------------- */
+/* ----------------- TEST CODE ################################################################################# */
 
-function getQuestionsAndAnswer(){
-    textAnswersAndQuestions = [];
-    count = 0;
-    const responseEntries = Object.entries(responses);
+function formatCompletedQuizData(){
+    // User name <-- I'll come back to this
+    // title of the quiz
+    // quiz id
+        // category names
+        // category id's
+            // every questions text
+            // every questions id
+                // text of every answer the user gave
+                // id of every answer the user gave
 
-    while(count != responseEntries.length){
+    const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1],...]
+    const optionIdIndex = 1;
 
-        answeredQuestionID = responseEntries[count][0];
-        selectedAnswerID = responseEntries[count][1];
+    //Grabs the title and id of the quiz being taken and makes catagories array
+    const usersQuizResponseData = {
+        quizTitle: quiz.title,
+        quizID: quiz.id,
+        quizCategories: []
+    };
 
-        page = pages[count]
+    
+    // Loop though all category types and load the name and id of each 
+        // Load question text and ids 
+            // Load answer text and id the user gave
+    for (const cat of quiz.categories){
 
-        singleResponseText = [];
-        if(page.item.id === answeredQuestionID){
-            singleResponseText.push(page.item.text);
-        } else {
-            singleResponseText.push("NO QUESTION");
+        // Load current category name and ID
+        const category = {
+            name: cat.name,  
+            id: cat.id,
+            questions: [] 
+        };
+        // Load Questions into the category
+        for (const ques of cat.items){
+            const question = {
+                text: ques.text,
+                id: ques.id,
+                UserAnswer: []
+            };
+            // compare user response to the responseEntries optionID's
+            for (const ans of ques.answer){
+                let userAnswer = null;
+                // Compare user response id to the answer id's
+                for(const response of responseEntries){
+                    if(ans.id === response[optionIdIndex]){
+                        userAnswer = {
+                            text: ans.text,
+                            id: ans.id
+                        };
+                    }
+                }
+                if (userAnswer) {
+                    question.UserAnswer.push(userAnswer);
+                } 
+            }
+            category.questions.push(question);
         }
-
-        specificAnswer = page.item.answer.find(ans => ans.id === selectedAnswerID);
-
-        if(specificAnswer){
-            singleResponseText.push(specificAnswer.text);
-        } else if (page.item.type === 'text'){
-            singleResponseText.push(selectedAnswerID);
-        } else {
-            singleResponseText.push("NO ANSWER WAS GIVEN");
-        }
-        textAnswersAndQuestions.push(singleResponseText);
-        count++;
+        usersQuizResponseData.quizCategories.push(category);
     }
-    return textAnswersAndQuestions;   
+    return usersQuizResponseData;
 }
 
-/* ----------------- TEST CODE END ----------------- */
+
+/* ----------------- TEST CODE END ####################################################################################################################################### */
 
 
 
@@ -198,14 +228,19 @@ function getQuestionsAndAnswer(){
  * @returns the page at the end of the survey
  */
 function renderSummary() {
-    listOfQuestionAndAnswers = getQuestionsAndAnswer()
+    testData = formatCompletedQuizData();
     return `
     <div class="summary-wrap">
-      <h2 class="summary-title">${JSON.stringify(responses)}</h2>
+      <h2 class="summary-title">Quiz Results JSON Preview</h2>
+      
+      <pre style="background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; text-align: left; overflow-x: auto;">
+        <code>${JSON.stringify(testData, null, 2)}</code>
+      </pre>
+      
     </div>
-    <div class="summary-wrap">
-      <h2 class="summary-title">${JSON.stringify(listOfQuestionAndAnswers)}</h2>
-    </div>`;
+    `;
+
+    
 }
 
 /**
