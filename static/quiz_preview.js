@@ -153,10 +153,10 @@ function renderQuestionPage(page) {
     ${body}`;
 }
 
-/* ----------------- TEST CODE END ####################################################################################################################################### */
-/* ----------------- TEST CODE END ####################################################################################################################################### */
-/* ----------------- TEST CODE ################################################################################# */
-
+/**
+ * Takes in completed quiz and collects and formats the answers the user gave to correspond the the question and category.
+ * @returns usersQuizResponseData this is the users answers to the questions in JSON format.
+ */
 function formatCompletedQuizData(){
 
     // TODO: Have it store the Username of the person taking the quiz
@@ -175,7 +175,7 @@ function formatCompletedQuizData(){
 
     // Loop though all category types and load the name and id of each 
         // Load question text and ids 
-            // Load answer text and id the user gave
+            // Load answer text and id the user selected
     for (const cat of quiz.categories){
 
         // Load current category name and ID
@@ -227,21 +227,12 @@ function formatCompletedQuizData(){
                     question.UserAnswer.push(userAnswer);
                 } 
             }
-
-
-
             category.questions.push(question);
         }
         usersQuizResponseData.quizCategories.push(category);
     }
     return usersQuizResponseData;
 }
-
-/* ----------------- TEST CODE END ####################################################################################################################################### */
-/* ----------------- TEST CODE END ####################################################################################################################################### */
-/* ----------------- TEST CODE END ####################################################################################################################################### */
-
-
 
 /**
  * Called at the end of the survey to indicate that it's done
@@ -251,12 +242,10 @@ function renderSummary() {
     testData = formatCompletedQuizData();
     return `
     <div class="summary-wrap">
-      
         <h2 class="summary-title">Quiz Results JSON Preview</h2>
         <pre style="margin-top: 400px; background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; text-align: left; overflow-x: auto;">
           <code>${JSON.stringify(testData, null, 1)}</code>
         </pre>
-  
     </div>
     `;
 
