@@ -168,7 +168,7 @@ function formatCompletedQuizData(){
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
-        userID: 'TEST_ID',
+        userID: 'TEST_ID', // <--- Temporary id
         quizID: quiz.id,
         quizCategories: []
     };
