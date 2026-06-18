@@ -673,7 +673,7 @@ async function submitShare() {
  */
 async function loadAccessList() {
     const list = document.getElementById('access_list');
-    list.innerHTML = '<li class="access_list_loading">Loading…</li>';
+    list.innerHTML = '<li class="access_list_loading">Loading...</li>';
 
     const response = await fetch(`/quiz_share?quiz_id=${quiz.id}`);
     const result = await response.json();
@@ -695,30 +695,29 @@ async function loadAccessList() {
         if (result.can_share && entry.role !== 'creator' && !isYou) {
             const opts = ['reader', 'editor', 'admin']
                 .filter(r => {
-                    // admin actors cannot assign admin
                     if (_role === 'admin' && r === 'admin') return false;
                     return true;
                 })
-                .map(r => `< option value = "${r}"${r === entry.role ? ' selected' : ''}> ${r}</option > `)
+                .map(r => `<option value = "${r}"${r === entry.role ? ' selected' : ''}> ${r}</option> `)
                 .join('');
             rolePicker = `
-        < select class="role_select_inline"
-    onchange = "changeUserRole('${entry.username}', this.value, this)" >
+        <select class="role_select_inline"
+    onchange = "changeUserRole('${entry.username}', this.value, this)">
         ${opts}
-                </select > `;
+                </select> `;
         }
 
-        // Revoke button
+
         const revokeBtn = entry.can_revoke
-            ? `< button class="revoke_btn" onclick = "revokeAccess('${entry.username}')" > Remove</button > `
+            ? `<button class="revoke_btn" onclick = "revokeAccess('${entry.username}')"> Remove</button > `
             : '';
 
-        return `< li class="access_list_item" >
+        return `<li class="access_list_item">
         <span>${entry.username}${youTag}</span>
             ${roleBadge}
             ${rolePicker}
             ${revokeBtn}
-        </li > `;
+        </li> `;
     }).join('');
 }
 async function revokeAccess(username) {
@@ -804,8 +803,21 @@ render();
 var id = document.getElementById("drawflow");
 const editor = new Drawflow(id);
 editor.reroute = true;
+editor.zoom_max = 2;
+editor.zoom_min = 0.2;
+editor.zoom_value = 0.1;
+editor.draggable_inputs = false;
 editor.start();
 editor.editor_mode = 'edit';
+
+document.getElementById('drawflow').addEventListener('wheel', function (e) {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+        editor.zoom_in();
+    } else {
+        editor.zoom_out();
+    }}, 
+    { passive: false });
 
 const questionTemplate = `
     <div class="question-node">
@@ -987,14 +999,13 @@ function renumberAnswers(nodeEl) {
     });
 }
 
-//TODO REVIEW THIS FUNCTION
 function computeAutoLayout(allQuestions) {
     const idToQ = {};
     allQuestions.forEach(q => idToQ[q.id] = q);
 
-    
-    const outgoing = {};   
-    const incoming = {};   
+
+    const outgoing = {};
+    const incoming = {};
     allQuestions.forEach(q => { outgoing[q.id] = []; incoming[q.id] = []; });
 
     allQuestions.forEach(q => {
@@ -1006,14 +1017,14 @@ function computeAutoLayout(allQuestions) {
         });
     });
 
-    
+
     const layer = {};
     const roots = allQuestions.filter(q => incoming[q.id].length === 0).map(q => q.id);
     const startNodes = roots.length ? roots : [allQuestions[0]?.id].filter(Boolean);
 
     startNodes.forEach(id => layer[id] = 0);
 
-    
+
     let changed = true;
     let iterations = 0;
     const maxIterations = allQuestions.length + 5;
@@ -1025,7 +1036,7 @@ function computeAutoLayout(allQuestions) {
             outgoing[q.id].forEach(targetId => {
                 const candidate = layer[q.id] + 1;
                 if (layer[targetId] === undefined || candidate > layer[targetId]) {
-            
+
                     if (candidate <= allQuestions.length) {
                         layer[targetId] = candidate;
                         changed = true;
@@ -1035,19 +1046,19 @@ function computeAutoLayout(allQuestions) {
         });
     }
 
-    
+
     allQuestions.forEach(q => { if (layer[q.id] === undefined) layer[q.id] = 0; });
 
-    
+
     const layers = {};
     allQuestions.forEach((q, i) => {
         const l = layer[q.id];
-        if (!layers[l]) 
+        if (!layers[l])
             layers[l] = [];
         layers[l].push(q.id);
     });
 
-    
+
     const positions = {};
     const X_SPACING = 500;
     const Y_SPACING = 280;
@@ -1063,12 +1074,12 @@ function computeAutoLayout(allQuestions) {
             ids = ids.slice().sort((a, b) => {
                 const avgY = id => {
                     const sources = incoming[id];
-                    if (!sources.length) 
+                    if (!sources.length)
                         return Infinity;
                     const ys = sources
                         .filter(s => positions[s] !== undefined)
                         .map(s => positions[s].y);
-                    if (!ys.length) 
+                    if (!ys.length)
                         return Infinity;
                     return ys.reduce((sum, v) => sum + v, 0) / ys.length;
                 };
@@ -1084,7 +1095,7 @@ function computeAutoLayout(allQuestions) {
         });
     });
 
-    return positions; 
+    return positions;
 }
 
 function loadQuizIntoDrawflow() {
