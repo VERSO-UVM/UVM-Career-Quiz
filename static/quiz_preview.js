@@ -160,6 +160,7 @@ function renderQuestionPage(page) {
 function formatCompletedQuizData(){
 
     // TODO: Have it store the Username of the person taking the quiz
+    
 
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
     const questionIdIndex = 0;
@@ -168,28 +169,29 @@ function formatCompletedQuizData(){
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
-        quizTitle: quiz.title,
+        //quizTitle: quiz.title,
+        userID: 'TEST_ID',
         quizID: quiz.id,
         quizCategories: []
     };
 
-    // Loop though all category types and load the name and id of each 
-        // Load question text and ids 
+    // Loop though all category types and load id of each 
+        // Load question ids 
             // Load answer text and id the user selected
     for (const cat of quiz.categories){
 
         // Load current category name and ID
         const category = {
-            name: cat.name,  
+            //name: cat.name,  
             id: cat.id,
             questions: [] 
         };
         // Load Questions into the category
         for (const ques of cat.items){
             const question = {
-                text: ques.text,
+                //text: ques.text,
                 id: ques.id,
-                type: ques.type,
+                //type: ques.type,
                 UserAnswer: []
             };
 
@@ -201,7 +203,7 @@ function formatCompletedQuizData(){
                     if(ques.id === response[questionIdIndex]){
                         userAnswer = {
                             text: response[textResponseIndex],
-                            id: Math.random().toString(36).slice(2, 9)
+                            //id: Math.random().toString(36).slice(2, 9)
                         };
                         break;
                     }
