@@ -18,7 +18,7 @@ function buildPages(quiz) {
 }
 
 /**
- * Update the footer each time a question is answered, is reponsible for the bar filling at the bottom 
+ * Update the footer each time a question is answered, is responsible for the bar filling at the bottom 
  * Allow the user to have a sense of how many question there are instead of trudging onward without any idea of what is awaiting them
  */
 function updateFooter() {
@@ -159,9 +159,8 @@ function renderQuestionPage(page) {
  */
 function formatCompletedQuizData(){
 
-    // TODO: Have it store the Username of the person taking the quiz
+    // TODO: Have it store the UserID of the person taking the quiz
     
-
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
     const questionIdIndex = 0;
     const optionIdIndex = 1;
@@ -169,7 +168,6 @@ function formatCompletedQuizData(){
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
-        //quizTitle: quiz.title,
         userID: 'TEST_ID',
         quizID: quiz.id,
         quizCategories: []
@@ -182,14 +180,12 @@ function formatCompletedQuizData(){
 
         // Load current category name and ID
         const category = {
-            //name: cat.name,  
             id: cat.id,
             questions: [] 
         };
         // Load Questions into the category
         for (const ques of cat.items){
             const question = {
-                //text: ques.text,
                 id: ques.id,
                 //type: ques.type,
                 UserAnswer: []
@@ -236,6 +232,7 @@ function formatCompletedQuizData(){
     return usersQuizResponseData;
 }
 
+
 /**
  * Called at the end of the survey to indicate that it's done
  * @returns the page at the end of the survey
@@ -249,9 +246,7 @@ function renderSummary() {
           <code>${JSON.stringify(testData, null, 1)}</code>
         </pre>
     </div>
-    `;
-
-    
+    `; 
 }
 
 /**
