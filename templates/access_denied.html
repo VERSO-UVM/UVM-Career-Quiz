@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Please Log In</title>
+    <link rel="icon" href="/static/asset/favicon/favicon.ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>
+            Access Denied
+        </h1>
+    </header>
+    <main>
+        <div id="choice">
+            <p class="status_message">
+                {{ reason or "You need to be logged in to view this page." }}
+            </p>
+        </div>
+        <div id="choice">
+            <a href="{{ url_for('quiz_login') }}"><button>Log in</button></a>
+            <a href="{{ url_for('register') }}"><button>I do not have an account yet</button></a>
+        </div>
+    </main>
+</body>
+
+</html>

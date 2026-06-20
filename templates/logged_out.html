@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logged Out</title>
+    <link rel="icon" href="/static/asset/favicon/favicon.ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+ 
+<body>
+    <header>
+        <h1>
+            Logged Out
+        </h1>
+    </header>
+    <main>
+        <p class="logged_out_message">You have been logged out successfully.</p>
+        <div id="choice">
+            <a href="{{ url_for('quiz_login') }}"><button>Log back in</button></a>
+            <a href="{{ url_for('login_page') }}"><button>Back to start</button></a>
+        </div>
+    </main>
+</body>
+ 
+</html>
+ 

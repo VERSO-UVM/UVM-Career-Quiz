@@ -19,11 +19,14 @@ def get_role(quiz_id):
 #Simple page, allow the user to choose between login in and registering. Set all session item to none in order to "Reset" the user and log them out
 @app.route("/")
 def login_page():
-    session['user_id'] = None
-    session['username'] = None 
-    session['email'] = None
     return render_template("login_page.html")
 
+@app.route("/logout")
+def logout():
+    session['user_id'] = None
+    session['username'] = None
+    session['email'] = None
+    return render_template("logged_out.html")
 
 #Log in a user, call functions from the log_in file. 
 #Might want to implement the option to log in with email at one point
@@ -64,7 +67,6 @@ def register():
     return render_template("register.html")
 
 
-
 # Allow the user to create and make modification to quizzes.
 @app.route("/quiz_builder/<quiz>", methods=["GET", "POST"])
 def quiz_builder(quiz):
@@ -86,7 +88,7 @@ def quiz_builder(quiz):
             error = "So far this is just a way to bypass the problem of creating new quiz." 
     
         return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
-    return redirect("/")
+    return require_login("You need to log in to access the quiz builder.")
 
 #Button on the quiz builder page, allow a user to save a quiz in our server.
 @app.route('/save_quiz', methods=['POST'])
@@ -118,7 +120,7 @@ def save_quiz():
         db.save_quiz_in_the_db(quiz["id"], quiz["title"], session["user_id"])
         return jsonify({"success": True, "id": quiz["id"], "last_modified": quiz["last_modified"]})
     
-    return redirect("/")
+    return require_login("You need to log in to save a quiz.")
 
 
 
@@ -135,8 +137,7 @@ def quiz_selection():
         for q in quiz:
             name.append(db.find_name_with_id(q))
         return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)
-    else : 
-        return redirect("/")
+    return require_login("You need to log in to see your quizzes.")
 
 @app.route("/quiz_preview/<quiz>")
 def quiz_preview(quiz):
@@ -148,8 +149,7 @@ def quiz_preview(quiz):
             return render_template("quiz_preview.html", quiz = quiz_)
         else:
             redirect("/quiz_selection")
-    else : 
-        return redirect("/")
+    return require_login("You need to log in to preview a quiz.")
 
 @app.route("/available_quizzes", methods=['GET','POST'])
 def show_available_quizzes():
@@ -166,8 +166,7 @@ def show_available_quizzes():
             completed_quizzes = []
 
         return render_template("available_quizzes.html", assigned_quizzes=assigned_quizzes, completed_quizzes=completed_quizzes)
-    else:
-        return redirect("/")
+    return require_login("You need to log in see the quizzes available to you.")
 
 
 @app.route("/quiz_share", methods=['GET','POST'])
@@ -226,8 +225,7 @@ def quiz_share():
         if error:
             return jsonify({"error": f"A problem occured when trying to share your quiz! <br> {error}."})
         return jsonify({"success": f"Quiz successfully shared with {username}!"})
-    else: 
-        return redirect("/")
+    return require_login("You need to log in to share a quiz.")
 
 
 
@@ -255,7 +253,7 @@ def assign_quiz():
         # Assign as reader so the user can take the quiz
         db.share_quiz(target_id, quiz_id, db.ROLE_READER)
         return jsonify({"success": f"Quiz assigned to {username}."})
-    return redirect("/")
+    return require_login("You need to log in to assign a quiz.")
 
 
 @app.route("/quiz_update_role", methods=["POST"])
@@ -287,7 +285,7 @@ def quiz_update_role():
             return jsonify({"error": str(e)})
     
         return jsonify({"success": f"Role updated to {new_role} for {username}."})
-    redirect("/")
+    return require_login("You need to log in to update the role of a user.")
 
 @app.route('/quiz_revoke', methods=['POST'])
 def quiz_revoke():
@@ -308,7 +306,7 @@ def quiz_revoke():
         
         db.remove_access(target_id, quiz_id)
         return jsonify({"success": f"Access removed for {username}."})
-    return redirect("/")
+    return require_login("You need to log in to revoke a user's access to a quiz.")
 
 @app.route('/go_back')
 def go_back():
@@ -333,6 +331,8 @@ def quiz_delete():
             return jsonify({"redirect": url_for('quiz_selection')})
         else: 
             return jsonify({"error" : "A problem happened while trying to delete your quiz"})
-    redirect("/")
+    return require_login("You need to log in to delete a quiz.")
 
 
+def require_login(reason=None):
+    return render_template("access_denied.html", reason=reason)
