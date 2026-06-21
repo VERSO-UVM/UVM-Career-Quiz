@@ -26,6 +26,13 @@ function getQuizInfo() {
     quiz.desc = document.getElementById('quiz-desc').value;
 }
 
+new Sortable(document.getElementById('category'), {
+    animation: 150,
+    handle: '.category_item',
+    onEnd: function (evt) {
+        const [moved] = quiz.categories.splice(evt.oldIndex, 1);
+        quiz.categories.splice(evt.newIndex, 0, moved);
+        markDirty();}});
 
 /**
  * Used in conjunction with a button in the html, create a category upon which you can add question. The category is added to the quiz dict\
@@ -173,6 +180,7 @@ function changeQuestionText(cat_Id, q_Id, new_Text) {
     markDirty()
 }
 
+let questionSortable = null;
 /**
  * Render a specific question
  * @param {*} cat_Id cat_Id the id of the category, of the question, that we are rendering
@@ -184,12 +192,15 @@ function renderQuestions(cat_Id) {
         return;
 
     const container = document.getElementById('questions_list');
-    if (!category.items.length) {
+if (!category.items.length) {
         container.innerHTML = `<p class="no_questions">No questions yet. Add one below.</p>`;
+        if (questionSortable) {
+            questionSortable.destroy();
+            questionSortable = null;
+        }
         return;
     }
 
-    //add the question proper to the inner html, everything before is setting it up
     container.innerHTML = category.items.map((q, index) => `
             <div class="question_item${active_question_Id === q.id ? ' active' : ''}" data-id="${q.id}" onclick="openAnswerPanel('${cat_Id}', '${q.id}')">
             <span class="question_number">Q${index + 1}</span>
@@ -203,6 +214,20 @@ function renderQuestions(cat_Id) {
             <button class="remove_question" onclick="event.stopPropagation(); removeQuestion('${cat_Id}', '${q.id}')">✕</button>
         </div>
     `).join('');
+    if (questionSortable) {
+        questionSortable.destroy();
+    }
+    questionSortable = new Sortable(container, {
+        animation: 150,
+        handle: '.question_number',
+        onEnd: function (evt) {
+            if (evt.oldIndex === evt.newIndex) return;
+            const [moved] = category.items.splice(evt.oldIndex, 1);
+            category.items.splice(evt.newIndex, 0, moved);
+            renderQuestions(cat_Id); 
+            markDirty();
+        }
+    });
 }
 
 
