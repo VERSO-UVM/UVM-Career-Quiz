@@ -177,32 +177,53 @@ def _json_data_convert(json_string: str):
                     answers.append((answer["id"], "NULL_ID", "IDX_ERR"))
             except KeyError:
                 answers.append(("NULL_ID", "KEY_ERR", answer["UserAnswer"][0]["text"]))
-                continue
-    
-        len_categories = len(questions)
-        
-        quiz_categories= [3]
-        mcq= []
-        slider= []
-        text_answer= []
-        answer_list= questions
-        len_quiz= len(answer_list)
+                continue    
+        len_quiz= len(questions)
 
-        for answer in answers:
-            print(answer)
-        print(len(answers))
-        return (len_categories, answers)
+        return (user_id, quiz_id, len_quiz, answers)
 
 
 
 
 
-def _incriment_quiz_ctr(self):
-    pass
-def _move_quiz_id_todo_cmp(self):
-    pass
-def _append_ansrewers(self):
-    pass
+def _incriment_quiz_ctr(u_id: str):
+    conn, cur = connecting_to_sql()
+    query = """UPDATE USER_RESPONSES SET num_completed_quizzes += 1 WHERE u_ID = ?"""
+    cur.execute(query, (u_id,))
+    conn.commit()
+    conn.close()
+
+def _move_quiz_id_todo_cmp(u_id):
+    conn, cur = connecting_to_sql()
+    query = """SELECT quizzes_to_do FROM USER_RESPONSES WHERE u_ID = ?"""
+    #TODO: more
+    cur.execute(query, (u_id,))
+    todo = cur.fetchone()
+    todo = return_from_serial(todo)
+    query = """SELECT completed_quizzes FROM USER_RESPONSE WHERE u_ID = ?"""
+    cmp = cur.execute(query, (u_id,))
+    cmp = return_from_serial(cmp)
+    for i in range(len(cmp)):
+        for j in range(len(todo)):
+            if todo[j][0] == cmp[i][0]:
+                complete = todo[j].pop()
+                cmp.append(complete)
+    todo = serialize(todo)
+    cmp = serialize(cmp)
+    cur.execute("UPDATE USER_RESPONSE SET quizzes_to_do = ?, completed_quizzes = ? WHERE u_ID = ?", (todo, cmp, u_id))
+    conn.commit()
+    conn.close()
+def _append_answers(u_id, answer_list):
+    conn,cur = connecting_to_sql()
+    query = """SELECT user_answers FROM USER_RESPONSE WHERE u_ID = ?"""
+    cur.execute(query, (u_id))
+    u_ans = cur.fetchone()
+    u_ans = return_from_serial(u_ans)
+    updated_ans = u_ans.append(answer_list)
+    updated_ans = serialize(updated_ans)
+    cur.execute("UPDATE USER_RESPONSE SET user_answers = ? WHERE u_ID = ?", (updated_ans, u_id))
+    conn.commit()
+    conn.close()
 
 def quiz_complete():
         pass
@@ -227,14 +248,6 @@ def lookup_kw_arg_on_user_set():
     
 
 if __name__ == "__main__":
-    #print(_json_data_convert(TEST_STRING))
-    serial_data = serialize(_json_data_convert(TEST_STRING)[1])
-    std_data = return_from_serial(serial_data)
-    print(serial_data)
-    print(std_data)
-    
+    gerald = _json_data_convert(TEST_STRING)
+    print((gerald))
 
-
-        
-
-    

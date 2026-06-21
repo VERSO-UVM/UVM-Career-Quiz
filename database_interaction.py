@@ -24,6 +24,8 @@ def can_edit(role):
     return role in (ROLE_CREATOR, ROLE_ADMIN, ROLE_EDITOR)
 def can_share(role): 
     return role in (ROLE_CREATOR, ROLE_ADMIN)
+def can_assign(role):
+    return role in (ROLE_CREATOR, ROLE_ADMIN, ROLE_EDITOR)
 def can_delete(role): 
     return role == ROLE_CREATOR
 def can_revoke(role): 
@@ -48,7 +50,10 @@ def access_creation(cur):
     cur.execute('''DROP TABLE IF EXISTS ACESS''')
     cur.execute('''DROP TABLE IF EXISTS ACCESS''')
     cur.execute('''CREATE TABLE ACCESS(u_ID TEXT NOT NULL, q_id TEXT NOT NULL, role TEXT NOT NULL)''')
-
+#We have to create a table that stores quiz responses on quiz id's for users in USERS
+def user_responses(cur):
+    cur.execute('''DROP TABLE IF EXISTS USER_RESPONSES''')
+    cur.execute('''CREATE TABLE  USER_RESPONSES(u_ID TEXT NOT NULL UNIQUE, num_completed_quizzes int ,quizzes_assigned TEXT, quizzes_completed TEXT, quiz_response_answers TEXT''')
 
 #Find the name of a quiz with it's ID
 def find_name_with_id(q_id):
