@@ -2,6 +2,7 @@ let pages = [];
 let cur = 0;
 let responses = {};
 let history = [];
+let CURRENT_USER_ID = null;
 
 /**
  * @param {*} quiz the quiz that is being previewed 
@@ -177,22 +178,39 @@ function renderQuestionPage(page) {
 }
 
 /**
+ * Gets the userID from the current session which will be stored along with the users completed quiz data 
+ */
+async function getUserID(){
+    try {
+        const response = await fetch('/get-user-id');
+        const data = await response.json();
+        
+        CURRENT_USER_ID = data.userId; 
+        console.log("User ID set to:", CURRENT_USER_ID);
+    } catch (error) {
+        CURRENT_USER_ID = 'NO User ID Found'; 
+        console.error("Error getting user ID:", error);
+    }
+}
+
+/**
  * Takes in completed quiz and collects and formats the answers the user gave to correspond the the question and category.
  * @returns usersQuizResponseData this is the users answers to the questions in JSON format.
  */
 function formatCompletedQuizData(){
 
     // TODO: Have it store the UserID of the person taking the quiz
-    
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
     const questionIdIndex = 0;
     const optionIdIndex = 1;
     const textResponseIndex = 1;
+    
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
-        userID: 'TEST_ID', // <--- Temporary id
+        userID: CURRENT_USER_ID, // <--- Temporary id
         quizID: quiz.id,
+        timeStamp: new Date().toUTCString(),
         quizCategories: []
     };
 
@@ -261,6 +279,7 @@ function formatCompletedQuizData(){
  * @returns the page at the end of the survey
  */
 function renderSummary() {
+    
     testData = formatCompletedQuizData();
     return `
     <div class="summary-wrap">
@@ -426,4 +445,5 @@ function esc(s) {
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 //will be called once every time we call this file.
+getUserID();
 loadQuiz(quiz);
