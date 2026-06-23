@@ -32,7 +32,9 @@ new Sortable(document.getElementById('category'), {
     onEnd: function (evt) {
         const [moved] = quiz.categories.splice(evt.oldIndex, 1);
         quiz.categories.splice(evt.newIndex, 0, moved);
-        markDirty();}});
+        markDirty();
+    }
+});
 
 /**
  * Used in conjunction with a button in the html, create a category upon which you can add question. The category is added to the quiz dict\
@@ -192,7 +194,7 @@ function renderQuestions(cat_Id) {
         return;
 
     const container = document.getElementById('questions_list');
-if (!category.items.length) {
+    if (!category.items.length) {
         container.innerHTML = `<p class="no_questions">No questions yet. Add one below.</p>`;
         if (questionSortable) {
             questionSortable.destroy();
@@ -224,7 +226,7 @@ if (!category.items.length) {
             if (evt.oldIndex === evt.newIndex) return;
             const [moved] = category.items.splice(evt.oldIndex, 1);
             category.items.splice(evt.newIndex, 0, moved);
-            renderQuestions(cat_Id); 
+            renderQuestions(cat_Id);
             markDirty();
         }
     });
@@ -537,13 +539,13 @@ function openShare() {
     loadAccessList();
 }
 
-let drawflowSnapshot = null;
-let drawflowDirty = false;
-
 function openBranching() {
     document.getElementById('branching_overlay').style.display = 'flex';
     // snapshot quiz state before any drawflow edits
     drawflowSnapshot = JSON.parse(JSON.stringify(quiz));
+
+    deletedQuestionIds.clear();
+    Object.keys(nodeQuestionMap).forEach(i => delete nodeQuestionMap[i]);
 
     const hasNodes = Object.keys(editor.export().drawflow.Home.data).length > 0;
     if (!hasNodes) {
@@ -556,6 +558,9 @@ function closeBranching() {
         if (!confirm('Are you sure you want to close? Unsaved changes will be lost.')) return;
         quiz.categories = drawflowSnapshot.categories;
         drawflowSnapshot = null;
+
+        deletedQuestionIds.clear();
+        Object.keys(nodeQuestionMap).forEach(i => delete nodeQuestionMap[i]);
     }
     document.getElementById('branching_overlay').style.display = 'none';
 }
@@ -628,18 +633,37 @@ function saveDrawflowChanges() {
             if (bodyInput) question.result_body = bodyInput.value;
         }
     }
+    if (deletedQuestionIds.size > 0) {
+        quiz.categories.forEach(cat => {
+            cat.items = cat.items.filter(q => !deletedQuestionIds.has(q.id));
+        });
+        quiz.categories.forEach(cat => {
+            cat.items.forEach(q => {
+                (q.answer || []).forEach(a => {
+                    if (deletedQuestionIds.has(a.leads_to)) a.leads_to = null;
+                });
+            });
+        });
+        deletedQuestionIds.clear();
+    }
+
     drawflowSnapshot = null;
     markDirty();
 
+    // refresh regular editor
+    render();
+
     if (active_question_Id && active_category_Id) {
         renderAnswerPanel(active_category_Id, active_question_Id);
+    } else {
+        closeAnswerPanel();
     }
-    renderCategory();
     if (active_category_Id) {
         renderQuestions(active_category_Id);
     }
 
     document.getElementById('branching_overlay').style.display = 'none';
+    saveQuiz();
 }
 
 window.onclick = function (event) {
@@ -834,6 +858,10 @@ editor.zoom_value = 0.1;
 editor.draggable_inputs = false;
 editor.start();
 editor.editor_mode = 'edit';
+let drawflowSnapshot = null;
+let drawflowDirty = false;
+const deletedQuestionIds = new Set();
+const nodeQuestionMap = {};
 
 document.getElementById('drawflow').addEventListener('wheel', function (e) {
     e.preventDefault();
@@ -841,7 +869,8 @@ document.getElementById('drawflow').addEventListener('wheel', function (e) {
         editor.zoom_in();
     } else {
         editor.zoom_out();
-    }}, 
+    }
+},
     { passive: false });
 
 const questionTemplate = `
@@ -1017,6 +1046,28 @@ editor.on("connectionRemoved", function (info) {
         indicators[answerIndex].textContent = "";
 });
 
+editor.on('nodeRemoved', function (nodeId) {
+    const question_id = nodeQuestionMap[nodeId];
+    if (question_id) {
+        // Immediately purge from data model
+        quiz.categories.forEach(cat => {
+            cat.items = cat.items.filter(q => q.id !== question_id);
+        });
+        // Null out any leads_to references pointing to the deleted question
+        quiz.categories.forEach(cat => {
+            cat.items.forEach(q => {
+                (q.answer || []).forEach(a => {
+                    if (a.leads_to === question_id) a.leads_to = null;
+                });
+            });
+        });
+
+        deletedQuestionIds.add(question_id); // keep as safety net
+        delete nodeQuestionMap[nodeId];
+        markDirty();
+    }
+});
+
 function renumberAnswers(nodeEl) {
     const answers = nodeEl.querySelectorAll('.answer input');
     answers.forEach((input, i) => {
@@ -1085,7 +1136,7 @@ function computeAutoLayout(allQuestions) {
 
 
     const positions = {};
-    const X_SPACING = 500;
+    const X_SPACING = 400;
     const Y_SPACING = 280;
     const X_OFFSET = 50;
     const Y_OFFSET = 50;
@@ -1139,16 +1190,18 @@ function loadQuizIntoDrawflow() {
         if (q.type == 'result') {
             const template = `
                 <div class="end-node">
-                    <input class="end-title drawflow-input" type="text" placeholder="Result title" value="${q.text || ''}" oninput="updateResultText(this)"/>
-                    <textarea class="end-body drawflow-input" placeholder="Result body (optional)" oninput="updateResultBody(this)">${q.result_body || ''}</textarea>
+                    <input class="end-title drawflow-input" type="text" placeholder="Title" value="${q.text || ''}" oninput="updateResultText(this)"/>
+                    <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)">${q.result_body || ''}</textarea>
                  </div>`;
             nodeId = editor.addNode('result', 1, 1, x, y, 'result', { question_id: q.id }, template);
+            nodeQuestionMap[nodeId] = q.id;
         } else if (q.type == 'text') {
             const template = `
             <div class="freeresponse-node">
                 <input class="fr-title drawflow-input" type="text" placeholder="Question text" value="${q.text || ''}" oninput="updateFreeResponseText(this)"/>
             </div>`;
             nodeId = editor.addNode('freeresponse', 1, 1, x, y, 'freeresponse', { question_id: q.id }, template);
+            nodeQuestionMap[nodeId] = q.id;
         } else {
             const answers_html = q.answer.map((a, j) => `
                 <div class="answer" data-output="output_${j + 1}">
@@ -1167,6 +1220,7 @@ function loadQuizIntoDrawflow() {
 
             const numOutputs = q.answer.length;
             nodeId = editor.addNode('question', 1, numOutputs, x, y, 'question', { question_id: q.id }, template);
+            nodeQuestionMap[nodeId] = q.id;
         }
 
         nodeIds.push(nodeId);
@@ -1203,6 +1257,7 @@ editor.on('nodeCreated', function (nodeId) {
         };
 
         editor.drawflow.drawflow.Home.data[nodeId].data.question_id = q_id;
+        nodeQuestionMap[nodeId] = q_id;
         quiz.categories[0].items.push(newQuestion);
         return;
     }
@@ -1214,6 +1269,7 @@ editor.on('nodeCreated', function (nodeId) {
             id: q_id, text: '', type: 'text', answer: [{ id: uid(), text: '', leads_to: null }]
         };
         editor.drawflow.drawflow.Home.data[nodeId].data.question_id = q_id;
+        nodeQuestionMap[nodeId] = q_id;
         quiz.categories[0].items.push(newQuestion);
         return;
     }
@@ -1231,6 +1287,7 @@ editor.on('nodeCreated', function (nodeId) {
     };
 
     editor.drawflow.drawflow.Home.data[nodeId].data.question_id = q_id;
+    nodeQuestionMap[nodeId] = q_id;
     quiz.categories[0].items.push(newQuestion);
 
     const answers_html = newQuestion.answer.map((a, j) => `

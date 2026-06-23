@@ -1,8 +1,9 @@
-.drawflow-input, .end-body {
-    all: revert;
-    color: black;
-    font-family: 'DM Serif Display', Georgia, serif;
-    
+.drawflow-input,
+.end-body {
+  all: revert;
+  color: black;
+  font-family: 'DM Serif Display', Georgia, serif;
+
 }
 
 
@@ -15,7 +16,7 @@
 
 .end-body {
   height: 20px;
-  padding: 8px!important;
+  padding: 8px !important;
   min-height: 40px;
   max-width: calc(100% - 30px + 12px);
   min-width: calc(100% - 30px + 12px);
@@ -23,60 +24,64 @@
 }
 
 #drawflow button {
-    all: revert;
+  all: revert;
 }
 
-#branching-section{
-    display: flex;
-    margin:0;
-    font-family: 'DM Serif Display', Georgia, serif;
+#branching-section {
+  display: flex;
+  margin: 0;
+  font-family: 'DM Serif Display', Georgia, serif;
+  position: relative;
 }
 
 
 
-
-#sidebar {
-    padding: 14px;
-    margin:0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: space-between;
-
-}
 
 #branching-section p {
-    overflow-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 #nodes {
-    display:flex;
-    flex-direction: column;
-    gap:10px;
+  position: absolute;
+  display:flex;
+  left: 10px;
+  top: 10px;
+  flex-direction: column;
+  gap:10px;
+  z-index: 100;
 }
 
 .node-type {
-    background-color: #164734;
-    padding: 10px 16px;
-    align-content: center;
-    
-    color: white;
-    border-radius: 4px;
-    
+  background-color: #164734;
+  padding: 8px 14px;
+  align-content: center;
+  font-size: small;
+
+  color: white;
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #ffffff0e;
+}
+.node-type:hover {
+  background-color: #215f47;
+  transition: .1s;
 }
 
 .end-node {
-  display:flex;
+  display: flex;
   flex-direction: column;
-  gap:16px;
+  gap: 16px;
 }
 
-.question-title, .end-title, .fr-title {
+.question-title,
+.end-title,
+.fr-title {
   font-weight: bold;
-  color:#164734;
+  color: #164734;
   border-style: solid;
   border-radius: 4px;
-  border-color:#1647345a;
+  border-color: #1647345a;
   border-width: 2px;
   font-size: larger;
   padding: 4px 8px;
@@ -87,16 +92,19 @@
 .drawflow .question .outputs {
   transform: translateY(8.5px)
 }
+
 .drawflow .question .output {
   position: relative;
   margin-bottom: 8px;
 }
+
 .question-node {
-    display:flex;
-    flex-direction: column;
-    gap:16px;
-    justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: space-between;
 }
+
 
 
 
@@ -105,55 +113,86 @@
 
 
 }
+
 .drawflow .answers {
-    display:flex;
-    flex-direction: column;
-    gap:5px;
-    margin: 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 10px;
 }
 
 
 .drawflow .answer {
-    display: flex;
-    gap:10px;
-    justify-content: space-between;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
 }
-.remove-answer {
-    flex-shrink: 0; /* stops button from being pushed out */
+
+.drawflow .remove-answer {
+  flex-shrink: 0;
 }
+
+#drawflow-save {
+  position:absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #1647348a;
+  color:#164734;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: bold;
+  background-color: white;
+}
+
+#drawflow-save:hover {
+  border-color:#164734;
+  background-color: #164734;
+  color: white;
+  transition: .1s;
+}
+
 
 
 
 .answer input {
-    flex:1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 #drawflow {
-    flex:1;
-    background-color: rgb(225, 225, 225);
-    margin:0;
+  flex: 1;
+  background-color: rgb(225, 225, 225);
+  margin: 0;
+  border-radius: 6px;
+  border-style: solid;
+  border-width: 2px;
+  border-color:#1647345a;
 }
+
 .drawflow .drawflow-node {
-    width: 250px;
-    max-width: 400px;
+  width: 250px;
+  max-width: 400px;
 }
 
 
 .drawflow .drawflow-node .inputs .input.inputConnected {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 12px 0 12px 12px;
-    border-color: transparent transparent transparent rgba(71, 179, 135, 1);
-    background: transparent;
-    border-radius: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 12px 0 12px 12px;
+  border-color: transparent transparent transparent rgba(71, 179, 135, 1);
+  background: transparent;
+  border-radius: 0;
 }
 
 
 :root {
   --dfBackgroundColor: rgba(235, 235, 235, 1);
-  --dfBackgroundSize: 34px;
+  --dfBackgroundSize: 20px;
   --dfBackgroundImage: linear-gradient(to right, rgba(255, 255, 255, 1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 1) 1px, transparent 1px);
 
   --dfNodeType: flex;
@@ -262,7 +301,7 @@
   display: var(--dfNodeType);
   background: var(--dfNodeBackgroundColor);
   color: var(--dfNodeTextColor);
-  border: var(--dfNodeBorderSize)  solid var(--dfNodeBorderColor);
+  border: var(--dfNodeBorderSize) solid var(--dfNodeBorderColor);
   border-radius: var(--dfNodeBorderRadius);
   min-height: var(--dfNodeMinHeight);
   width: auto;
@@ -270,7 +309,7 @@
   padding-top: var(--dfNodePaddingTop);
   padding-bottom: var(--dfNodePaddingBottom);
   -webkit-box-shadow: var(--dfNodeBoxShadowHL) var(--dfNodeBoxShadowVL) var(--dfNodeBoxShadowBR) var(--dfNodeBoxShadowS) var(--dfNodeBoxShadowColor);
-  box-shadow:  var(--dfNodeBoxShadowHL) var(--dfNodeBoxShadowVL) var(--dfNodeBoxShadowBR) var(--dfNodeBoxShadowS) var(--dfNodeBoxShadowColor);
+  box-shadow: var(--dfNodeBoxShadowHL) var(--dfNodeBoxShadowVL) var(--dfNodeBoxShadowBR) var(--dfNodeBoxShadowS) var(--dfNodeBoxShadowColor);
 }
 
 
@@ -278,25 +317,25 @@
 .drawflow .drawflow-node:hover {
   background: var(--dfNodeHoverBackgroundColor);
   color: var(--dfNodeHoverTextColor);
-  border: var(--dfNodeHoverBorderSize)  solid var(--dfNodeHoverBorderColor);
+  border: var(--dfNodeHoverBorderSize) solid var(--dfNodeHoverBorderColor);
   border-radius: var(--dfNodeHoverBorderRadius);
   -webkit-box-shadow: var(--dfNodeHoverBoxShadowHL) var(--dfNodeHoverBoxShadowVL) var(--dfNodeHoverBoxShadowBR) var(--dfNodeHoverBoxShadowS) var(--dfNodeHoverBoxShadowColor);
-  box-shadow:  var(--dfNodeHoverBoxShadowHL) var(--dfNodeHoverBoxShadowVL) var(--dfNodeHoverBoxShadowBR) var(--dfNodeHoverBoxShadowS) var(--dfNodeHoverBoxShadowColor);
+  box-shadow: var(--dfNodeHoverBoxShadowHL) var(--dfNodeHoverBoxShadowVL) var(--dfNodeHoverBoxShadowBR) var(--dfNodeHoverBoxShadowS) var(--dfNodeHoverBoxShadowColor);
 }
 
 .drawflow .drawflow-node.selected {
   background: var(--dfNodeSelectedBackgroundColor);
   color: var(--dfNodeSelectedTextColor);
-  border: var(--dfNodeSelectedBorderSize)  solid var(--dfNodeSelectedBorderColor);
+  border: var(--dfNodeSelectedBorderSize) solid var(--dfNodeSelectedBorderColor);
   border-radius: var(--dfNodeSelectedBorderRadius);
   -webkit-box-shadow: var(--dfNodeSelectedBoxShadowHL) var(--dfNodeSelectedBoxShadowVL) var(--dfNodeSelectedBoxShadowBR) var(--dfNodeSelectedBoxShadowS) var(--dfNodeSelectedBoxShadowColor);
-  box-shadow:  var(--dfNodeSelectedBoxShadowHL) var(--dfNodeSelectedBoxShadowVL) var(--dfNodeSelectedBoxShadowBR) var(--dfNodeSelectedBoxShadowS) var(--dfNodeSelectedBoxShadowColor);
+  box-shadow: var(--dfNodeSelectedBoxShadowHL) var(--dfNodeSelectedBoxShadowVL) var(--dfNodeSelectedBoxShadowBR) var(--dfNodeSelectedBoxShadowS) var(--dfNodeSelectedBoxShadowColor);
 }
 
 .drawflow .drawflow-node .input {
   left: var(--dfInputLeft);
   background: var(--dfInputBackgroundColor);
-  border: var(--dfInputBorderSize)  solid var(--dfInputBorderColor);
+  border: var(--dfInputBorderSize) solid var(--dfInputBorderColor);
   border-radius: var(--dfInputBorderRadius);
   height: var(--dfInputHeight);
   width: var(--dfInputWidth);
@@ -304,7 +343,7 @@
 
 .drawflow .drawflow-node .input:hover {
   background: var(--dfInputHoverBackgroundColor);
-  border: var(--dfInputHoverBorderSize)  solid var(--dfInputHoverBorderColor);
+  border: var(--dfInputHoverBorderSize) solid var(--dfInputHoverBorderColor);
   border-radius: var(--dfInputHoverBorderRadius);
 }
 
@@ -315,7 +354,7 @@
 .drawflow .drawflow-node .output {
   right: var(--dfOutputRight);
   background: var(--dfOutputBackgroundColor);
-  border: var(--dfOutputBorderSize)  solid var(--dfOutputBorderColor);
+  border: var(--dfOutputBorderSize) solid var(--dfOutputBorderColor);
   border-radius: var(--dfOutputBorderRadius);
   height: var(--dfOutputHeight);
   width: var(--dfOutputWidth);
@@ -323,7 +362,7 @@
 
 .drawflow .drawflow-node .output:hover {
   background: var(--dfOutputHoverBackgroundColor);
-  border: var(--dfOutputHoverBorderSize)  solid var(--dfOutputHoverBorderColor);
+  border: var(--dfOutputHoverBorderSize) solid var(--dfOutputHoverBorderColor);
   border-radius: var(--dfOutputHoverBorderRadius);
 }
 
