@@ -66,7 +66,7 @@ def find_name_with_id(q_id):
     if row : 
         return row[0][0]
     else :
-        return ""
+        return None
 
 #Find the user id of a user providing it's username. 
 def find_id_with_uname(username):
@@ -82,7 +82,7 @@ def find_id_with_uname(username):
     if row :
         return row[0]
     else :
-        return ""
+        return None
 
 #reverse of the above function
 def find_uname_with_id(u_id):
@@ -93,7 +93,7 @@ def find_uname_with_id(u_id):
     if row:
         return row[0]
     else:
-        return ""
+        return None
 
 #Share a quiz with another user
 def share_quiz(u_id, q_id, role):
@@ -118,7 +118,17 @@ def save_quiz_in_the_db(q_id, q_title, u_ID):
     conn.close()
 
 #return the role of a user for a specific uiz
-def get_role(u_id, q_id):
+def get_role(u_id : str, q_id : str) -> str | None:
+    """
+    Get the role of a user for a specific quiz.
+
+    Args:
+        u_id: the id of the user to get the role for
+        q_id: the id of the quiz to get the role for
+
+    Returns:
+        str | None: the role of the user, or None if the user does not have a role for this quiz.
+    """
     conn, cur = connecting_to_sql()
     cur.execute("SELECT role FROM ACCESS WHERE u_ID = ? AND q_ID = ?",(u_id, q_id))
     row = cur.fetchone()
@@ -126,7 +136,7 @@ def get_role(u_id, q_id):
     if row:
         return row[0] 
     else :
-        ""
+        None
 
 def update_role(u_id, q_id, new_role):
     conn,cur = connecting_to_sql()
@@ -151,7 +161,7 @@ def user_with_access(q_id):
     if row:   
         return row
     else: 
-        return ""
+        return None
 
 
 def quizzes_for_user(u_id):
@@ -177,7 +187,7 @@ def find_creator(q_id):
     if row :
         return row[0]
     else :
-        return ""
+        return None
 
 # Remove a user's access to a quiz
 def remove_access(u_id, q_id):
