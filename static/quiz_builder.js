@@ -1,7 +1,11 @@
 // class variable, alongside quiz (a dictionary), which is defined in quiz_builder.html
 let active_category_Id = null;
 let active_question_Id = null;
+
+//this variable should be marked true any single time a change happen to the quiz.
 var isDirty = false;
+
+// role of the user, it's fetched from app.py 
 const _role = (typeof USER_ROLE !== 'undefined') ? USER_ROLE : 'reader';
 
 /**
@@ -26,6 +30,9 @@ function getQuizInfo() {
     quiz.desc = document.getElementById('quiz-desc').value;
 }
 
+/**
+ * Not a function per se, allow for sorting the different category thanks to the sortableJS library. 
+ */
 new Sortable(document.getElementById('category'), {
     animation: 150,
     handle: '.category_item',
@@ -37,7 +44,7 @@ new Sortable(document.getElementById('category'), {
 });
 
 /**
- * Used in conjunction with a button in the html, create a category upon which you can add question. The category is added to the quiz dict\
+ * Used in conjunction with a button in the html, create a category upon which you can add question. The category is added to the quiz dict
  * @returns the return is here as a way to break out of the function
  */
 function addCategory() {
@@ -182,7 +189,9 @@ function changeQuestionText(cat_Id, q_Id, new_Text) {
     markDirty()
 }
 
+// variable used with the sortableJS library
 let questionSortable = null;
+
 /**
  * Render a specific question
  * @param {*} cat_Id cat_Id the id of the category, of the question, that we are rendering
@@ -216,6 +225,7 @@ function renderQuestions(cat_Id) {
             <button class="remove_question" onclick="event.stopPropagation(); removeQuestion('${cat_Id}', '${q.id}')">✕</button>
         </div>
     `).join('');
+
     if (questionSortable) {
         questionSortable.destroy();
     }
@@ -511,6 +521,14 @@ function renderAnswerPanel(cat_Id, q_Id) {
 
 }
 
+
+/**
+ * change a result
+ * @param {*} cat_Id the category that the question belong too
+ * @param {*} q_Id the question that we are changing 
+ * @param {*} new_text the new text of the result
+ * @returns espace the function in case of unexpected behavior
+ */
 function changeResultBody(cat_Id, q_Id, new_text) {
     const category = quiz.categories.find(b => b.id === cat_Id);
     if (!category) return;
@@ -532,13 +550,21 @@ function render() {
     renderCategory();
 }
 
-
-function openShare() {
-    document.getElementById('share_overlay').style.display = 'flex';
-    document.getElementById('share_message').style.display = 'none';
-    loadAccessList();
+/**
+ * Allow for a preview of the quiz. It need to be saved at least once.
+ */
+function previewQuiz() {
+    if (quiz.title && !window.location.href.includes("new_quiz"))
+        window.location.href = `/quiz_preview/${quiz.id}`;
+    else
+        alert("Please choose a title and save your quiz before trying to preview it")
 }
 
+//EVERYTHING FROM THIS COMMENT TO THE NEXT SUCH COMMENT IS RELATED TO OPENING AND CLOSING OF THE BRANCHING OVERLAY
+
+/**
+ * Function much the same as the share overlay (if a bit more complicated), open the branching overlay 
+ */
 function openBranching() {
     document.getElementById('branching_overlay').style.display = 'flex';
     // snapshot quiz state before any drawflow edits
@@ -553,134 +579,43 @@ function openBranching() {
     }
 }
 
+/**
+ * close the branching overlay, by flipping the css around, and closing the drawflow.
+ * @returns espace in case of unwanted behavior
+ */
 function closeBranching() {
-    if (drawflowSnapshot) {
-        if (!confirm('Are you sure you want to close? Unsaved changes will be lost.')) return;
+    if (drawflowSnapshot && drawflowDirty) {
+        if (!confirm('Are you sure you want to close? Unsaved changes will be lost.'))
+            return;
         quiz.categories = drawflowSnapshot.categories;
-        drawflowSnapshot = null;
-
         deletedQuestionIds.clear();
         Object.keys(nodeQuestionMap).forEach(i => delete nodeQuestionMap[i]);
     }
+    drawflowSnapshot = null;
+    drawflowDirty = false;
     document.getElementById('branching_overlay').style.display = 'none';
 }
 
+
+//EVERYTHING INVOLVING IN THE SHARE OVERLAY IS FROM HERE TO THE NEXT COMMENT SUCH AS THIS ONE
+
+/**
+ * Open the share overlay, useless by itself, it work by modifing the coresponding css. 
+ */
+function openShare() {
+    document.getElementById('share_overlay').style.display = 'flex';
+    document.getElementById('share_message').style.display = 'none';
+    loadAccessList();
+}
+
+
+/**
+ * Close the share overlay by flipping css value around
+ */
 function closeShare() {
     document.getElementById('share_overlay').style.display = 'none';
 }
 
-function openAssign() {
-    document.getElementById('assign_overlay').style.display = 'flex';
-    document.getElementById('assign_message').style.display = 'none';
-}
-
-function closeAssign() {
-    document.getElementById('assign_overlay').style.display = 'none';
-}
-
-async function submitAssign() {
-    if (quiz.title && !window.location.href.includes("new_quiz")) {
-        const username = document.getElementById('assign_username').value.trim();
-        const msg = document.getElementById('assign_message');
-        if (!username) {
-            msg.style.display = 'block';
-            msg.style.color = 'red';
-            msg.innerHTML = 'Please enter a username before submitting';
-            return;
-        }
-
-        const response = await fetch('/assign_quiz', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: username, quiz_id: quiz.id })
-        });
-        const result = await response.json();
-        msg.style.display = 'block';
-        msg.style.color = result.error ? 'red' : 'green';
-        msg.innerHTML = result.error || result.success;
-        if (!result.error) {
-            document.getElementById('assign_username').value = '';
-        }
-    }
-    else
-        alert("Please choose a title and save your quiz before trying to assign it")
-}
-
-function saveDrawflowChanges() {
-    // read every node's current DOM state and write to quiz
-    const allNodes = editor.export().drawflow.Home.data;
-
-    for (const nodeId in allNodes) {
-        const node = allNodes[nodeId];
-        const question = getQuizQuestion(nodeId);
-        if (!question) continue;
-
-        const nodeEl = document.querySelector(`#node-${nodeId} .drawflow_content_node`);
-        if (!nodeEl) continue;
-
-        if (node.name === 'question') {
-            const titleInput = nodeEl.querySelector('.question-title');
-            if (titleInput) question.text = titleInput.value;
-
-            const answerInputs = nodeEl.querySelectorAll('.answer input');
-            answerInputs.forEach((input, i) => {
-                if (question.answer[i]) question.answer[i].text = input.value;
-            });
-        } else if (node.name === 'result') {
-            const titleInput = nodeEl.querySelector('.end-title');
-            const bodyInput = nodeEl.querySelector('.end-body');
-            if (titleInput) question.text = titleInput.value;
-            if (bodyInput) question.result_body = bodyInput.value;
-        }
-    }
-    if (deletedQuestionIds.size > 0) {
-        quiz.categories.forEach(cat => {
-            cat.items = cat.items.filter(q => !deletedQuestionIds.has(q.id));
-        });
-        quiz.categories.forEach(cat => {
-            cat.items.forEach(q => {
-                (q.answer || []).forEach(a => {
-                    if (deletedQuestionIds.has(a.leads_to)) a.leads_to = null;
-                });
-            });
-        });
-        deletedQuestionIds.clear();
-    }
-
-    drawflowSnapshot = null;
-    markDirty();
-
-    // refresh regular editor
-    render();
-
-    if (active_question_Id && active_category_Id) {
-        renderAnswerPanel(active_category_Id, active_question_Id);
-    } else {
-        closeAnswerPanel();
-    }
-    if (active_category_Id) {
-        renderQuestions(active_category_Id);
-    }
-
-    document.getElementById('branching_overlay').style.display = 'none';
-    saveQuiz();
-}
-
-window.onclick = function (event) {
-    var overlay_share = document.getElementById('share_overlay');
-    var overlay_display = document.getElementById('branching_overlay')
-    if (event.target == overlay_share) {
-        overlay_share.style.display = 'none';
-    }
-    if (event.target == overlay_display) {
-        closeBranching();
-    }
-
-}
-document.getElementById('delete_overlay').addEventListener('click', function (e) {
-    if (e.target === this)
-        closeDelete();
-});
 /**
  * Submit the share request
  * @returns here to break in case someone doesnt choose a username
@@ -717,8 +652,9 @@ async function submitShare() {
     else
         alert("Please choose a title and save your quiz before trying to share it")
 }
+
 /**
- * Load from the backend the exact user who have access to this quiz
+ * Load from the backend the exact users who have access to this quiz
  */
 async function loadAccessList() {
     const list = document.getElementById('access_list');
@@ -751,7 +687,7 @@ async function loadAccessList() {
                 .join('');
             rolePicker = `
         <select class="role_select_inline"
-    onchange = "changeUserRole('${entry.username}', this.value, this)">
+    onchange = "changeUserRole('${entry.username}', this.value)">
         ${opts}
                 </select> `;
         }
@@ -769,6 +705,11 @@ async function loadAccessList() {
         </li> `;
     }).join('');
 }
+
+/**
+ * If the user revoking acess has the sufficient level of authorization, revoke the acess of the other user
+ * @param {*} username the username of the user who will not be allowed access anymore 
+ */
 async function revokeAccess(username) {
     const msg = document.getElementById('share_message');
     const response = await fetch('/quiz_revoke', {
@@ -784,7 +725,12 @@ async function revokeAccess(username) {
         loadAccessList();
 }
 
-async function changeUserRole(username, newRole, selectEl) {
+/**
+ * Change the role of a user (provided the present user has the corect permission)
+ * @param {*} username the username who's role will be changed 
+ * @param {*} newRole the new role of the user
+ */
+async function changeUserRole(username, newRole) {
     const msg = document.getElementById('share_message');
     const response = await fetch('/quiz_update_role', {
         method: 'POST',
@@ -795,27 +741,82 @@ async function changeUserRole(username, newRole, selectEl) {
     msg.style.display = 'block';
     msg.style.color = result.error ? 'red' : 'green';
     msg.innerHTML = result.error || result.success;
-    if (result.error && selectEl)
-        loadAccessList(); // revert picker on error
-}
-/**
- * Allow for a preview of the quiz. I did this instead of the simple url_for, as it allowed for easier verification that the quiz had been saved at least once.
- */
-function previewQuiz() {
-    if (quiz.title && !window.location.href.includes("new_quiz"))
-        window.location.href = `/quiz_preview/${quiz.id}`;
-    else
-        alert("Please choose a title and save your quiz before trying to preview it")
+    if (result.error )
+        loadAccessList();
 }
 
+
+// EVERYTHING INVOLVED IN THE ASSIGN OVERLAY IS FROM HERE TO THE NEXT COMMENT SUCH AS THIS ONE
+
+/**
+ * Open the assign overlay
+ */
+function openAssign() {
+    document.getElementById('assign_overlay').style.display = 'flex';
+    document.getElementById('assign_message').style.display = 'none';
+}
+
+/**
+ * Closet the assign overlay
+ */
+function closeAssign() {
+    document.getElementById('assign_overlay').style.display = 'none';
+}
+
+
+/**
+ * Submit an assignment. This function will assign a quiz to a user/group of user.
+ * @returns escape in case of unwanted behavior
+ */
+async function submitAssign() {
+    if (quiz.title && !window.location.href.includes("new_quiz")) {
+        const username = document.getElementById('assign_username').value.trim();
+        const msg = document.getElementById('assign_message');
+        if (!username) {
+            msg.style.display = 'block';
+            msg.style.color = 'red';
+            msg.innerHTML = 'Please enter a username before submitting';
+            return;
+        }
+
+        const response = await fetch('/assign_quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, quiz_id: quiz.id })
+        });
+        const result = await response.json();
+        msg.style.display = 'block';
+        msg.style.color = result.error ? 'red' : 'green';
+        msg.innerHTML = result.error || result.success;
+        if (!result.error) {
+            document.getElementById('assign_username').value = '';
+        }
+    }
+    else
+        alert("Please choose a title and save your quiz before trying to assign it")
+}
+
+
+// EVERYTHING INVOLVED IN THE DELETE OVERLAY IS FROM HERE TO THE WINDOW.ONCLICK FUNCTION
+
+/**
+ * Open the delete overlay
+ */
 function openDelete() {
     document.getElementById('delete_overlay').style.display = 'flex';
 }
 
+/**
+ * Close the delete overlay
+ */
 function closeDelete() {
     document.getElementById('delete_overlay').style.display = 'none';
 }
 
+/**
+ * Delete a quiz. Should be checked again in app.py.
+ * @returns in case of unwanted behavior
+ */
 async function deleteQuiz() {
     if (!quiz.title && window.location.href.includes("new_quiz")) {
         alert("Your quiz has not even been saved once, and as such does not need to be deleted, you can just refresh the page.")
@@ -836,33 +837,57 @@ async function deleteQuiz() {
         alert(result.error)
     }
 }
-// having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
-render();
+
+/**
+ * this is here for the overlays (Add to this function for each overlay created), it will allow for closure of the overlay if the user click outside of it.
+ * TODO if you create an overlay and it's associated close function, use them acordingly here.
+ * @param {*} event 
+ */
+window.onclick = function (event) {
+    var overlay_share = document.getElementById('share_overlay');
+    var overlay_display = document.getElementById('branching_overlay')
+    var delete_overlay = document.getElementById('delete_overlay')
+    var assign_overlay = document.getElementById("assign_overlay")
+    if (event.target == overlay_share) {
+        closeShare();
+    }
+    if (event.target == overlay_display) {
+        closeBranching();
+    }
+    if (event.target == delete_overlay){
+        closeDelete();
+    }
+    if(event.target == assign_overlay){
+        closeAssign();
+    }
+}
 
 
+// EVERYTHING FROM HERE TO THE window.addEventListener('beforeunload') IS THE BRANCHING SECTION 
 
-
-
-
-
-
-
-
-// Branching section:
 var id = document.getElementById("drawflow");
 const editor = new Drawflow(id);
 editor.reroute = true;
+
+//variable related to the zoom in and out of the drawflow
 editor.zoom_max = 2;
 editor.zoom_min = 0.2;
 editor.zoom_value = 0.1;
+
 editor.draggable_inputs = false;
 editor.start();
+
 editor.editor_mode = 'edit';
+
 let drawflowSnapshot = null;
 let drawflowDirty = false;
+
 const deletedQuestionIds = new Set();
 const nodeQuestionMap = {};
 
+/**
+ * Allow for zooming in and out of the drawflow with the wheel of their mouse
+ */
 document.getElementById('drawflow').addEventListener('wheel', function (e) {
     e.preventDefault();
     if (e.deltaY < 0) {
@@ -870,9 +895,12 @@ document.getElementById('drawflow').addEventListener('wheel', function (e) {
     } else {
         editor.zoom_out();
     }
-},
-    { passive: false });
+},{ passive: false });
 
+
+/**
+ * Template for the multiple choice question.
+*/
 const questionTemplate = `
     <div class="question-node">
       <input class="question-title drawflow-input" type="text" placeholder="Question text" />
@@ -890,6 +918,9 @@ const questionTemplate = `
     </div>
 `;
 
+/**
+ * Template for the result/pure text section.
+*/
 const endTemplate = `
     <div class="end-node">
         <input class="end-title drawflow-input" type="text" placeholder="Title" oninput="updateResultText(this)"/>
@@ -897,18 +928,31 @@ const endTemplate = `
     </div>
 `;
 
+/**
+ * Template for the free answer question.
+*/
 const freeResponseTemplate = `
     <div class="freeresponse-node">
         <input class="fr-title drawflow-input" type="text" placeholder="Question text" oninput="updateFreeResponseText(this)"/>
     </div>
 `;
 
+/**
+ * Get the quiz question object associated with a drawflow node
+ * @param {*} nodeId the id of the drawflow node
+ * @returns the question object from quiz, or null if not found
+ */
 function getQuizQuestion(nodeId) {
     const node = editor.getNodeFromId(nodeId);
     const allQuestions = quiz.categories.flatMap(cat => cat.items);
     return allQuestions.find(q => q.id === node.data.question_id) || null;
 }
 
+
+/**
+ * Add an answer option to a question in the drawflow editor
+ * @param {*} btn the button that was clicked
+ */
 function addNodeAnswer(btn) {
     const answers = btn.previousElementSibling;
     const nodeEl = btn.closest('.drawflow-node');
@@ -939,6 +983,12 @@ function addNodeAnswer(btn) {
     renumberAnswers(nodeEl);
 }
 
+/**
+ * Remove an answer option from a question node in the drawflow editor
+ * Also removes the corresponding output and any connections attached to it
+ * @param {*} btn the button that was clicked
+ * @returns here to break out of the function if only one answer remains
+ */
 function removeNodeAnswer(btn) {
     const answer = btn.parentElement;
     const nodeEl = btn.closest('.drawflow-node');
@@ -969,14 +1019,24 @@ function removeNodeAnswer(btn) {
     renumberAnswers(nodeEl);
 }
 
+
+/**
+ * Allow the node type elements in the sidebar to be dragged onto the drawflow canvas.
+ */
 document.querySelectorAll('.node-type').forEach(el => {
     el.addEventListener('dragstart', e => {
         e.dataTransfer.setData('node-type', e.target.dataset.node);
     });
 });
 
+/**
+ * Allow the drawflow canvas to receive dropped elements by preventing the default, browser behavior (which would otherwise reject the drop).
+*/
 document.getElementById('drawflow').addEventListener('dragover', e => e.preventDefault());
 
+/**
+ * Handle a node being dropped onto the drawflow canvas.
+ */
 document.getElementById('drawflow').addEventListener('drop', e => {
     e.preventDefault();
     const type = e.dataTransfer.getData('node-type');
@@ -1000,6 +1060,9 @@ document.getElementById('drawflow').addEventListener('drop', e => {
     }
 });
 
+/**
+ * Enforces a maximum of one connection per output (removes the old one if a second is drawn),
+ */
 editor.on('connectionCreated', function (info) {
     drawflowDirty = true;
     const node = editor.getNodeFromId(info.output_id);
@@ -1025,7 +1088,9 @@ editor.on('connectionCreated', function (info) {
     if (indicators[answerIndex])
         indicators[answerIndex].textContent = target ? `⇒ ${target.text || '(unnamed)'}` : '';
 });
-
+/**
+ * Fired by drawflow when a connection between two nodes is removed.Clears the inputConnected style on the target node if it has no remaining connections,
+ */
 editor.on("connectionRemoved", function (info) {
     drawflowDirty = true;
     const node = editor.getNodeFromId(info.input_id);
@@ -1046,6 +1111,9 @@ editor.on("connectionRemoved", function (info) {
         indicators[answerIndex].textContent = "";
 });
 
+/**
+ * Fired by drawflow when a node is deleted from the canvas.Removes the corresponding question from quiz.categories, as well as any dependency that question had
+ */
 editor.on('nodeRemoved', function (nodeId) {
     const question_id = nodeQuestionMap[nodeId];
     if (question_id) {
@@ -1068,6 +1136,12 @@ editor.on('nodeRemoved', function (nodeId) {
     }
 });
 
+
+
+/**
+ * Renumber the placeholder text of all answer inputs inside a question. Called after adding or removing an answer to keep labels consistent
+ * @param {*} nodeEl the node containing the answers
+ */
 function renumberAnswers(nodeEl) {
     const answers = nodeEl.querySelectorAll('.answer input');
     answers.forEach((input, i) => {
@@ -1075,6 +1149,12 @@ function renumberAnswers(nodeEl) {
     });
 }
 
+/**
+ * Compute an auto-layout position for each question node based on the branching graph.
+ * Nodes are placed in layers (left to right) determined by their longest path from a root node.
+ * @param {*} allQuestions flat array of all question objects across all categories
+ * @returns a dictionary mapping question id to {x, y} position
+ */
 function computeAutoLayout(allQuestions) {
     const idToQ = {};
     allQuestions.forEach(q => idToQ[q.id] = q);
@@ -1134,7 +1214,7 @@ function computeAutoLayout(allQuestions) {
         layers[l].push(q.id);
     });
 
-
+    //A spacing of (450,280) usually give a good spacing (at least on my testing part)
     const positions = {};
     const X_SPACING = 450;
     const Y_SPACING = 280;
@@ -1174,6 +1254,11 @@ function computeAutoLayout(allQuestions) {
     return positions;
 }
 
+
+/**
+ * Load the current quiz into the drawflow editor, creating one node per question, and drawing connections based on each answer's leads_to value.
+ * Only called once when the branching overlay is first opened.
+ */
 function loadQuizIntoDrawflow() {
     editor.clearModuleSelected();
 
@@ -1241,10 +1326,11 @@ function loadQuizIntoDrawflow() {
                     editor.addConnection(sourceNodeId, questionToNode[a.leads_to], outputKey, 'input_1');
                 }
             });
-        });
+        });drawflowDirty = false;
     }, 100);
 }
 
+//TODO COMMENT THIS FUNCTION 
 editor.on('nodeCreated', function (nodeId) {
     const node = editor.getNodeFromId(nodeId);
 
@@ -1307,6 +1393,11 @@ editor.on('nodeCreated', function (nodeId) {
     `;
 });
 
+
+/**
+ * Update the text of a free response question when its node input changes
+ * @param {*} input the input element inside the freeresponse node
+ */
 function updateFreeResponseText(input) {
     drawflowDirty = true;
     const nodeEl = input.closest('.drawflow-node');
@@ -1315,6 +1406,10 @@ function updateFreeResponseText(input) {
     if (question) question.text = input.value;
 }
 
+/**
+ * Update the text of a multiple choice question when its node input changes
+ * @param {*} input the input element inside the question node
+ */
 function updateQuestionText(input) {
     drawflowDirty = true;
     const nodeEl = input.closest('.drawflow-node');
@@ -1323,6 +1418,10 @@ function updateQuestionText(input) {
     if (question) question.text = input.value;
 }
 
+/**
+ * Update the text of a specific answer option when its node input changes
+ * @param {*} input the input element inside the answer row
+ */
 function updateAnswerText(input) {
     drawflowDirty = true;
     const nodeEl = input.closest('.drawflow-node');
@@ -1336,6 +1435,10 @@ function updateAnswerText(input) {
     if (question.answer[answerIndex]) question.answer[answerIndex].text = input.value;
 }
 
+/**
+ * Update the title text of a result node when its input changes
+ * @param {*} input the input element inside the result node
+ */
 function updateResultText(input) {
     drawflowDirty = true;
     const nodeEl = input.closest('.drawflow-node');
@@ -1344,6 +1447,10 @@ function updateResultText(input) {
     if (question) question.text = input.value;
 }
 
+/**
+ * Update the body text of a result node when its textarea changes
+ * @param {*} input the textarea element inside the result node
+ */
 function updateResultBody(input) {
     drawflowDirty = true;
     const nodeEl = input.closest('.drawflow-node');
@@ -1353,9 +1460,79 @@ function updateResultBody(input) {
 }
 
 
+/**
+ * read every node's current DOM state and write to quiz
+ */
+function saveDrawflowChanges() {
+    
+    const allNodes = editor.export().drawflow.Home.data;
+
+    for (const nodeId in allNodes) {
+        const node = allNodes[nodeId];
+        const question = getQuizQuestion(nodeId);
+        if (!question) continue;
+
+        const nodeEl = document.querySelector(`#node-${nodeId} .drawflow_content_node`);
+        if (!nodeEl) continue;
+
+        if (node.name === 'question') {
+            const titleInput = nodeEl.querySelector('.question-title');
+            if (titleInput) question.text = titleInput.value;
+
+            const answerInputs = nodeEl.querySelectorAll('.answer input');
+            answerInputs.forEach((input, i) => {
+                if (question.answer[i]) question.answer[i].text = input.value;
+            });
+        } else if (node.name === 'result') {
+            const titleInput = nodeEl.querySelector('.end-title');
+            const bodyInput = nodeEl.querySelector('.end-body');
+            if (titleInput) question.text = titleInput.value;
+            if (bodyInput) question.result_body = bodyInput.value;
+        }
+    }
+    if (deletedQuestionIds.size > 0) {
+        quiz.categories.forEach(cat => {
+            cat.items = cat.items.filter(q => !deletedQuestionIds.has(q.id));
+        });
+        quiz.categories.forEach(cat => {
+            cat.items.forEach(q => {
+                (q.answer || []).forEach(a => {
+                    if (deletedQuestionIds.has(a.leads_to)) a.leads_to = null;
+                });
+            });
+        });
+        deletedQuestionIds.clear();
+    }
+
+    drawflowSnapshot = null;
+    markDirty();
+
+    // refresh regular editor
+    render();
+
+    if (active_question_Id && active_category_Id) {
+        renderAnswerPanel(active_category_Id, active_question_Id);
+    } else {
+        closeAnswerPanel();
+    }
+    if (active_category_Id) {
+        renderQuestions(active_category_Id);
+    }
+
+    document.getElementById('branching_overlay').style.display = 'none';
+    saveQuiz();
+}
+
+/**
+ * Here to prevent a user from leaving the page if any change has been made.
+ */
 window.addEventListener('beforeunload', (event) => {
     if (isDirty) {
         event.preventDefault();
         event.returnValue = '';
     }
 });
+
+
+// having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
+render();
