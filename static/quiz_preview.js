@@ -2,10 +2,11 @@ let pages = [];
 let cur = 0;
 let responses = {};
 let history = [];
+let CURRENT_USER_ID = null;
 
 /**
  * @param {*} quiz the quiz that is being previewed 
- * @returns a list containing every question (even null question --> do we want to remove that part?)
+ * @returns a list containing every question
  */
 function buildPages(quiz) {
     const list = [];
@@ -22,51 +23,74 @@ function buildPages(quiz) {
  * Allow the user to have a sense of how many question there are instead of trudging onward without any idea of what is awaiting them
  */
 function updateFooter() {
-    const total = pages.length;
-    const traveled = history.length;
-
+    const answered = history.length;
     if (cur >= pages.length) {
         document.getElementById('footer-fill').style.width = '100%';
-        document.getElementById('footer-label').textContent = `${traveled} question(s) answered`;
+        document.getElementById('footer-label').textContent = `${answered} questions answered`;
         document.getElementById('footer-remain').textContent = 'All done!';
         return;
     }
-    console.log(isPathDeterminate(cur));
-    if (isPathDeterminate(cur)) {
-        const answered = Object.values(responses).filter(v => v !== '' && v !== null && v !== undefined).length;
-        const percent = total ? Math.round((answered / total) * 100) : 0;
-        const remaining = total - answered;
-        document.getElementById('footer-fill').style.width = percent + '%';
-        document.getElementById('footer-label').textContent = `${answered} of ${total} question(s) answered`;
-        document.getElementById('footer-remain').textContent = remaining > 0 ? `${remaining} remaining` : 'All done!';
-    } else {
-        const percent = Math.round((traveled / (traveled + 1)) * 100);
-        document.getElementById('footer-fill').style.width = percent + '%';
-        document.getElementById('footer-label').textContent = `${traveled} question(s) answered`;
-        document.getElementById('footer-remain').textContent = '';
-    }
+
+    
+    const [min, max] = getRemainingRange(cur);
+
+    
+    const worstTotal = answered + max;
+    const bestTotal  = answered + min;  
+
+    const worstPct = worstTotal > 0 ? Math.round((answered / worstTotal) * 100) : 0;
+    const bestPct  = bestTotal  > 0 ? Math.round((answered / bestTotal)  * 100) : 0;
+
+    // progress bar just goesd off worst case scenario for the time being. maybe we could add a range later? not sure best way to do this.
+    document.getElementById('footer-fill').style.width = worstPct + '%';
+
+    
+    document.getElementById('footer-label').textContent = (worstPct == bestPct)
+        ? `${worstPct}% complete`
+        : `${worstPct}–${bestPct}% complete`;
+
+
+    document.getElementById('footer-remain').textContent = (min == max)
+        ? `${max} remaining`
+        : `${min}–${max} remaining`;
 }
 
-// check if the path ahead of an index has branching or is linear.
-function isPathDeterminate(startIdx) {
-    let idx = startIdx;
-    const visited = new Set();
-    while (idx >= 0 && idx < pages.length) {
-        if (visited.has(idx)) return false;
-        visited.add(idx);
+// gets the number of remaining questions given a start index
+function getRemainingRange(startIdx) {
+    const memo = new Map();
+    const visiting = new Set();
+
+    function crawl(idx) {
+        if (idx >= pages.length) return [0, 0];  
+        if (visiting.has(idx)) return [0, 0];
+        if (memo.has(idx)) return memo.get(idx);
+
+        visiting.add(idx);
+
         const answers = pages[idx].item.answer || [];
-        const destinations = [];
-        for (const a of answers) {
-            const dest = resolveLeadsTo(a.leads_to);
-            if (!destinations.includes(dest)) destinations.push(dest);
+        let childRanges;
+
+        // if theres no answers, just add 1
+        if (answers.length == 0) {
+            childRanges = [crawl(idx + 1)];
+        } else {
+            // remove duplicate destinations
+            const dests = [...new Set(answers.map(a => resolveLeadsTo(a.leads_to)))];
+            childRanges = dests.map(dest => crawl(dest));
         }
-        if (destinations.length > 1) return false;
-        if (destinations.length === 0) { idx++; continue; }
-        const next = destinations[0];
-        if (next >= pages.length) break;
-        idx = next;
+
+        visiting.delete(idx);
+
+        const result = [
+            1 + Math.min(...childRanges.map(r => r[0])),
+            1 + Math.max(...childRanges.map(r => r[1]))
+        ];
+
+        memo.set(idx, result);
+        return result;
     }
-    return true;
+
+    return crawl(startIdx);
 }
 
 
@@ -154,22 +178,39 @@ function renderQuestionPage(page) {
 }
 
 /**
+ * Gets the userID from the current session which will be stored along with the users completed quiz data 
+ */
+async function getUserID(){
+    try {
+        const response = await fetch('/get-user-id');
+        const data = await response.json();
+        
+        CURRENT_USER_ID = data.userId; 
+        console.log("User ID set to:", CURRENT_USER_ID);
+    } catch (error) {
+        CURRENT_USER_ID = 'NO User ID Found'; 
+        console.error("Error getting user ID:", error);
+    }
+}
+
+/**
  * Takes in completed quiz and collects and formats the answers the user gave to correspond the the question and category.
  * @returns usersQuizResponseData this is the users answers to the questions in JSON format.
  */
 function formatCompletedQuizData(){
 
     // TODO: Have it store the UserID of the person taking the quiz
-    
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
     const questionIdIndex = 0;
     const optionIdIndex = 1;
     const textResponseIndex = 1;
+    
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
-        userID: 'TEST_ID', // <--- Temporary id
+        userID: CURRENT_USER_ID, // <--- Temporary id
         quizID: quiz.id,
+        timeStamp: new Date().toUTCString(),
         quizCategories: []
     };
 
@@ -240,6 +281,7 @@ function exportQuizData{}
  * @returns the page at the end of the survey
  */
 function renderSummary() {
+    
     testData = formatCompletedQuizData();
     return `
     <div class="summary-wrap">
@@ -249,6 +291,35 @@ function renderSummary() {
         </pre>
     </div>
     `; 
+}
+
+function isLastPage() {
+    const item = pages[cur]?.item;
+    if (!item) 
+        return true;
+
+    if (item.type === 'result' || item.type === 'text') {
+        const leads_to = item.answer?.[0]?.leads_to;
+        if (!leads_to) 
+            return true;
+        return resolveLeadsTo(leads_to) >= pages.length;
+    }
+
+    const answerId = responses[item.id];
+    if (!answerId) {
+        return cur === pages.length - 1;
+    }
+
+    const answer = item.answer?.find(a => a.id === answerId);
+    if (!answer) 
+        return false;
+
+    const leads_to = answer.leads_to;
+    if (!leads_to) {
+        return cur === pages.length - 1;
+    }
+
+    return resolveLeadsTo(leads_to) >= pages.length;
 }
 
 /**
@@ -277,7 +348,7 @@ function render() {
     document.getElementById('btn-back').disabled = (history.length === 0);
     document.getElementById('btn-back').onclick = () => goBack();
 
-    document.getElementById('btn-next').textContent = (cur === pages.length - 1) ? 'Finish' : 'Next';
+    document.getElementById('btn-next').textContent = (isLastPage()) ? 'Finish' : 'Next';
     document.getElementById('btn-next').onclick = () => nextQuestion(pages[cur].item.id);
     document.getElementById('btn-next').disabled = !isCurrentAnswered();
 
@@ -405,4 +476,6 @@ function esc(s) {
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 //will be called once every time we call this file.
+getUserID();
 loadQuiz(quiz);
+

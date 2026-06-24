@@ -16,6 +16,11 @@ app.secret_key = "flask_is_making_me_do_this"
 def get_role(quiz_id):
     return db.get_role(session["user_id"], quiz_id)
 
+@app.route('/get-user-id', methods=['GET'])
+def get_user_id():
+    if "user_id" in session:
+        return jsonify({"userId": session["user_id"]}), 200
+
 #Simple page, allow the user to choose between login in and registering. Set all session item to none in order to "Reset" the user and log them out
 @app.route("/")
 def login_page():
