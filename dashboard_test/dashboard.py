@@ -2,27 +2,26 @@ import streamlit as st
 import dashboard_functions
 import pandas as pd
 
-# [quiz_id, ques_id, answer] --> [[quiz_id,[ques_id1, answer],[ques_id2, answer]], [], ...]
+# [quiz_id, ques_id, answer] --> [[ques_id1, answer],[ques_id2, answer]]
 #
-def match_questions_to_answers(quiz_names, answer_tuple):
-    matched_answers = []
+def match_quiz_to_answers(quiz_name, answer_tuple):
+    all_matched_answers = [] 
     QUIZ_ID = 0
     QUESTION_ID = 1
-    ANSWER = 2
+    ANSWER_INDEX = 2
 
-    """
-    - start on the 1st element of quiz_names 
-    - scan the whole tuple add all the answers to the matching quiz_id 
-    - then go to the next quiz_names element
-    """
-        
-            
+    for answer in answer_tuple:
+        answer_package = []
+        if answer[QUIZ_ID] == quiz_name:
+            answer_package.append(answer[QUESTION_ID])
+            answer_package.append(answer[ANSWER_INDEX])
+            all_matched_answers.append(answer_package)
+        else:
+            pass
+    return all_matched_answers # --> [[ques_id1, answer],[ques_id2, answer]]
 
 
-    return
-
-if __name__ == "__main__":
-
+def load_user_dash():
     all_users_data = dashboard_functions.load_users_into_objects("user_quiz_data.csv")
 
     # get all user names
@@ -50,16 +49,23 @@ if __name__ == "__main__":
         st.subheader("View Quiz Results")
 
         quiz_names = current_user.get_completed_quiz_names()
-        print(quiz_names)
+
 
         if quiz_names:
+            # selected_quiz_id = current quiz name that is selected
             selected_quiz_id = st.selectbox("Select a completed Quiz", quiz_names)
 
             st.subheader(f"{selected_quiz_id} answers:")    
+            quiz_answers = match_quiz_to_answers(selected_quiz_id, user.parse_answer_tuple())
 
-
+            for answer in quiz_answers:
+                with st.container(border=True):
+                    st.write(f"Question: {answer[0]} | Answer: {answer[1]}")
         else:
-            st.info("This user has no completed quizzes to display.")
+            st.info("This user has no completed quizzes to display.")    
 
+if __name__ == "__main__":
 
+    
+    load_user_dash()
     
