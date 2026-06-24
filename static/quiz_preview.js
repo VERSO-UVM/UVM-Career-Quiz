@@ -279,7 +279,9 @@ function formatCompletedQuizData(){
     }
     return usersQuizResponseData;
 }
-
+// TODO: This function will take in the usersQuizResponseData and pass it to response_table_interaction.py for insertion into the user's database row,
+// in order to do this I need to find the best way to run this python and I believe that will be having the json sent to the server for it to do so. Not sure how this is done yet but am currently investigating -ejorr 6/24/26
+function exportQuizData{}
 
 /**
  * Called at the end of the survey to indicate that it's done
@@ -507,3 +509,4 @@ function esc(s) {
 //the following function will be called once every time we call this file.
 getUserID();
 loadQuiz(quiz);
+
