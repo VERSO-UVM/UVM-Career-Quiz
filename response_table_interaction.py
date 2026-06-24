@@ -170,17 +170,40 @@ TEST_STRING = '''  {
  ]
 }       
 '''
+# Exception type for catching database loading and converting on bad types
+class IncompatibleType(Exception):
+        def __init__(self, message):
+            super().__init__(message)
+
+
+class TypeCheck:
+    def __init__(self):
+            pass
+
+    def import_data(self, data):
+        if type(data) is bytes:
+            return pickle.loads(data)
+        else:
+            raise IncompatibleType(f"Unable to transform data: {type(data)} from bytes to {type(data)}.")
+    def export_data(self, data):
+        if type (data) in [list, tuple, dict]:
+            return pickle.dumps(data)
+        else:
+            raise IncompatibleType(message=f"Data is of type: {type(data)}, must be of type '<class 'bytes'>'")
+        
+
+
 def connecting_to_sql():
     conn = sqlite3.connect("career_quiz.db")
     cur = conn.cursor()
     return conn, cur
-#MUST BE PERFORMED ON ALL LISTS PRIOR TO ADDITION TO DB
+#MUST BE PERFORMED ON ALL LISTS PRIOR TO ADDITION TO DB -- these are now safer
 def serialize(data):
-    return pickle.dumps(data)
+    return TypeCheck().export_data(data)
 #MUST BE DONE ON ALL SERIALIZATIONS PRIOR TO MODIFICATION
 def return_from_serial(data):
-    return pickle.loads(data)
-
+    return TypeCheck().import_data(data)
+#------------------------- from quiz_preview.js fn -> formatQuizResultsJSON() -> call the below function -- def quiz_complete()
 def _json_data_convert(json_string: str):
         quiz_results = json.loads(json_string)
         user_id = quiz_results["userID"]
@@ -255,18 +278,35 @@ def quiz_complete(json_string):
 
 
     # -----------------HELPER FUNCTIONS------------------------
-def csv_lookup_to_dict():
+def csv_lookup_to_list(topic ,filename="question_keyword_lookup.csv")-> list:
+    result = []
+    with open(filename, newline = '') as file_:
+        filereader = csv.reader(file_)
+        for row in filereader:
+            if topic == row[0]:
+                result.append(row[1:])
+            else:
+                result.append(f"no results for : {topic}")
+    return result
         # admin can lookup keywords and will provide questions that relate to that, then can be queried for. 
-        pass
+
 def check_user_lookup_status(admin_id, u_id):
+
         # check to see if all users are accessible to admin, should kill the request to data 
         pass
-def data_type_correction_wrapper():
-    #this will eventually be a class for data but not yet just a placeholder see * above for more information
-    pass
-    # -----------------LOOKUP BEHAVIORS------------------------
-def findall_users_cmp_quiz():
-        pass
+
+# -----------------LOOKUP BEHAVIORS------------------------
+def findall_users_cmp_quiz(user_id_array: list, quiz_id):
+    # query completed_quizzes from user array
+    # fetch data -- return from serial
+    users_completed = []
+    data = "query response"
+    for idx, user in enumerate(user_id_array):
+        for quiz in data[idx]:
+            if quiz[0] == quiz_id:
+                if user not in users_completed:
+                    users_completed.append(user)
+
 def get_user_response_to_quiz(u_id, q_id):
     conn, cur = connecting_to_sql()
     query = """SELECT num_completed_quizzes, completed_quizzes, user_answers FROM USER_RESPONSE WHERE u_ID = ?"""
@@ -287,19 +327,29 @@ def get_user_response_to_quiz(u_id, q_id):
 def get_response_breakdown_on_users(ques_id, user_id_array, q_id):
     conn, cur = connecting_to_sql()
     responses = []
+    def lookup_single_quiz_answer(ques_id, user_answers):
+        for answer in user_answers:
+            if answer[0] == ques_id:
+                return answer[1]
+
 
     query = """SELECT completed_quizzes, user_answers FROM USER_RESPONSE WHERE u_ID IN ?"""
     cur.execute(query, (user_id_array,))
     user_comp_quizzes, user_answers = cur.fetchall()
     conn.close()
-    user_comp_quizzes = return_from_serial(user_comp_quizzes)
-    user_answers = return_from_serial(user_answers)
-    for user in user_comp_quizzes:
-        for quiz in user:
+    users_cmp_quiz= []
+    for u_id in user_id_array:
+        user_comp_quizzes = return_from_serial(user_comp_quizzes)
+        user_answers = return_from_serial(user_answers)
+    
+        for quiz in user_comp_quizzes:
             if quiz[0] == q_id:
-                pass
+                users_cmp_quiz.append(u_id)
+                
 
+                
 
+    return responses
             
         # loop through user checking
         #1. is q_id in user completed quizzes
@@ -308,12 +358,27 @@ def get_response_breakdown_on_users(ques_id, user_id_array, q_id):
         # append user_id, question_response to responses where u_id 
 def fetch_results_of_question_id_on_user_set():
         pass
-def lookup_kw_arg_on_user_set():
-        pass
+def lookup_kw_arg_on_user_set(keyword:str , user_array: list):
+    ques_ids = csv_lookup_to_list(keyword)
+    result = []
+    for user in user_array:
+        # lookup user_responses
+        usr_responses = [] # query
+        user_responses_in_topic = []
+        for ques in usr_responses:
+            if ques[0] in ques_ids:
+                user_responses_in_topic.append(ques)
+        if len(user_responses_in_topic) > 0:
+            result.append((user, user_responses_in_topic))
+
+    return result
 
     
 
 if __name__ == "__main__":
-    gerald = _json_data_convert(TEST_STRING)
-    print((gerald))
+    #gerald = _json_data_convert(TEST_STRING)
+    #print((gerald))
+    ques = csv_lookup_to_list("resume")
+   
+
 
