@@ -20,24 +20,7 @@ def match_quiz_to_answers(quiz_name, answer_tuple):
             pass
     return all_matched_answers # --> [[ques_id1, answer],[ques_id2, answer]]
 
-
-def load_user_dash():
-    all_users_data = dashboard_functions.load_users_into_objects("user_quiz_data.csv")
-
-    # get all user names
-    user_names = []
-    for user in all_users_data:
-        user_names.append(user.u_id)
-
-    # Renders the side bar box
-    user_selectbox = st.sidebar.selectbox('User Selection menu', user_names)
-
-    # Select a user from the selection menu
-    current_user = None
-    for user in all_users_data:
-        if user.u_id == user_selectbox:
-            current_user = user
-            break  
+def load_user_dash(current_user):
 
     # This renders the selected users dashboard and quiz data
     if current_user is not None:
@@ -66,6 +49,25 @@ def load_user_dash():
 
 if __name__ == "__main__":
 
+    all_users_data = dashboard_functions.load_users_into_objects("user_quiz_data.csv")
+
+    # get all user names
+    user_names = []
+    for user in all_users_data:
+        user_names.append(user.u_id)
+
+    # Renders the side bar box
+    user_selectbox = st.sidebar.selectbox('User Selection menu', user_names)
+
+    # Select a user from the selection menu
+    current_user = None
+    for user in all_users_data:
+        if user.u_id == user_selectbox:
+            current_user = user
+            break  
     
-    load_user_dash()
+    load_user_dash(current_user)
+
+    # Get all quiz names
+    
     

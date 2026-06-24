@@ -15,10 +15,10 @@ class UserQuizData:
         self.completed_quiz_count = completed_quiz_count
         self.quizzes_to_do: list[str] = to_do_str.split(",")
 
-        self.completed_quizzes: list[tuple[str, str]] = self._parse_tuples(
+        self.completed_quizzes: list[tuple[str, str]] = self.parse_tuples(
             completed_str
         )
-        self.answers: list[tuple[str, str]] = self._parse_tuples(answers_str)
+        self.answers: list[tuple[str, str]] = self.parse_tuples(answers_str)
     
     # String representation of UserDataObject
     def __repr__(self) -> str:
@@ -31,7 +31,7 @@ class UserQuizData:
         )
 
     # Adds all tuples for completed_quizzes and answers to a list "(),(),()" --> [(),(),()]
-    def _parse_tuples(self, raw_str: str):
+    def parse_tuples(self, raw_str: str):
         matches = re.findall(r"\(([^)]+)\)", raw_str)
         parsed_list = []
 
@@ -44,20 +44,19 @@ class UserQuizData:
         return parsed_list
     
     # gets names of all the quizzes an individual user has completed
-    # TODO : we could also do this for unfinished quizzes also
     def get_completed_quiz_names(self) -> list[str]:
         completed_quiz_names = []
         for quiz_name in self.completed_quizzes:
             completed_quiz_names.append(quiz_name[0])
         return completed_quiz_names
-    
-    '''
-    def get_quiz_answer_tuple(self) -> list[tuple[str,str]]:
-        completed_quiz_answers = []
-        for quiz_answers in self.answers:
-            completed_quiz_answers.append(quiz_answers)
-        return completed_quiz_answers
-    '''
+
+    # gets names of all the quizzes an individual user has NOT taken
+    def get_uncompleted_quiz_names(self) -> list[str]:
+        uncompleted_quiz_names = []
+        for quiz_name in self.quizzes_to_do:
+            uncompleted_quiz_names.append(quiz_name)
+        return uncompleted_quiz_names
+
 
     # (quiz_id-ques_id, answer) --> (quiz_id, ques_id, answer)
     def parse_answer_tuple(self) -> list[str,str,str]:
@@ -89,4 +88,4 @@ if __name__ == "__main__":
 
     all_users = load_users_into_objects("user_quiz_data.csv")       
 
-    print(all_users[0].parse_answer_tuple())
+    print(all_users[0].get_uncompleted_quiz_names())
