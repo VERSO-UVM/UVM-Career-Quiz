@@ -6,7 +6,7 @@ let CURRENT_USER_ID = null;
 
 /**
  * @param {*} quiz the quiz that is being previewed 
- * @returns a list containing every question (even null question --> do we want to remove that part?)
+ * @returns a list containing every question
  */
 function buildPages(quiz) {
     const list = [];
@@ -291,6 +291,35 @@ function renderSummary() {
     `; 
 }
 
+function isLastPage() {
+    const item = pages[cur]?.item;
+    if (!item) 
+        return true;
+
+    if (item.type === 'result' || item.type === 'text') {
+        const leads_to = item.answer?.[0]?.leads_to;
+        if (!leads_to) 
+            return true;
+        return resolveLeadsTo(leads_to) >= pages.length;
+    }
+
+    const answerId = responses[item.id];
+    if (!answerId) {
+        return cur === pages.length - 1;
+    }
+
+    const answer = item.answer?.find(a => a.id === answerId);
+    if (!answer) 
+        return false;
+
+    const leads_to = answer.leads_to;
+    if (!leads_to) {
+        return cur === pages.length - 1;
+    }
+
+    return resolveLeadsTo(leads_to) >= pages.length;
+}
+
 /**
  * Render the page each time it is needed to render
  * @returns is here in order to escape after a certain condition
@@ -317,7 +346,7 @@ function render() {
     document.getElementById('btn-back').disabled = (history.length === 0);
     document.getElementById('btn-back').onclick = () => goBack();
 
-    document.getElementById('btn-next').textContent = (cur === pages.length - 1) ? 'Finish' : 'Next';
+    document.getElementById('btn-next').textContent = (isLastPage()) ? 'Finish' : 'Next';
     document.getElementById('btn-next').onclick = () => nextQuestion(pages[cur].item.id);
     document.getElementById('btn-next').disabled = !isCurrentAnswered();
 

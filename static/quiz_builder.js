@@ -1136,7 +1136,7 @@ function computeAutoLayout(allQuestions) {
 
 
     const positions = {};
-    const X_SPACING = 400;
+    const X_SPACING = 450;
     const Y_SPACING = 280;
     const X_OFFSET = 50;
     const Y_OFFSET = 50;
