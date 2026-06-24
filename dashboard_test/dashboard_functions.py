@@ -59,11 +59,10 @@ class UserQuizData:
         return completed_quiz_answers
     '''
 
-    # (quiz_id-ques_id, answer) --> (quiz_id, question_id, answer)
+    # (quiz_id-ques_id, answer) --> (quiz_id, ques_id, answer)
     def parse_answer_tuple(self) -> list[str,str,str]:
         all_parsed_answers = []
         for answer in self.answers:
-            parsed_answer = None
             parsed_answer = answer[0].split("-")
             parsed_answer.append(answer[1])
             all_parsed_answers.append(parsed_answer)
