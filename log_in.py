@@ -1,12 +1,18 @@
 #TODO WILL HAVE TO CREATE A LOG IN SYSTEM THAT IS SECURE --> HASH TABLE AND THE SUCH --> FOR NOW WE"LL JUST BE STORING AND RETRIEVING THING IN THE DB AS PLAINTEXT
 # when we have the server we'll switch to hashtable (or before maybe)
-import sqlite3
+import sqlite3 
+from sqlite3 import Connection, Cursor
 import uuid
 
 
 
-#As it stand you cannot carry sql statement between python file, therefore it will allow us to connect to the DB
-def connecting_to_sql():
+def connecting_to_sql() -> tuple[Connection, Cursor]:
+    """
+    As it stand you cannot carry sql statement between python file, therefore this function allow us to connect to the database
+
+    Returns:
+        tupple : a tupple containing the connection to the database, and the cursor to said database
+    """
     conn = sqlite3.connect("carrer_quiz.db")
     cur = conn.cursor()
     return conn,cur
