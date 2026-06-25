@@ -301,7 +301,7 @@ function renderSummary() {
 }
 
 /**
- * Check if a page is the last page, used to check wether the next button text need to be changed to "Finish" instead
+ * Check if a page is the last page, used to check whether the next button text need to be changed to "Finish" instead
  * @returns if this page is the last page or not
  */
 function isLastPage() {

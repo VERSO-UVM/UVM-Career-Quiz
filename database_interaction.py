@@ -5,6 +5,7 @@ To be used by an admin to wipe all data
 """
 
 import sqlite3
+from sqlite3 import Connection, Cursor
 
 ROLE_CREATOR = "creator"
 ROLE_ADMIN   = "admin"
@@ -15,48 +16,138 @@ ROLE_RANK = { ROLE_CREATOR:4,
               ROLE_EDITOR:2, 
               ROLE_READER:1 }
 
-#As it stand you cannot carry sql statement between python file, therefore it will allow us to connect to the DB
-def connecting_to_sql():
-    conn = sqlite3.connect("carrer_quiz.db")
+
+def connecting_to_sql() -> tuple[Connection, Cursor]:
+    """
+    As it stand you cannot carry sql statement between python file, therefore this function allow us to connect to the database
+
+    Returns:
+        tupple : a tupple containing the connection to the database, and the cursor to said database
+    """
+    conn = sqlite3.connect("carrer_quiz.db") 
     cur = conn.cursor()
     return conn,cur
-def can_edit(role):   
+
+def can_edit(role : str) -> bool:
+    """
+    Allow us to know if a user can edit a quiz
+
+    Args:
+        role(str): the role of the user
+    Returns:
+        boolean : whether the role is creator, admin, or editor.
+    """
     return role in (ROLE_CREATOR, ROLE_ADMIN, ROLE_EDITOR)
-def can_share(role): 
+
+def can_share(role: str) -> bool: 
+    """
+    Allow us to know if a user can share a quiz
+    Args:
+        role(str) : the role of the user
+    Returns:
+        boolean : whether the role is creator, or admin
+    """
     return role in (ROLE_CREATOR, ROLE_ADMIN)
-def can_assign(role):
+
+def can_assign(role: str) -> bool:
+    """
+    Allow us to know if a user can assign a quiz
+    Args:
+        role(str): the role of the user
+    Returns:
+        boolean : whether the role is creator, admin, or editor.
+    """
     return role in (ROLE_CREATOR, ROLE_ADMIN, ROLE_EDITOR)
-def can_delete(role): 
+
+def can_delete(role: str) -> bool: 
+    """
+    Allow us to know if a user can delete a quiz
+    Args:
+        role(str) : the role of the user
+    Returns:
+        boolean : whether the role is the creator or not 
+    """
     return role == ROLE_CREATOR
-def can_revoke(role): 
+
+def can_revoke(role: str) -> bool: 
+    """
+    Allow us to know if a user can revoke access to a quiz
+    Args:
+        role(str) : the role of the user
+    Returns:
+        boolean : whether the role is creator, or admin
+    """
     return role in (ROLE_CREATOR, ROLE_ADMIN)
-def can_promote(actor_role, target_role):
+
+def can_promote(actor_role: str , target_role : str) -> bool:
+    """
+    Allow us to know if a user can promote another user
+
+    Args:
+        actor_role(str) : the role of the user that try to promote
+        target_role (str): the role of the promoted user
+
+    Returns:
+        boolean : whether the promoter try to promote above his station or not
+    """
     if target_role == ROLE_CREATOR: 
         return False
     return ROLE_RANK.get(actor_role,0) > ROLE_RANK.get(target_role,0)
     
-# Create the user table
-def user_creation(cur):
+def user_creation(cur : Cursor):
+    """
+    Create the user table
+
+    Args:
+        cur(Cursor) : a cursor to the database 
+    """
     cur.execute('''DROP TABLE IF EXISTS USER''')
     cur.execute('''CREATE TABLE USER(u_ID TEXT NOT NULL UNIQUE, Username TEXT NOT NULL UNIQUE , Password TEXT NOT NULL, Email TEXT NOT NULL UNIQUE, PRIMARY KEY("u_ID"))''')
 
-#Create the quiz table
-def quiz_creation(cur):
+
+def quiz_creation(cur:Cursor):
+    """
+    Create the quiz table
+
+    Args:
+        cur(Cursor) : a cursor to the database 
+    """
     cur.execute('''DROP TABLE IF EXISTS QUIZ''')
     cur.execute('''CREATE TABLE QUIZ(q_ID TEXT NOT NULL UNIQUE, name TEXT NOT NULL,owner_id TEXT NOT NULL, PRIMARY KEY("q_ID"))''')
 
-#Create the access table
-def access_creation(cur):
+
+def access_creation(cur:Cursor):
+    """
+    Create the access table
+
+    Args:
+        cur(Cursor) : a cursor to the database 
+    """
     cur.execute('''DROP TABLE IF EXISTS ACESS''')
     cur.execute('''DROP TABLE IF EXISTS ACCESS''')
     cur.execute('''CREATE TABLE ACCESS(u_ID TEXT NOT NULL, q_id TEXT NOT NULL, role TEXT NOT NULL)''')
-#We have to create a table that stores quiz responses on quiz id's for users in USERS
-def user_responses(cur):
+
+
+def user_responses(cur : Cursor):
+    """
+    We have to create a table that stores quiz responses on quiz id's for users in USERS
+    Create the user_response table, that store if user completed quiz, as well as a key to a json that contain their answer
+
+    Args:
+        cur(Cursor) : a cursor to the database 
+    """
     cur.execute('''DROP TABLE IF EXISTS USER_RESPONSES''')
     cur.execute('''CREATE TABLE  USER_RESPONSES(u_ID TEXT NOT NULL UNIQUE, num_completed_quizzes int ,quizzes_assigned TEXT, quizzes_completed TEXT, quiz_response_answers TEXT''')
 
-#Find the name of a quiz with it's ID
-def find_name_with_id(q_id):
+
+
+def find_name_with_id(q_id : str) -> str | None:
+    """
+    find the name of a QUIZ with it's id
+
+    Args:
+        q_id(str) : the id of the quiz which we're trying to find a name for 
+    """
     conn, cur = connecting_to_sql()
     query = "SELECT name FROM QUIZ WHERE q_ID = ?"
     cur.execute(query,(q_id,))
@@ -68,8 +159,14 @@ def find_name_with_id(q_id):
     else :
         return None
 
-#Find the user id of a user providing it's username. 
-def find_id_with_uname(username):
+
+def find_id_with_uname(username: str) -> str | None:
+    """
+    find the id of a USER with it's username
+
+    Args:
+        username(str) : the name of the user who's id we're trying to find 
+    """
     conn, cur = connecting_to_sql()
     query = "SELECT u_id FROM USER WHERE Username = ?"
 
@@ -84,8 +181,14 @@ def find_id_with_uname(username):
     else :
         return None
 
-#reverse of the above function
-def find_uname_with_id(u_id):
+
+def find_uname_with_id(u_id :str ) -> str | None :
+    """
+    find the name of a USER with it's id
+
+    Args:
+        u_id(str) : the id of the user who's name we're trying to find 
+    """
     conn, cur = connecting_to_sql()
     cur.execute("SELECT Username FROM USER WHERE u_ID = ?", (u_id,))
     row = cur.fetchone()
@@ -95,15 +198,32 @@ def find_uname_with_id(u_id):
     else:
         return None
 
-#Share a quiz with another user
-def share_quiz(u_id, q_id, role):
+
+def share_quiz(u_id : str , q_id : str, role : str) :
+    """
+    allow for sharing of a quiz with someone else
+
+    Args:
+        u_id(str) : the id of the user who's being given access to the quiz
+        q_id(str) : the id of the quiz who's being shared 
+        role (str) : the role that is being given to the user
+    """
     conn, cur = connecting_to_sql()
     cur.execute("INSERT INTO ACCESS (q_id, u_id,role) VALUES(?,?,?) ", (q_id, u_id,role))
     conn.commit()
     conn.close()
 
-#Save a quiz in the DB
-def save_quiz_in_the_db(q_id, q_title, u_ID):
+
+def save_quiz_in_the_db(q_id : str, q_title : str , u_ID :str ):
+    """
+    allow for saving a quiz
+    If the quiz already exist it simply update it, otherwise it create a new row in the db
+
+    Args:
+        q_id(str) : the id of the quiz (given before we arrive to this step)
+        q_title(str) : the title of the quiz  
+        u_id (str) : the id of the person who's saving the quiz.
+    """
     conn, cur = connecting_to_sql()
     query = "SELECT name FROM QUIZ WHERE q_ID = ?"
     cur.execute(query,(q_id,))
@@ -117,14 +237,14 @@ def save_quiz_in_the_db(q_id, q_title, u_ID):
     conn.commit()
     conn.close()
 
-#return the role of a user for a specific uiz
+
 def get_role(u_id : str, q_id : str) -> str | None:
     """
     Get the role of a user for a specific quiz.
 
     Args:
-        u_id: the id of the user to get the role for
-        q_id: the id of the quiz to get the role for
+        u_id (str): the id of the user to get the role for
+        q_id (str): the id of the quiz to get the role for
 
     Returns:
         str | None: the role of the user, or None if the user does not have a role for this quiz.
@@ -138,13 +258,31 @@ def get_role(u_id : str, q_id : str) -> str | None:
     else :
         return None
 
-def update_role(u_id, q_id, new_role):
+def update_role(u_id : str, q_id : str, new_role: str):
+    """
+    update the role of a user for a specific quiz.
+
+    Args:
+        u_id(str): the id of the user who's role is update
+        q_id(str): the id of the quiz
+        new_role(str) : the new role given to the user
+    """
     conn,cur = connecting_to_sql()
     cur.execute("UPDATE ACCESS SET role=? WHERE u_ID=? AND q_ID=?",(new_role, u_id, q_id))
     conn.commit()
     conn.close()
-#Return whether or not a User has access to a quiz or not
-def has_access(u_ID, q_ID):
+
+
+def has_access(u_ID: str , q_ID : str) -> bool:
+    """
+    Return whether or not a User has access to a quiz or not
+    Args:
+        u_id (str): the id of the user who we're checking
+        q_id (str): the id of the quiz to check
+
+    Returns:
+        bool : whether or not a user has access to a quiz or not
+    """
     conn, cur = connecting_to_sql()
     query = "SELECT * FROM ACCESS WHERE q_ID = ? AND u_ID = ?"
     cur.execute(query,(q_ID, u_ID))
@@ -152,7 +290,15 @@ def has_access(u_ID, q_ID):
     conn.close()
     return row
 
-def user_with_access(q_id):
+def user_with_access(q_id : str) -> list[str] | None:
+    """
+    Return the users who have acess to the quiz
+    Args:
+        q_id (str): the id of the quiz to check
+
+    Returns:
+        list[str] : a list containing all information about a quiz
+    """
     conn, cur = connecting_to_sql()
     query = "SELECT * FROM ACCESS WHERE q_ID = ?"
     cur.execute(query,(q_id,))
@@ -164,7 +310,18 @@ def user_with_access(q_id):
         return None
 
 
-def quizzes_for_user(u_id):
+def quizzes_for_user(u_id : str) -> list[dict[str, str]]:
+    """
+    Retrieve all quizzes that a user has access to.
+
+    Args:
+        u_id (str): the id of the user whose quizzes we want to retrieve
+
+    Returns:
+        list: a list of dictionaries, each containing the quiz id and name
+              of a quiz the user has access to. Returns an empty list if
+              the user has no quizzes.
+    """
     conn, cur = connecting_to_sql()
     query = """
         SELECT QUIZ.q_ID, QUIZ.name
@@ -175,11 +332,20 @@ def quizzes_for_user(u_id):
     cur.execute(query, (u_id,))
     rows = cur.fetchall()
     conn.close()
-    return [{"id": row[0], "name": row[1] or ""} for row in rows]
+    return [{"id": row[0], "name": row[1] or None} for row in rows]
 
 
-# Return the username of the quiz creator
-def find_creator(q_id):
+
+def find_creator(q_id : str) -> str | None:
+    """
+    find the creator of a quiz
+
+    Args:
+        q_id (str): the id of the quiz whose creator we want to find
+
+    Returns:
+        str | None : either the name of the creator, or None if a quiz has no creator (doesnt exist)
+    """
     conn, cur = connecting_to_sql()
     cur.execute("SELECT Username FROM USER JOIN QUIZ ON USER.u_ID = QUIZ.owner_id WHERE QUIZ.q_ID = ?", (q_id,))
     row = cur.fetchone()
@@ -189,14 +355,30 @@ def find_creator(q_id):
     else :
         return None
 
-# Remove a user's access to a quiz
-def remove_access(u_id, q_id):
+
+def remove_access(u_id : str, q_id : str):
+    """
+    remove the acces of a user to a quiz
+
+    Args:
+        u_id (str) : the id of the user who's being removed from the quiz
+        q_id (str): the id of the quiz whose permission we're changing
+
+    """
     conn, cur = connecting_to_sql()
     cur.execute("DELETE FROM ACCESS WHERE u_ID = ? AND q_ID = ?", (u_id, q_id))
     conn.commit()
     conn.close()
 
-def delete_quiz(q_id):
+def delete_quiz(q_id: str) -> bool:
+    """
+    fully delete a quiz from the database. The file itself is deleted upstream
+
+    Args:
+        q_id (str): the id of the quiz that is being deleted
+    Returns:
+        bool : whether it was truly removed from the db or not
+    """
     conn,cur = connecting_to_sql()
     cur.execute("DELETE FROM ACCESS WHERE q_id = ?", (q_id,))
     cur.execute("DELETE FROM QUIZ WHERE q_id = ?" ,(q_id,))
@@ -212,8 +394,11 @@ def delete_quiz(q_id):
         return False
     
 
-#Call the first 4 function in this file to create the Database. Careful as stated above it wipe all and every data in the DB except for training one
 def create_db():
+    """
+    Call the first 4 function in the database_interaction.py file to create the Database.
+    CAUTION : CALLING IT CAUSE A MASSIVE WIPE OF EVERY DATA CONTAINED IN THE DATABASE
+    """
     id_1 = "1"
     u_name_1 = "1"
     u_pass_1 = "1"
@@ -245,5 +430,5 @@ def create_db():
     conn.commit()
     conn.close()
 
-if __name__ == "__main__":
-    create_db()
+# if __name__ == "__main__":
+#     create_db()
