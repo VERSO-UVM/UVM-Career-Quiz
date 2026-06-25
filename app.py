@@ -5,15 +5,14 @@ import json
 import time
 import database_interaction as db 
 import log_in
-import user_quizzes
-
+import response_table_interaction as ri
 
 app = Flask(__name__)
 #TODO this is for testing purpose and will need to be changed as soon as we get a server
 app.secret_key = "flask_is_making_me_do_this"
 
 
-def get_role(quiz_id: str) -> str :
+def get_role(quiz_id: str) -> str:
     """
     Get the role of the current logged-in user for a specific quiz. Mainly a wrapper for the db function of the same name.
 
@@ -23,7 +22,7 @@ def get_role(quiz_id: str) -> str :
     Returns:
         str : the role of the user
     """
-    return db.get_role(session["user_id"], quiz_id)
+    return str(db.get_role(session["user_id"], quiz_id))
 
 @app.route('/get-user-id', methods=['GET'])
 def get_user_id():
@@ -254,6 +253,7 @@ def quiz_preview(quiz):
             redirect("/quiz_selection")
     return require_login("You need to log in to preview a quiz.")
 
+#TODO: this is currently not working as intended, the library for fetching quiz info is changed WIP
 @app.route("/available_quizzes", methods=['GET','POST'])
 def show_available_quizzes():
     """
@@ -265,15 +265,13 @@ def show_available_quizzes():
     """
     if session["user_id"]:
         assigned_quizzes = db.quizzes_for_user(session["user_id"])
+        completed_quizzes = []    
+        _, completed = ri.lookup_user_todo_completed_quizzes(session.get('username', ''))
+        completed_quizzes = [
+                {"id": q, "name": db.find_name_with_id(q)}
+                for q in completed ]
+        
         completed_quizzes = []
-        try:
-            to_do, completed = user_quizzes.fetch_curr_user(session.get('username', ''), True)
-            completed_quizzes = [
-                {"id": q.get_quiz_id(), "name": db.find_name_with_id(q.get_quiz_id())}
-                for q in completed
-            ]
-        except Exception:
-            completed_quizzes = []
 
         return render_template("available_quizzes.html", assigned_quizzes=assigned_quizzes, completed_quizzes=completed_quizzes)
     return require_login("You need to log in see the quizzes available to you.")

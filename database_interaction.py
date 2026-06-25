@@ -136,7 +136,7 @@ def get_role(u_id : str, q_id : str) -> str | None:
     if row:
         return row[0] 
     else :
-        None
+        return None
 
 def update_role(u_id, q_id, new_role):
     conn,cur = connecting_to_sql()

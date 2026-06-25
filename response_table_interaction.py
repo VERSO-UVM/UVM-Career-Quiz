@@ -293,7 +293,7 @@ def csv_lookup_to_list(topic ,filename="question_keyword_lookup.csv")-> list:
 def check_user_lookup_status(admin_id, u_id):
 
         # check to see if all users are accessible to admin, should kill the request to data 
-        pass
+        return True
 
 # -----------------LOOKUP BEHAVIORS------------------------
 def findall_users_cmp_quiz(user_id_array: list, quiz_id):
@@ -324,40 +324,37 @@ def get_user_response_to_quiz(u_id, q_id):
     curr_quiz_answers = user_answers[offset:end]
     return curr_quiz_answers
     
-def get_response_breakdown_on_users(ques_id, user_id_array, q_id):
+def get_user_responses_of_question_id(ques_id, user_id_array):
     conn, cur = connecting_to_sql()
     responses = []
-    def lookup_single_quiz_answer(ques_id, user_answers):
-        for answer in user_answers:
-            if answer[0] == ques_id:
-                return answer[1]
-
-
     query = """SELECT completed_quizzes, user_answers FROM USER_RESPONSE WHERE u_ID IN ?"""
+    """this query returns json that looks like [
+    {cmp_quizzes}, {user_answers}
+    ...]
+    for each user in the query"""
     cur.execute(query, (user_id_array,))
-    user_comp_quizzes, user_answers = cur.fetchall()
+    result = cur.fetchall()
     conn.close()
-    users_cmp_quiz= []
-    for u_id in user_id_array:
-        user_comp_quizzes = return_from_serial(user_comp_quizzes)
-        user_answers = return_from_serial(user_answers)
-    
-        for quiz in user_comp_quizzes:
-            if quiz[0] == q_id:
-                users_cmp_quiz.append(u_id)
-                
-
+    result = return_from_serial(result)
+    for user_index, user in enumerate(result):
+        for ques in user[1]:
+            if ques[0] == ques_id:
+                responses.append((user_id_array[user_index], ques[1]))
                 
 
     return responses
             
-        # loop through user checking
-        #1. is q_id in user completed quizzes
-        #2. if so, fetch the user responses to the quizzes (get_user_response_to_quiz)
-        #3. check to see if question id in list of responses, this can sometimes not happen because of branching
-        # append user_id, question_response to responses where u_id 
-def fetch_results_of_question_id_on_user_set():
-        pass
+def get_users_completed_quiz_quiz_id(user_id_array, q_id):
+    result = []
+    #TODO: query
+    response = ""
+    response = return_from_serial(response)
+    for idx, user in (user_id_array):
+        for quiz in response[idx]:
+            if quiz[0]== q_id:
+                result.append(user)
+
+        return result
 def lookup_kw_arg_on_user_set(keyword:str , user_array: list):
     ques_ids = csv_lookup_to_list(keyword)
     result = []
@@ -372,6 +369,26 @@ def lookup_kw_arg_on_user_set(keyword:str , user_array: list):
             result.append((user, user_responses_in_topic))
 
     return result
+
+def lookup_user_todo_completed_quizzes(u_id: str) -> tuple[list,list]:
+    conn, cur = connecting_to_sql()
+
+    query = """SELECT quizzes_assigned, quizzes_completed FROM USER_RESPONSES WHERE U_ID = ?"""
+    returned_results = []
+    cur.execute(query, (u_id,))
+    result = cur.fetchone()
+    conn.close()
+    for item in result:
+        returned_results.append(return_from_serial(item))
+    if len(result) == 2:
+        quiz_ids = [quiz[0] for quiz in result[1]]
+        return (result[0], quiz_ids)
+    else:
+        return (["err"], ["could not fetch data"])
+
+
+    
+        
 
     
 
