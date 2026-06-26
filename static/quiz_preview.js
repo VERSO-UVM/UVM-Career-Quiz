@@ -125,6 +125,7 @@ function renderQuestionPage(page) {
         const val = responses[item.id] || '';
         body = `<textarea class="open-textarea" placeholder="Type your answer here"
         oninput="setText('${item.id}',this.value)">${esc(val)}</textarea>`;
+
     } else if (item.type === 'sldr') {
         const options = item.answer;
         if (!options.length) {
@@ -240,7 +241,7 @@ function formatCompletedQuizData(){
                     if(ques.id === response[questionIdIndex]){
                         userAnswer = {
                             text: response[textResponseIndex],
-                            //id: Math.random().toString(36).slice(2, 9)
+                            id: Math.random().toString(36).slice(2, 9) //TEST
                         };
                         break;
                     }

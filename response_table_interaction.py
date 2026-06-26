@@ -170,6 +170,38 @@ TEST_STRING = '''  {
  ]
 }       
 '''
+
+TEST_STRING_TWO = ''' {
+ "userID": "1",
+ "quizID": "605ab9c6-4087-496f-b0f9-03e736387715",
+ "timeStamp": "Fri, 26 Jun 2026 19:35:33 GMT",
+ "quizCategories": [
+  {
+   "id": "lwao6ai",
+   "questions": [
+    {
+     "id": "clippn2",
+     "UserAnswer": [
+      {
+       "text": "HI",
+       "id": "m36a7h0"
+      }
+     ]
+    },
+    {
+     "id": "zaxz8fd",
+     "UserAnswer": [
+      {
+       "text": "c",
+       "id": "qhlk9ks"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}'''
+
 def connecting_to_sql():
     conn = sqlite3.connect("career_quiz.db")
     cur = conn.cursor()
