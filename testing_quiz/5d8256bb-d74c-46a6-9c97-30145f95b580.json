@@ -349,16 +349,16 @@
           "type": "result"
         },
         {
-          "id": "ala00ck",
-          "text": "What's your uvm email?",
-          "type": "text",
           "answer": [
             {
               "id": "h71hk6s",
-              "text": "",
-              "leads_to": "4ooszh1"
+              "leads_to": "4ooszh1",
+              "text": ""
             }
-          ]
+          ],
+          "id": "ala00ck",
+          "text": "What's your uvm email?",
+          "type": "text"
         }
       ],
       "name": "Category 1"
@@ -366,6 +366,6 @@
   ],
   "desc": "This is an example of what our quiz builder can do in comparison to qualtrics. The long term goal is for this quiz to be similar to the one in qualtrics, but better. Missing :\n- Purely text based category (no answer needed) \n- Image?",
   "id": "5d8256bb-d74c-46a6-9c97-30145f95b580",
-  "last_modified": 1781803004.4331837,
-  "title": "Carrer Quiz 1"
+  "last_modified": 1782519391.790382,
+  "title": "Career Quiz 1"
 }

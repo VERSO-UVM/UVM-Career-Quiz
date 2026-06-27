@@ -13,7 +13,7 @@ def connecting_to_sql() -> tuple[Connection, Cursor]:
     Returns:
         tupple : a tupple containing the connection to the database, and the cursor to said database
     """
-    conn = sqlite3.connect("carrer_quiz.db")
+    conn = sqlite3.connect("career_quiz.db")
     cur = conn.cursor()
     return conn,cur
 

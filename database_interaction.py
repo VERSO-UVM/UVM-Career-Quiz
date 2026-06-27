@@ -24,7 +24,7 @@ def connecting_to_sql() -> tuple[Connection, Cursor]:
     Returns:
         tupple : a tupple containing the connection to the database, and the cursor to said database
     """
-    conn = sqlite3.connect("carrer_quiz.db") 
+    conn = sqlite3.connect("career_quiz.db") 
     cur = conn.cursor()
     return conn,cur
 
@@ -419,7 +419,7 @@ def create_db():
     quiz_creation(cur)
     cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_1, name_1, id_1))
     cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", (q_id_2, name_2, id_2))
-    cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", ("5d8256bb-d74c-46a6-9c97-30145f95b580", "Carrer Quiz 1", id_1))
+    cur.execute("INSERT INTO QUIZ (q_ID, name, owner_id) VALUES (?,?,?)", ("5d8256bb-d74c-46a6-9c97-30145f95b580", "Career Quiz 1", id_1))
     conn.commit()
     access_creation(cur)
     cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_1, q_id_1, ROLE_CREATOR))
@@ -430,5 +430,5 @@ def create_db():
     conn.commit()
     conn.close()
 
-# if __name__ == "__main__":
-#     create_db()
+if __name__ == "__main__":
+    create_db()
