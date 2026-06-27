@@ -227,7 +227,7 @@ def quiz_selection():
                 quiz.append(filename[:-5])
         for q in quiz:
             name.append(db.find_name_with_id(q))
-        return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)
+        return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0, username = session["username"])
     return require_login("You need to log in to see your quizzes.")
 
 @app.route("/quiz_preview/<quiz>")

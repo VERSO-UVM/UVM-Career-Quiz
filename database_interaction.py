@@ -137,7 +137,7 @@ def user_responses(cur : Cursor):
         cur(Cursor) : a cursor to the database 
     """
     cur.execute('''DROP TABLE IF EXISTS USER_RESPONSES''')
-    cur.execute('''CREATE TABLE  USER_RESPONSES(u_ID TEXT NOT NULL UNIQUE, num_completed_quizzes int ,quizzes_assigned TEXT, quizzes_completed TEXT, quiz_response_answers TEXT''')
+    cur.execute('''CREATE TABLE  USER_RESPONSES(u_ID TEXT NOT NULL UNIQUE, num_completed_quizzes int ,quizzes_assigned TEXT, quizzes_completed TEXT, quiz_response_answers TEXT)''')
 
 
 
@@ -427,6 +427,8 @@ def create_db():
     cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_2, q_id_2, ROLE_CREATOR))
     cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_1,"5d8256bb-d74c-46a6-9c97-30145f95b580", ROLE_CREATOR))
     cur.execute("INSERT INTO ACCESS (u_ID, q_ID,role) VALUES (?,?,?)", (id_2,"5d8256bb-d74c-46a6-9c97-30145f95b580", ROLE_ADMIN))
+    conn.commit()
+    user_responses(cur)
     conn.commit()
     conn.close()
 

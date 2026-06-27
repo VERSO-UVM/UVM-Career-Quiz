@@ -801,7 +801,7 @@ main#empty_state {
 
 .delete_btn_accept {
     flex: 1;
-    background: red;
+    background: #154734;
     color: white;
     border: none;
     cursor: pointer;
@@ -823,7 +823,8 @@ main#empty_state {
 
 .delete_btn_reject {
     flex: 1;
-    background: #154734;
+    background: red;
+    
     color: white;
     padding: 8px 14px;
     border: none;
@@ -910,4 +911,14 @@ header .role_badge {
 .role_select:focus,
 .role_select_inline:focus {
     outline: 2px solid #154734;
+}
+
+header a {
+    color: inherit;
+    text-decoration: none;
+}
+
+header a:hover h1 {
+    opacity: 0.8;
+    cursor: pointer;
 }
