@@ -362,13 +362,14 @@ def receive_user_quiz_data():
     if not data:
         return jsonify({"status": "error", "message": "No data received"}), 400
 
+    # runs command to execute the test file
     result = subprocess.run(
             ['python3', 'test_posted_user_data.py', nice_json_string], 
-            capture_output=True, # Captures the print statements from worker.py
-            text=True            # Keeps the output as text rather than raw bytes
+            capture_output=True, 
+            text=True            
         )
     
-    print("--- Worker Script Output ---")
+    print("--- Test Script Output ---")
     print(result.stdout) 
     print("----------------------------")
 
