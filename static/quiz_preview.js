@@ -274,6 +274,36 @@ function formatCompletedQuizData(){
     return usersQuizResponseData;
 }
 
+//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+async function postUserData(usersQuizResponseData){
+    data = usersQuizResponseData;
+
+    try {
+        const response = await fetch('/quiz-data', {
+          method: 'POST', 
+          headers: {
+            'Content-Type': 'application/json' 
+          },
+          body: JSON.stringify(data) 
+        });
+    
+        if (!response.ok) {
+          throw new Error(`HTTP error!`);
+        }
+    
+        const result = await response.json();
+        console.log('Success:', result);
+
+    } catch (error) {
+        console.error('Error during POST request:', error);
+    }
+}
+//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+
 
 /**
  * Called at the end of the survey to indicate that it's done
@@ -282,6 +312,7 @@ function formatCompletedQuizData(){
 function renderSummary() {
     
     testData = formatCompletedQuizData();
+    postUserData(testData);
     return `
     <div class="summary-wrap">
         <h2 class="summary-title">Quiz Results JSON Preview</h2>
@@ -436,7 +467,7 @@ function isCurrentAnswered() {
 }
 
 /**
- * Since html is a slighly annoying language, user input can easily break it. This is here to sanitize an input
+ * Since html is a slightly annoying language, user input can easily break it. This is here to sanitize an input
  * @param {*} s the text that need escaping from  
  * @returns the string sanitized
  */

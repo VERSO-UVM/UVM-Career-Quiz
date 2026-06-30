@@ -2,6 +2,7 @@ import json
 import sqlite3
 import csv
 import pickle
+import app
 #TODO: check sql queries to ensure correct data is being handled, make sure that any errors that occur for now cannot happen in prod, a lot of this can be dangerous if serial data can be mixed with unserialzed data and either re-serialized or joined wrong, all data types must be checked in every function. 
 #-----------------------------------WARNING!!!!!----------------------------------------------------
 

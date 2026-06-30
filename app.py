@@ -1,4 +1,5 @@
 from flask import Flask, render_template,request, session, redirect, url_for, jsonify
+from flask_cors import CORS
 import uuid
 import os
 import json
@@ -6,11 +7,16 @@ import time
 import database_interaction as db 
 import log_in
 import user_quizzes
+import subprocess
 
 
 app = Flask(__name__)
 #TODO this is for testing purpose and will need to be changed as soon as we get a server
 app.secret_key = "flask_is_making_me_do_this"
+
+
+# TESTING CODE
+CORS(app) # This allows your JS frontend to talk to this backend without security blocks
 
 
 def get_role(quiz_id):
@@ -341,3 +347,35 @@ def quiz_delete():
 
 def require_login(reason=None):
     return render_template("access_denied.html", reason=reason)
+
+#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+
+
+@app.route('/quiz-data', methods=['POST'])
+def receive_user_quiz_data():
+
+    data = request.get_json()
+    nice_json_string = json.dumps(data, indent=2)
+
+    if not data:
+        return jsonify({"status": "error", "message": "No data received"}), 400
+
+    result = subprocess.run(
+            ['python3', 'test_posted_user_data.py', nice_json_string], 
+            capture_output=True, # Captures the print statements from worker.py
+            text=True            # Keeps the output as text rather than raw bytes
+        )
+    
+    print("--- Worker Script Output ---")
+    print(result.stdout) 
+    print("----------------------------")
+
+    return jsonify({
+        "status": "success",
+    }), 200
+
+#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
