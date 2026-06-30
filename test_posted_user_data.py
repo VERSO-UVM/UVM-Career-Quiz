@@ -2,6 +2,11 @@ import sys
 import json
 import response_table_interaction
 
+'''
+This is the test file for takeing in a users 
+completed quiz and formatting it for the data base
+'''
+
 def main():
     print("-> test file has started executing!")
     
