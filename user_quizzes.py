@@ -1,37 +1,7 @@
-import sqlite3
-quizzes_to_be_done = []
-complete_quizzes = []
-class Quiz:
-    is_complete : bool = False
-    quiz_id : str = ""
-
-    def __init__(self, quiz_id : str):
-        self.is_complete = False
-        self.quiz_id = quiz_id
-    
-    def get_quiz_id(self):
-        return self.quiz_id
-    def complete_quiz(self):
-        self.is_complete =True
-    def is_completed(self):
-        return self.is_complete
+import response_table_interaction as ri
 
 def fetch_curr_user(username: str, verified: bool):
-        """sql query to fetch user data once logged in"""
-        query_result = ["sdfduhg", "forth", "23jfrd"]
-        data = [Quiz(quiz_id) for quiz_id in query_result]
-        if verified:
-            user_quizzes = data
-            for quiz in user_quizzes:
-                if not quiz.is_completed():
-                    quizzes_to_be_done.append(quiz)
-                else:
-                    complete_quizzes.append(quiz)
-            """sql query update user quizzes in categories"""
-            return (quizzes_to_be_done, complete_quizzes)
-        
-        else:
-            return("Unable to access user quizzes")
+    return ri.lookup_user_todo_completed_quizzes(username)
         #on available quizzes.html display all quizzes 2 sections, user completed vs not 
     
 

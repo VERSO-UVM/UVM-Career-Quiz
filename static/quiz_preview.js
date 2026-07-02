@@ -1,3 +1,4 @@
+//instance variable.
 let pages = [];
 let cur = 0;
 let responses = {};
@@ -6,7 +7,7 @@ let CURRENT_USER_ID = null;
 
 /**
  * @param {*} quiz the quiz that is being previewed 
- * @returns a list containing every question (even null question --> do we want to remove that part?)
+ * @returns a list containing every question
  */
 function buildPages(quiz) {
     const list = [];
@@ -21,6 +22,7 @@ function buildPages(quiz) {
 /**
  * Update the footer each time a question is answered, is responsible for the bar filling at the bottom 
  * Allow the user to have a sense of how many question there are instead of trudging onward without any idea of what is awaiting them
+ * @returns when the quiz is fully finished, as a way to escape and not continue with unneded behavior 
  */
 function updateFooter() {
     const answered = history.length;
@@ -55,7 +57,12 @@ function updateFooter() {
         : `${min}–${max} remaining`;
 }
 
-// gets the number of remaining questions given a start index
+
+/**
+ * gets the number of remaining questions given a start index
+ * @param {*} startIdx the start index that we are using 
+ * @returns the range of question left to answer
+ */
 function getRemainingRange(startIdx) {
     const memo = new Map();
     const visiting = new Set();
@@ -125,7 +132,6 @@ function renderQuestionPage(page) {
         const val = responses[item.id] || '';
         body = `<textarea class="open-textarea" placeholder="Type your answer here"
         oninput="setText('${item.id}',this.value)">${esc(val)}</textarea>`;
-
     } else if (item.type === 'sldr') {
         const options = item.answer;
         if (!options.length) {
@@ -274,9 +280,7 @@ function formatCompletedQuizData(){
     return usersQuizResponseData;
 }
 
-//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
+// Sends out POST with users quiz data for the database to process
 async function postUserData(usersQuizResponseData){
     data = usersQuizResponseData;
 
@@ -300,10 +304,6 @@ async function postUserData(usersQuizResponseData){
         console.error('Error during POST request:', error);
     }
 }
-//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-
 
 /**
  * Called at the end of the survey to indicate that it's done
@@ -324,8 +324,41 @@ function renderSummary() {
 }
 
 /**
+ * Check if a page is the last page, used to check whether the next button text need to be changed to "Finish" instead
+ * @returns if this page is the last page or not
+ */
+function isLastPage() {
+    const item = pages[cur]?.item;
+    if (!item) 
+        return true;
+
+    if (item.type === 'result' || item.type === 'text') {
+        const leads_to = item.answer?.[0]?.leads_to;
+        if (!leads_to) 
+            return true;
+        return resolveLeadsTo(leads_to) >= pages.length;
+    }
+
+    const answerId = responses[item.id];
+    if (!answerId) {
+        return cur === pages.length - 1;
+    }
+
+    const answer = item.answer?.find(a => a.id === answerId);
+    if (!answer) 
+        return false;
+
+    const leads_to = answer.leads_to;
+    if (!leads_to) {
+        return cur === pages.length - 1;
+    }
+
+    return resolveLeadsTo(leads_to) >= pages.length;
+}
+
+/**
  * Render the page each time it is needed to render
- * @returns is here in order to escape after a certain condition
+ * @returns is here in order to escape if the current page is the Summary page, or if the renderDepth is too big (and is likely a recursion case)
  */
 let renderDepth = 0;
 function render() {
@@ -349,7 +382,7 @@ function render() {
     document.getElementById('btn-back').disabled = (history.length === 0);
     document.getElementById('btn-back').onclick = () => goBack();
 
-    document.getElementById('btn-next').textContent = (cur === pages.length - 1) ? 'Finish' : 'Next';
+    document.getElementById('btn-next').textContent = (isLastPage()) ? 'Finish' : 'Next';
     document.getElementById('btn-next').onclick = () => nextQuestion(pages[cur].item.id);
     document.getElementById('btn-next').disabled = !isCurrentAnswered();
 
@@ -369,6 +402,11 @@ function go(dir) {
     window.scrollTo({ top: 0 });
 }
 
+/**
+ * Resolve a leads_to value to an index in the pages array.
+ * @param {*} leads_to the question id to resolve, or null/undefined
+ * @returns the index of the target page in pages[], or pages.length if not found/null
+ */
 function resolveLeadsTo(leads_to) {
     if (!leads_to) {
         return pages.length;
@@ -376,6 +414,12 @@ function resolveLeadsTo(leads_to) {
     const index = pages.findIndex(p => p.item.id == leads_to);
     return index !== -1 ? index : pages.length;
 }
+
+
+/**
+ * Advance the quiz to the next question based on the current question's leads_to value.
+ * @param {*} qId the id of the current question being answered
+ */
 
 function nextQuestion(qId) {
     const item = pages[cur].item;
@@ -391,6 +435,10 @@ function nextQuestion(qId) {
     window.scrollTo({ top: 0 });
 }
 
+/**
+ * Go back to a previous question
+ * @returns if there is no way to go back has it's the first question
+ */
 function goBack() {
     if (history.length === 0) return;
     cur = history.pop();
@@ -399,7 +447,7 @@ function goBack() {
 }
 
 /**
- * Restart the quiz after the quiz has been finished
+ * Restart the quiz after the quiz has been finished, if the user whishes it.
  */
 function restart() {
     responses = {};
@@ -430,7 +478,7 @@ function selectMC(qId, optId) {
 }
 
 /**
- * 
+ * choose an answer to a slider question
  * @param {*} qId the question
  * @param {*} sliderValue current slider value
  * @param {*} optionsArray array of all possible answers to the question
@@ -452,6 +500,10 @@ function setText(qId, val) {
     document.getElementById('btn-next').disabled = !isCurrentAnswered();
 }
 
+/**
+ * Check whether the current page has been answered sufficiently to allow further movement.
+ * @returns true if the current page can be advanced past, false otherwise
+ */
 function isCurrentAnswered() {
     const item = pages[cur]?.item;
     if (!item) return true;
@@ -476,6 +528,7 @@ function esc(s) {
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-//will be called once every time we call this file.
+
+//the following function will be called once every time we call this file.
 getUserID();
 loadQuiz(quiz);

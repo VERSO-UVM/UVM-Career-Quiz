@@ -12,13 +12,13 @@
     <link rel="stylesheet" href="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='drawflow.css') }}">
 
-    <!-- This is only allowing us to BUILD the quiz itself, as for hosting, running the quiz, and exporting it 
-      this is still very much a work in progress (can it be called that when we have nothing yet?) -->
 </head>
 
 <body>
     <header>
-        <h1>Quiz builder</h1>
+        <a href="{{ url_for('quiz_selection') }}">
+            <h1>Quiz builder</h1>
+        </a>
         <div class="header_actions">
             <a href="{{ url_for('quiz_selection') }}">
                 <button class="home_btn">Home</button>
@@ -146,14 +146,12 @@
                 <button class="close_btn" onclick="closeBranching()">✕</button>
             </div>
             <div id="branching-section">
-                <div id="sidebar">
-                    <div id="nodes">
-                        <div class="node-type" draggable="true" data-node="question">Multiple Choice</div>
-                        <div class="node-type" draggable="true" data-node="freeresponse">Free Response</div>
-                        <div class="node-type" draggable="true" data-node="result">No Response</div>
-                    </div>
-                    <button onclick="saveDrawflowChanges()">Save Changes</button>
+                <div id="nodes">
+                    <div class="node-type" draggable="true" data-node="question">Multiple Choice</div>
+                    <div class="node-type" draggable="true" data-node="freeresponse">Free Response</div>
+                    <div class="node-type" draggable="true" data-node="result">No Response</div>
                 </div>
+                <button id="drawflow-save" onclick="saveDrawflowChanges()">Save Changes</button>
                 <div id="drawflow"></div>
 
 
@@ -174,9 +172,9 @@
         document.getElementById('quiz-title').value = quiz.title;
         document.getElementById('quiz-desc').value = quiz.desc;
     </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js" 
-            integrity="sha512-csIng5zcB+XpulRUa+ev1zKo7zRNGpEaVfNB9On1no9KYTEY/rLGAEEpvgdw6nim1WdTuihZY1eqZ31K7/fZjw==" 
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js"
+        integrity="sha512-csIng5zcB+XpulRUa+ev1zKo7zRNGpEaVfNB9On1no9KYTEY/rLGAEEpvgdw6nim1WdTuihZY1eqZ31K7/fZjw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.js"></script>
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
 

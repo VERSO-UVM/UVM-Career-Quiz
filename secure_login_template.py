@@ -164,7 +164,7 @@ import uuid
 # all good
 #As it stand you cannot carry sql statement between python file, therefore it will allow us to connect to the DB
 def connecting_to_sql():
-    conn = sqlite3.connect("carrer_quiz.db")
+    conn = sqlite3.connect("career_quiz.db")
     cur = conn.cursor()
     return conn,cur
 

@@ -6,7 +6,7 @@ import json
 import time
 import database_interaction as db 
 import log_in
-import user_quizzes
+import response_table_interaction as ri
 import subprocess
 
 
@@ -20,30 +20,67 @@ app.secret_key = "flask_is_making_me_do_this"
 CORS(app) 
 
 
-def get_role(quiz_id):
-    return db.get_role(session["user_id"], quiz_id)
+def get_role(quiz_id: str) -> str:
+    """
+    Get the role of the current logged-in user for a specific quiz. Mainly a wrapper for the db function of the same name.
+
+    Args:
+        quiz_id: the id of the quiz to get the role for
+
+    Returns:
+        str : the role of the user
+    """
+    return str(db.get_role(session["user_id"], quiz_id))
 
 @app.route('/get-user-id', methods=['GET'])
 def get_user_id():
-    if "user_id" in session:
-        return jsonify({"userId": session["user_id"]}), 200
+    """
+    Return the current logged-in user's id as a JSON response.
+    Intended to allow the frontend to retrieve the session user id without
+    exposing the full session object.
 
-#Simple page, allow the user to choose between login in and registering. Set all session item to none in order to "Reset" the user and log them out
+    Returns:
+        200: JSON object containing the user's id if the user is logged in
+        404: if no user_id is found in the session (user is not logged in)
+    """
+    if "user_id" in session:
+        return jsonify({"userId": session["user_id"]})
+    return jsonify({"error": "Not logged in"}), 404
+
+
 @app.route("/")
 def login_page():
+    """
+    Render the welcome page where the user can choose to log in or register.
+    """
     return render_template("login_page.html")
 
 @app.route("/logout")
 def logout():
+    """
+    Log the current user out by clearing their session data and render the logged out confirmation page.
+
+    Returns:
+        200: the logged_out.html page confirming the user has been logged out
+    """
     session['user_id'] = None
     session['username'] = None
     session['email'] = None
     return render_template("logged_out.html")
 
-#Log in a user, call functions from the log_in file. 
-#Might want to implement the option to log in with email at one point
+
 @app.route("/quiz_login", methods=['GET', 'POST'])
 def quiz_login():
+    """
+    Render the login page and handle login form submissions.
+    On POST, validates the provided credentials and logs the user in.
+    On GET, renders the login form.
+
+    Returns:
+        GET  200: the quiz_login.html page
+        POST 200: the quiz_login.html page with an error message on failure
+        POST 302: redirect to quiz_selection on success
+    """
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -60,9 +97,19 @@ def quiz_login():
     return render_template("quiz_login.html")
 
 
-#Register a user into the database
+
 @app.route("/register",methods=['GET', 'POST'])
 def register():
+    """
+    Render the registration page and handle registration form submissions.
+    On GET, renders the registration form.
+    On POST, attempts to register the user and logs them in on success, redirecting them to quiz_selection.
+
+    Returns:
+        GET  200: the register.html page
+        POST 200: the register.html page with an error message on failure
+        POST 302: redirect to quiz_selection on success
+    """
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -78,10 +125,34 @@ def register():
         return redirect(url_for('quiz_selection'))
     return render_template("register.html")
 
+def require_login(reason=None):
+    """
+    Render the access denied page when a user tries to access certain page without being logged in.
 
-# Allow the user to create and make modification to quizzes.
+    Args:
+        reason: optional message explaining why access was denied
+
+    Returns:
+        403: the access_denied.html page with the reason message
+    """
+    return render_template("access_denied.html", reason=reason), 403
+
 @app.route("/quiz_builder/<quiz>", methods=["GET", "POST"])
 def quiz_builder(quiz):
+    """
+    Render the quiz builder page for a given quiz id.
+    If the quiz does not exist yet (new quiz), grants the user creator role.
+    If the quiz exists but the user has no access to it, redirects to quiz_selection.
+    Loads the quiz data from the corresponding JSON file if it exists.
+
+    Args:
+        quiz: the id of the quiz to build, or 'new_quiz' for a new one (done in quiz_selection.html)
+
+    Returns:
+        200: the quiz_builder.html page with the quiz data and user role
+        302: redirect to quiz_selection if the user has no access
+        403: access_denied.html if the user is not logged in
+    """
     if session["user_id"]:
  
         role = get_role(quiz)
@@ -102,9 +173,19 @@ def quiz_builder(quiz):
         return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
     return require_login("You need to log in to access the quiz builder.")
 
-#Button on the quiz builder page, allow a user to save a quiz in our server.
+
+
 @app.route('/save_quiz', methods=['POST'])
 def save_quiz():
+    """
+    Save the quiz JSON sent from the frontend to the server.
+
+    Returns:
+        200: JSON with the quiz id and last_modified timestamp on success
+        200: JSON with an error message if the user lacks edit permission
+        409: JSON with an error message if the quiz was modified concurrently
+        403: access_denied.html if the user is not logged in
+    """
     if session["user_id"]:
 
         quiz = request.get_json()
@@ -114,7 +195,7 @@ def save_quiz():
 
         
         if get_role(quiz["id"]) and not db.can_edit(get_role(quiz["id"])):
-            return jsonify({"error" : "You do not have the permision to edit this quiz"}) 
+            return jsonify({"error" : "You do not have the permision to edit this quiz"}), 403
         
         path = f'testing_quiz/{quiz["id"]}.json'
 
@@ -122,7 +203,7 @@ def save_quiz():
             with open(path) as f:
                 saved = json.load(f)
             if saved.get('last_modified') != quiz.get('last_modified'):
-                return jsonify({"error": "This quiz was modified by someone else. Please refresh and redo your changes."})
+                return jsonify({"error": "This quiz was modified by someone else. Please refresh and redo your changes."}),409
 
 
         quiz['last_modified'] = time.time()
@@ -136,9 +217,16 @@ def save_quiz():
 
 
 
-#Allow the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a brute force strategy, but it should work (or at least it has so far)
+#Allow the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a bruteforce strategy, but it should work (or at least it has so far)
 @app.route("/quiz_selection", methods=['GET', 'POST'])
 def quiz_selection():
+    """
+    Render the quiz selection page, listing all quizzes the current user has access to.
+
+    Returns:
+        200: the quiz_selection.html page with the list of accessible quizzes
+        403: access_denied.html if the user is not logged in
+    """
     if session["user_id"]:
         folder_path = './testing_quiz'
         quiz = []
@@ -148,11 +236,22 @@ def quiz_selection():
                 quiz.append(filename[:-5])
         for q in quiz:
             name.append(db.find_name_with_id(q))
-        return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0)
+        return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0, username = session["username"])
     return require_login("You need to log in to see your quizzes.")
 
 @app.route("/quiz_preview/<quiz>")
 def quiz_preview(quiz):
+    """
+    Render the quiz preview page for a given quiz id.
+
+    Args:
+        quiz: the id of the quiz to preview
+
+    Returns:
+        200: the quiz_preview.html page with the quiz data
+        302: redirect to quiz_selection if the user has no access to the quiz
+        403: access_denied.html if the user is not logged in
+    """
     if session["user_id"]:
         role = get_role(quiz)
         if role:
@@ -163,19 +262,25 @@ def quiz_preview(quiz):
             redirect("/quiz_selection")
     return require_login("You need to log in to preview a quiz.")
 
+#TODO: this is currently not working as intended, the library for fetching quiz info is changed WIP
 @app.route("/available_quizzes", methods=['GET','POST'])
 def show_available_quizzes():
+    """
+    Render the available quizzes page.
+
+    Returns:
+        200: the available_quizzes.html page with assigned and completed quiz lists
+        403: access_denied.html if the user is not logged in
+    """
     if session["user_id"]:
         assigned_quizzes = db.quizzes_for_user(session["user_id"])
+        completed_quizzes = []    
+        _, completed = ri.lookup_user_todo_completed_quizzes(session.get('username', ''))
+        completed_quizzes = [
+                {"id": q, "name": db.find_name_with_id(q)}
+                for q in completed ]
+        
         completed_quizzes = []
-        try:
-            to_do, completed = user_quizzes.fetch_curr_user(session.get('username', ''), True)
-            completed_quizzes = [
-                {"id": q.get_quiz_id(), "name": db.find_name_with_id(q.get_quiz_id())}
-                for q in completed
-            ]
-        except Exception:
-            completed_quizzes = []
 
         return render_template("available_quizzes.html", assigned_quizzes=assigned_quizzes, completed_quizzes=completed_quizzes)
     return require_login("You need to log in see the quizzes available to you.")
@@ -183,6 +288,17 @@ def show_available_quizzes():
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
+    """
+    Handle sharing a quiz with another user.
+    On GET, returns a JSON list of users who currently have access to the quiz, along with the current user's sharing permissions.
+    On POST, shares the quiz with the specified user at the specified role, subject to permission checks.
+
+    Returns:
+        GET  200: JSON with the list of users, their roles, and sharing permissions
+        POST 200: JSON success message on successful share
+        POST 200: JSON error message if permissions are insufficient or user not found
+        403: access_denied.html if the user is not logged in
+    """
     if session["user_id"]:
         if request.method == 'GET':
             quiz_id = request.args.get("quiz_id", "").strip()
@@ -243,6 +359,16 @@ def quiz_share():
 
 @app.route('/assign_quiz', methods=['POST'])
 def assign_quiz():
+    """
+    Assign a quiz to a user by giving them reader access to it.
+    Only users with share permissions (creator or admin) can assign quizzes.
+
+    Returns:
+        200: JSON success message if the quiz was assigned successfully
+        200: JSON error message if the user does not exist or already has access
+        403: JSON error message if the current user lacks share permission
+        403: access_denied.html if the user is not logged in
+    """
     if session.get('user_id'):
         data = request.get_json() or {}
         username = data.get('username', '').strip()
@@ -253,7 +379,7 @@ def assign_quiz():
 
         u_role = get_role(quiz_id)
         if not db.can_share(u_role):
-            return jsonify({"error": "You do not have permission to assign this quiz."})
+            return jsonify({"error": "You do not have permission to assign this quiz."}),403
 
         target_id = db.find_id_with_uname(username)
         if not target_id:
@@ -270,6 +396,15 @@ def assign_quiz():
 
 @app.route("/quiz_update_role", methods=["POST"])
 def quiz_update_role():
+    """
+    Update the role of a user for a specific quiz.
+    The current user must have share permissions and cannot assign a role equal to or higher than their own.
+
+    Returns:
+        200: JSON success message if the role was updated successfully
+        200: JSON error message if permissions are insufficient or the role is invalid
+        403: access_denied.html if the user is not logged in
+    """
     if session["username"]:
  
         data     = request.get_json()
@@ -301,6 +436,16 @@ def quiz_update_role():
 
 @app.route('/quiz_revoke', methods=['POST'])
 def quiz_revoke():
+    """
+    Revoke a user's access to a quiz.
+    Only creators and admins can revoke access, and the creator's own access
+    cannot be revoked.
+    TODO may want to add a way for the creator to transfer ownership to someone else.
+    Returns:
+        200: JSON success message if access was revoked successfully
+        200: JSON error message if permissions are insufficient or the target is the creator
+        403: access_denied.html if the user is not logged in
+    """
     if session["username"]:
         data = request.get_json()
         username = data.get('username', '').strip()
@@ -322,6 +467,13 @@ def quiz_revoke():
 
 @app.route('/go_back')
 def go_back():
+    """
+    Redirect the user to their previous page if stored in the session,
+    falling back to quiz_selection if no previous page is recorded.
+
+    Returns:
+        302: redirect to the previous page or quiz_selection
+    """
     prev = session.get('previous_page')
     if prev:
         return redirect(prev)
@@ -329,6 +481,16 @@ def go_back():
 
 @app.route("/quiz_delete", methods =['POST'])
 def quiz_delete():
+    """
+    Delete a quiz entirely, removing it from both the database and the filesystem.
+    Only the creator of the quiz can delete it.
+
+    Returns:
+        200: JSON with a redirect URL to quiz_selection on success
+        200: JSON error message if the current user is not the creator
+        200: JSON error message if the deletion failed unexpectedly
+        403: access_denied.html if the user is not logged in
+    """
     if session["username"]:
         data = request.get_json()
         quiz_id = data.get('quiz_id', ''.strip())
