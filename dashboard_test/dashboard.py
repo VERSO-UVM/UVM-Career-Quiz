@@ -2,8 +2,9 @@ import streamlit as st
 import dashboard_functions
 import pandas as pd
 
-# [quiz_id, ques_id, answer] --> [[ques_id1, answer],[ques_id2, answer]]
+# Loads all quiz questions and answers into a 2D list that can be parsed
 #
+# [quiz_id, ques_id, answer] --> [[ques_id1, answer],[ques_id2, answer]]
 def match_quiz_to_answers(quiz_name, answer_tuple):
     all_matched_answers = [] 
     QUIZ_ID = 0
@@ -20,7 +21,11 @@ def match_quiz_to_answers(quiz_name, answer_tuple):
             pass
     return all_matched_answers # --> [[ques_id1, answer],[ques_id2, answer]]
 
+# Loads the user dash board of the selected person in the side bar drop down menu
 def load_user_dash(current_user):
+
+    QUESTION_INDEX = 0
+    ANSWER_INDEX = 1
 
     # This renders the selected users dashboard and quiz data
     if current_user is not None:
@@ -41,9 +46,10 @@ def load_user_dash(current_user):
             st.subheader(f"{selected_quiz_id} answers:")    
             quiz_answers = match_quiz_to_answers(selected_quiz_id, user.parse_answer_tuple())
 
+            # loads all the Questions and Answers for the selected quiz
             for answer in quiz_answers:
                 with st.container(border=True):
-                    st.write(f"Question: {answer[0]} | Answer: {answer[1]}")
+                    st.write(f"Question: {answer[QUESTION_INDEX]} | Answer: {answer[ANSWER_INDEX]}")
         else:
             st.info("This user has no completed quizzes to display.")    
 
@@ -66,8 +72,7 @@ if __name__ == "__main__":
             current_user = user
             break  
     
-    load_user_dash(current_user)
+    # Loads selected users dashboard stats
+    load_user_dash(current_user) 
 
-    # Get all quiz names
-    
     

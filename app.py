@@ -15,8 +15,9 @@ app = Flask(__name__)
 app.secret_key = "flask_is_making_me_do_this"
 
 
-# TESTING CODE
-CORS(app) # This allows your JS frontend to talk to this backend without security blocks
+
+# This allows JS frontend to talk to this backend without security blocks TBD on weather this is a long term solution.
+CORS(app) 
 
 
 def get_role(quiz_id):
@@ -135,7 +136,7 @@ def save_quiz():
 
 
 
-#Allow the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a bruteforce strategy, but it should work (or at least it has so far)
+#Allow the user to choose a quiz from our server, and upon choosing send them to quiz_builder. The two list are kind of a brute force strategy, but it should work (or at least it has so far)
 @app.route("/quiz_selection", methods=['GET', 'POST'])
 def quiz_selection():
     if session["user_id"]:
@@ -348,11 +349,9 @@ def quiz_delete():
 def require_login(reason=None):
     return render_template("access_denied.html", reason=reason)
 
-#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
 
-
+# Accepts the post request from flask that contains a users completed quiz data package
+# Then sends it to be processed into the database
 @app.route('/quiz-data', methods=['POST'])
 def receive_user_quiz_data():
 
@@ -376,7 +375,3 @@ def receive_user_quiz_data():
     return jsonify({
         "status": "success",
     }), 200
-
-#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//
-#//-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------////-----------------TEST---FUNCTION-----------------//

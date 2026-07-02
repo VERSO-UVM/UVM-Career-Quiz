@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 
+# Object that contains all of a users quiz data the will be displayed on the dashboard
 class UserQuizData:
 
     def __init__(
@@ -57,7 +58,8 @@ class UserQuizData:
             uncompleted_quiz_names.append(quiz_name)
         return uncompleted_quiz_names
 
-
+    # Parse the quiz and question id into separate indexes
+    #
     # (quiz_id-ques_id, answer) --> (quiz_id, ques_id, answer)
     def parse_answer_tuple(self) -> list[str,str,str]:
         all_parsed_answers = []
@@ -85,7 +87,7 @@ def load_users_into_objects(filename):
 
 
 if __name__ == "__main__":
-
+    # Test Code
     all_users = load_users_into_objects("user_quiz_data.csv")       
 
     print(all_users[0].get_uncompleted_quiz_names())
