@@ -418,15 +418,10 @@ def lookup_user_todo_completed_quizzes(u_id: str) -> tuple[list,list]:
         return (["err"], ["could not fetch data"])
 
 
-    
-        
-
-    
-
 if __name__ == "__main__":
-    #gerald = _json_data_convert(TEST_STRING)
-    #print((gerald))
-    ques = csv_lookup_to_list("resume")
+    gerald = _json_data_convert(TEST_STRING_TWO)
+    print(gerald)
+    
    
 
 
