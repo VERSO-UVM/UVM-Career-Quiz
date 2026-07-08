@@ -2,10 +2,15 @@ import streamlit as st
 import dashboard_functions
 import pandas as pd
 
-# Loads all quiz questions and answers into a 2D list that can be parsed
-#
-# [quiz_id, ques_id, answer] --> [[ques_id1, answer],[ques_id2, answer]]
 def match_quiz_to_answers(quiz_name, answer_tuple):
+    '''
+    Loads all quiz questions and answers into a 2D list that can be parsed
+
+    :param quiz_name: title of the quiz being matched
+    :param answer_tuple: tuple in format : (quiz_id, ques_id, answer)
+
+    :returns all_matched_answers: List in format : [[ques_id1, answer],[ques_id2, answer],...] 
+    '''
     all_matched_answers = [] 
     QUIZ_ID = 0
     QUESTION_ID = 1
@@ -19,11 +24,14 @@ def match_quiz_to_answers(quiz_name, answer_tuple):
             all_matched_answers.append(answer_package)
         else:
             pass
-    return all_matched_answers # --> [[ques_id1, answer],[ques_id2, answer]]
+    return all_matched_answers 
 
-# Loads the user dash board of the selected person in the side bar drop down menu
 def load_user_dash(current_user):
+    '''
+    Loads the user dash board of the selected person in the side bar drop down menu
 
+    :param current_user: The UserDataObject that represents a specific user
+    '''
     QUESTION_INDEX = 0
     ANSWER_INDEX = 1
 

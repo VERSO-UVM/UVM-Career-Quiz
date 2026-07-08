@@ -3,7 +3,15 @@ import re
 
 # Object that contains all of a users quiz data the will be displayed on the dashboard
 class UserQuizData:
+    '''
+    # Object that contains all of a users quiz data the will be displayed on the dashboard
 
+    :param u_id: Users ID
+    :param completed_quiz_count: Number of quizzes that the user has completed
+    :param to_do_str: Titles of quizzes that aren't completed 
+    :param completed_str: Titles of quizzes that are completed
+    :param answers_str: A users answers to all the completed quizzes
+    '''
     def __init__(
         self,
         u_id: str,
@@ -31,8 +39,14 @@ class UserQuizData:
             f"  answers={self.answers}\n"
         )
 
-    # Adds all tuples for completed_quizzes and answers to a list "(),(),()" --> [(),(),()]
     def parse_tuples(self, raw_str: str):
+        '''
+        Adds all tuples for completed_quizzes and answers to a list
+
+        :param raw_str: tuples in string form : "(),(),()"
+
+        :returns parsed_list: list of tuples : [(),(),()]
+        '''
         matches = re.findall(r"\(([^)]+)\)", raw_str)
         parsed_list = []
 
@@ -44,24 +58,38 @@ class UserQuizData:
                 parsed_list.append((key, val))
         return parsed_list
     
-    # gets names of all the quizzes an individual user has completed
     def get_completed_quiz_names(self) -> list[str]:
+        '''
+        Gets names of all the quizzes an individual user has completed
+
+        :returns completed_quiz_names: list of completed quiz names
+        '''
         completed_quiz_names = []
         for quiz_name in self.completed_quizzes:
             completed_quiz_names.append(quiz_name[0])
         return completed_quiz_names
 
-    # gets names of all the quizzes an individual user has NOT taken
     def get_uncompleted_quiz_names(self) -> list[str]:
+        '''
+        gets names of all the quizzes an individual user has NOT taken
+
+        :returns uncompleted_quiz_names: list of uncompleted quiz names
+        '''
         uncompleted_quiz_names = []
         for quiz_name in self.quizzes_to_do:
             uncompleted_quiz_names.append(quiz_name)
         return uncompleted_quiz_names
 
-    # Parse the quiz and question id into separate indexes
-    #
-    # (quiz_id-ques_id, answer) --> (quiz_id, ques_id, answer)
+    #------------------------ FUNCTIONS THAT PROBABLY WONT BE USED ONCE DATABASE IS UP ------------------------#
+
     def parse_answer_tuple(self) -> list[str,str,str]:
+        '''
+        Parse the quiz and question id into separate indexes
+
+        :param self: tuple in format of : (quiz_id-ques_id, answer)
+
+        :returns: tuple in format of : (quiz_id, ques_id, answer)
+        '''
         all_parsed_answers = []
         for answer in self.answers:
             parsed_answer = answer[0].split("-")
@@ -69,9 +97,15 @@ class UserQuizData:
             all_parsed_answers.append(parsed_answer)
         return all_parsed_answers
 
-# Loads csv data into UserQuizData objects
-def load_users_into_objects(filename):
-    df = pd.read_csv(filename)
+def load_users_into_objects(file_name):
+    '''
+    Loads test csv data into UserQuizData objects
+
+    :param file_name: name of csv file
+
+    :returns all_users: list of UserQuizData objects 
+    '''
+    df = pd.read_csv(file_name)
     
     all_users = [
         UserQuizData(
@@ -84,7 +118,7 @@ def load_users_into_objects(filename):
         for row in df.itertuples(index=False)
     ]
     return all_users
-
+#------------------------ FUNCTIONS THAT PROBABLY WONT BE USED ONCE DATABASE IS UP ------------------------#
 
 if __name__ == "__main__":
     # Test Code
