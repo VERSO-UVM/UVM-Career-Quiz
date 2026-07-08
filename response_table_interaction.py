@@ -3,6 +3,7 @@ import sqlite3
 import csv
 import pickle
 import app
+import os 
 #TODO: check sql queries to ensure correct data is being handled, make sure that any errors that occur for now cannot happen in prod, a lot of this can be dangerous if serial data can be mixed with unserialzed data and either re-serialized or joined wrong, all data types must be checked in every function. 
 #-----------------------------------WARNING!!!!!----------------------------------------------------
 
@@ -202,6 +203,7 @@ TEST_STRING_TWO = ''' {
  ]
 }'''
 
+JSON_CONVERTED_TEST_STRING = [('clippn2', 'm36a7h0', 'HI'), ('zaxz8fd', 'qhlk9ks', 'c')]
 # Exception type for catching database loading and converting on bad types
 class IncompatibleType(Exception):
         def __init__(self, message):
@@ -248,7 +250,7 @@ def _json_data_convert(json_string: str):
                     ques_id = answer["id"]    
                     response = answer["UserAnswer"][0]["text"]
                     ans_id = answer["UserAnswer"][0]["id"]
-                    answers.append((ques_id,"Answer Details: " ,ans_id, response))
+                    answers.append((ques_id, ans_id, response))
                 else:
                     answers.append((answer["id"], "NULL_ID", "IDX_ERR"))
             except KeyError:
@@ -262,7 +264,7 @@ def _json_data_convert(json_string: str):
 
 
 
-def _incriment_quiz_ctr(u_id: str):
+def _increment_quiz_ctr(u_id: str):
     conn, cur = connecting_to_sql()
     query = """UPDATE USER_RESPONSES SET num_completed_quizzes += 1 WHERE u_ID = ?"""
     cur.execute(query, (u_id,))
@@ -303,7 +305,7 @@ def _append_answers(u_id, answer_list):
 
 def quiz_complete(json_string):
        u_id, q_id, len_quiz, answer_arr = _json_data_convert(json_string)
-       _incriment_quiz_ctr(u_id)
+       _increment_quiz_ctr(u_id)
        _move_quiz_id_todo_cmp(u_id, q_id, len_quiz)
        _append_answers(u_id, answer_arr)
 
@@ -417,10 +419,46 @@ def lookup_user_todo_completed_quizzes(u_id: str) -> tuple[list,list]:
     else:
         return (["err"], ["could not fetch data"])
 
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# (question_id, answer_id, answer_text)
+TEST_QUIZ_ANSWERS = [('clippn2', 'm36a7h0', 'HI'), ('zaxz8fd', 'qhlk9ks', 'c')]
+
+TEST_QUIZ_ID = '605ab9c6-4087-496f-b0f9-03e736387715'
+
+# Translation function to get question 
+#
+# returns translated list of all questions that where answered
+def id_to_text_translator(quiz_id, answers_id_list, quiz_folder_master):
+
+    quiz_file_name = f'{quiz_id}.json'
+
+    file_path = os.path.join(quiz_folder_master, quiz_file_name)
+    
+    quiz_list = os.listdir(quiz_folder_master)
+            
+    if os.path.exists(file_path):
+        print(f"Opening and parsing: {file_path}")
+
+        with open(file_path, "r", encoding="utf-8") as file:
+            quiz_data = json.load(file)
+
+        print(f"User ID from File: {quiz_data['u_id']}")
+        
+    else:
+        print(f" Error: The file {file_path} could not be found.")
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+
 
 if __name__ == "__main__":
-    gerald = _json_data_convert(TEST_STRING_TWO)
-    print(gerald)
+    #gerald = _json_data_convert(TEST_STRING_TWO)
+    #print(gerald)
+
+    print( id_to_text_translator(TEST_QUIZ_ID, TEST_QUIZ_ANSWERS, 'testing_quiz') )
+
     
    
 
