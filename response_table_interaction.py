@@ -403,7 +403,7 @@ def lookup_kw_arg_on_user_set(keyword:str , user_array: list):
 
     return result
 
-def lookup_user_todo_completed_quizzes(u_id: str) -> tuple[list,list]:
+def lookup_user_todo_completed_quizzes(u_id: str):
     conn, cur = connecting_to_sql()
 
     query = """SELECT quizzes_assigned, quizzes_completed FROM USER_RESPONSES WHERE U_ID = ?"""
@@ -411,11 +411,12 @@ def lookup_user_todo_completed_quizzes(u_id: str) -> tuple[list,list]:
     cur.execute(query, (u_id,))
     result = cur.fetchone()
     conn.close()
-    for item in result:
-        returned_results.append(return_from_serial(item))
-    if len(result) == 2:
-        quiz_ids = [quiz[0] for quiz in result[1]]
-        return (result[0], quiz_ids)
+    if result is not None:
+        for item in result:
+            returned_results.append(return_from_serial(item))
+        if len(result) == 2:
+            quiz_ids = [quiz[0] for quiz in result[1]]
+            return (result[0], quiz_ids)
     else:
         return (["err"], ["could not fetch data"])
 

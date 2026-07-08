@@ -275,7 +275,7 @@ def show_available_quizzes():
     if session["user_id"]:
         assigned_quizzes = db.quizzes_for_user(session["user_id"])
         completed_quizzes = []    
-        _, completed = ri.lookup_user_todo_completed_quizzes(session.get('username', ''))
+        _, completed = ri.lookup_user_todo_completed_quizzes(session['user_id'])
         completed_quizzes = [
                 {"id": q, "name": db.find_name_with_id(q)}
                 for q in completed ]
