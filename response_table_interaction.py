@@ -450,7 +450,7 @@ def question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_MASTER)
     '''
     Translation function to get question text from question IDs
 
-    :param answer_id_list:
+    :param answer_id_list: List of tuples in format [(question_id, answer_id, answer_text), ...]
     :param quiz_folder_MASTER: The name of the folder that holds the JSON files for the quizzes
 
     :returns: A list of all the questions from the quiz in text form
