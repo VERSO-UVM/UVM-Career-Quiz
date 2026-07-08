@@ -203,7 +203,6 @@ TEST_STRING_TWO = ''' {
  ]
 }'''
 
-JSON_CONVERTED_TEST_STRING = [('clippn2', 'm36a7h0', 'HI'), ('zaxz8fd', 'qhlk9ks', 'c')]
 # Exception type for catching database loading and converting on bad types
 class IncompatibleType(Exception):
         def __init__(self, message):
@@ -423,18 +422,43 @@ def lookup_user_todo_completed_quizzes(u_id: str):
 # ------------------------------------------------TEST-CODE------------------------------------------------#
 # ------------------------------------------------TEST-CODE------------------------------------------------#
 # ------------------------------------------------TEST-CODE------------------------------------------------#
-# (question_id, answer_id, answer_text)
-TEST_QUIZ_ANSWERS = [('wu2k8f4', 't2u0y1r', 'HELLO'), ('umdk5o3', '43zaysu', 'Dragon Fruit'), ('5u83jdb', 'umo3d5g', 'VT')]
 
-TEST_QUIZ_ID = 'pjo4roy'
+def quiz_id_to_quiz_title_translator(quiz_id, quiz_folder_MASTER):
+    '''
+    Translation function to get quiz title from inputting the quiz ID
 
-# Translation function to get question text
-#
-# returns translated list of all questions that where answered
-def question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_master):
+    :param quiz_folder_MASTER: The name of the folder that holds the JSON files for the quizzes
 
+    :returns: quiz title in text form
+    '''
+
+    # Finds matching JSON file in the master folder
     quiz_file_name = f'{quiz_id}.json'
-    file_path = os.path.join(quiz_folder_master, quiz_file_name)
+    file_path = os.path.join(quiz_folder_MASTER, quiz_file_name)
+
+    if os.path.exists(file_path):
+        #print(f"Opening and parsing: {file_path}") TEST CODE
+
+        # opens quiz json file
+        with open(file_path, "r", encoding="utf-8") as file:
+            quiz_data = json.load(file)
+            return quiz_data['title']
+    else:
+        print(f" Error: The file {file_path} could not be found.")
+        
+def question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_MASTER):
+    '''
+    Translation function to get question text from question IDs
+
+    :param answer_id_list:
+    :param quiz_folder_MASTER: The name of the folder that holds the JSON files for the quizzes
+
+    :returns: A list of all the questions from the quiz in text form
+    '''
+
+    # Finds matching JSON file in the master folder
+    quiz_file_name = f'{quiz_id}.json'
+    file_path = os.path.join(quiz_folder_MASTER, quiz_file_name)
     
     # parse answer_id_list to get question ids
     QUESTION_ID_INDEX = 0
@@ -445,7 +469,7 @@ def question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_master)
     # where the text for the questions will be stored
     question_text = []
     if os.path.exists(file_path):
-        print(f"Opening and parsing: {file_path}")
+        #print(f"Opening and parsing: {file_path}") TEST CODE
 
         # opens quiz json file
         with open(file_path, "r", encoding="utf-8") as file:
@@ -475,4 +499,14 @@ if __name__ == "__main__":
     #gerald = _json_data_convert(TEST_STRING_TWO)
     #print(gerald)
 
+    # (question_id, answer_id, answer_text)
+    TEST_QUIZ_ANSWERS = [('wu2k8f4', 't2u0y1r', 'HELLO'), ('umdk5o3', '43zaysu', 'Dragon Fruit'), ('5u83jdb', 'umo3d5g', 'VT')]
+
+    TEST_QUIZ_ID = 'pjo4roy'
+
+    print('-'*15 + 'QUIZ TITLE' + '-'*15)
+    print(quiz_id_to_quiz_title_translator(TEST_QUIZ_ID, 'testing_quiz'))
+    print('-'*43)
+    print('-'*15 + 'QUESTION TEXT' + '-'*15)
     print(question_id_to_text_translator(TEST_QUIZ_ID, TEST_QUIZ_ANSWERS, 'testing_quiz'))
+    print('-'*43)
