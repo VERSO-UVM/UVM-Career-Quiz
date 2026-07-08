@@ -424,29 +424,46 @@ def lookup_user_todo_completed_quizzes(u_id: str):
 # ------------------------------------------------TEST-CODE------------------------------------------------#
 # ------------------------------------------------TEST-CODE------------------------------------------------#
 # (question_id, answer_id, answer_text)
-TEST_QUIZ_ANSWERS = [('clippn2', 'm36a7h0', 'HI'), ('zaxz8fd', 'qhlk9ks', 'c')]
+TEST_QUIZ_ANSWERS = [('wu2k8f4', 't2u0y1r', 'HELLO'), ('umdk5o3', '43zaysu', 'Dragon Fruit'), ('5u83jdb', 'umo3d5g', 'VT')]
 
-TEST_QUIZ_ID = '605ab9c6-4087-496f-b0f9-03e736387715'
+TEST_QUIZ_ID = 'pjo4roy'
 
-# Translation function to get question 
+# Translation function to get question text
 #
 # returns translated list of all questions that where answered
-def id_to_text_translator(quiz_id, answers_id_list, quiz_folder_master):
+def question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_master):
 
     quiz_file_name = f'{quiz_id}.json'
-
     file_path = os.path.join(quiz_folder_master, quiz_file_name)
     
-    quiz_list = os.listdir(quiz_folder_master)
-            
+    # parse answer_id_list to get question ids
+    QUESTION_ID_INDEX = 0
+    question_ids = []
+    for answer in answers_id_list:
+        question_ids.append(answer[QUESTION_ID_INDEX])
+
+    # where the text for the questions will be stored
+    question_text = []
     if os.path.exists(file_path):
         print(f"Opening and parsing: {file_path}")
 
+        # opens quiz json file
         with open(file_path, "r", encoding="utf-8") as file:
             quiz_data = json.load(file)
-
-        print(f"User ID from File: {quiz_data['u_id']}")
         
+        # matches question id's and pulls text
+        for category in quiz_data["categories"]:
+            for item in category["items"]:
+                counter = 0
+                while item['id'] != question_ids[counter]:
+                    counter += 1
+                
+                # Failsafe against infinite loops
+                if counter == len(question_ids):
+                    question_text.append('NO MATCH SOMETHING IS BROKEN')
+                    break
+                question_text.append(item['text'])
+        return question_text  
     else:
         print(f" Error: The file {file_path} could not be found.")
 # ------------------------------------------------TEST-CODE------------------------------------------------#
@@ -458,9 +475,4 @@ if __name__ == "__main__":
     #gerald = _json_data_convert(TEST_STRING_TWO)
     #print(gerald)
 
-    print( id_to_text_translator(TEST_QUIZ_ID, TEST_QUIZ_ANSWERS, 'testing_quiz') )
-
-    
-   
-
-
+    print(question_id_to_text_translator(TEST_QUIZ_ID, TEST_QUIZ_ANSWERS, 'testing_quiz'))
