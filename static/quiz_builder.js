@@ -378,10 +378,11 @@ function setQuestionType(cat_Id, q_Id, new_type) {
         question.answer = [{ id: uid(), text: '' }];
     if (new_type === 'result' && !question.answer.length)
         question.answer = [{ id: uid(), text: '', leads_to: null }];
+    if (new_type === 'drag' && !question.answer.length)
+        question.answer = [{ id: uid(), text: '' }];
     renderAnswerPanel(cat_Id, q_Id);
     markDirty()
 }
-
 
 /**
  * Add an answer to a question
@@ -443,6 +444,43 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
     markDirty()
 }
 
+/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+
+function dragDropDesignPanel(cat_Id, q_Id){
+
+    // Grab the modal element from quiz_builder.html
+    const modal = document.getElementById('dragDropModal');
+    if (!modal) {
+        console.error("Error: #dragDropModal not found in the HTML DOM.");
+        return;
+    }
+    // Reveal the modal overlay
+    modal.style.display = 'flex';
+
+
+}
+
+
+/**
+ * Hides the modal overlay and resets its inputs
+ */
+ function closeModal() {
+    const modal = document.getElementById('dragDropModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+
+    // Clear the input text field so it's fresh for the next question clicked
+    const userInput = document.getElementById('drag-option-input');
+    if (userInput) {
+        userInput.value = '';
+    }
+}
+/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 
 /**
  * Render the right side panel when you click on a question
@@ -462,6 +500,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
     const is_mc = question.type === 'mc';
     const is_sldr = question.type === 'sldr';
     const is_result = question.type === 'result'
+    const is_drag = question.type === 'drag'
 
     // TODO maybe find a fix for this ? as it stand it wont stop until it cannot find ASCII character, however it mean at one point you stop having capital letter and just have char 
     const answers_html = is_mc || is_sldr ? `
@@ -504,6 +543,11 @@ function renderAnswerPanel(cat_Id, q_Id) {
                 <button class="type_btn${is_mc ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'mc')">Multiple choice</button>
                 <button class="type_btn${is_sldr ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'sldr')">Slider</button>
                 <button class="type_btn${is_result ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'result')">No Response</button>
+
+
+                <button class="type_btn${is_drag ? ' selected' : ''}" onclick="dragDropDesignPanel('${cat_Id}', '${q_Id}', 'drag')">Drag & Drop</button>
+
+
             </div>
             <div id="answer_config">${answers_html}</div>
         </div>
