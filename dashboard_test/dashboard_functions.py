@@ -80,7 +80,7 @@ class UserQuizData:
             uncompleted_quiz_names.append(quiz_name)
         return uncompleted_quiz_names
 
-    #------------------------ FUNCTIONS THAT PROBABLY WONT BE USED ONCE DATABASE IS UP ------------------------#
+#------------------------ FUNCTIONS THAT PROBABLY WONT BE USED ONCE DATABASE IS UP ------------------------#
 
     def parse_answer_tuple(self) -> list[str,str,str]:
         '''

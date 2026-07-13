@@ -504,9 +504,11 @@ if __name__ == "__main__":
 
     TEST_QUIZ_ID = 'pjo4roy'
 
+    MASTER_FILE_NAME = 'testing_quiz'
+
     print('-'*15 + 'QUIZ TITLE' + '-'*15)
-    print(quiz_id_to_quiz_title_translator(TEST_QUIZ_ID, 'testing_quiz'))
+    print(quiz_id_to_quiz_title_translator(TEST_QUIZ_ID, MASTER_FILE_NAME))
     print('-'*43)
     print('-'*15 + 'QUESTION TEXT' + '-'*15)
-    print(question_id_to_text_translator(TEST_QUIZ_ID, TEST_QUIZ_ANSWERS, 'testing_quiz'))
+    print(question_id_to_text_translator(TEST_QUIZ_ID, TEST_QUIZ_ANSWERS, MASTER_FILE_NAME))
     print('-'*43)
