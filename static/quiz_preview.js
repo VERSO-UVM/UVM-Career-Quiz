@@ -176,6 +176,15 @@ function renderQuestionPage(page) {
         <div class="result-display">
             ${item.result_body ? `<p class="result-body">${esc(item.result_body)}</p>` : ''}
         </div>`;
+    } else if (item.type === 'drag') {
+        //
+        
+
+
+
+
+        
+        //
     } else {
         body = `<p class="inline-note">Question type not yet configured.</p>`;
     }

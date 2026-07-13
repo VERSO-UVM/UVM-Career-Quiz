@@ -185,20 +185,46 @@
     <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
     <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
     <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-
     <div id="dragDropModal" class="modal-overlay">
         <div class="modal-content">
-            <h3 id="modal-title">Drag & Drop Setup TEST</h3>
-            <div class="modal-body">
-                <input type="text" id="drag-option-input" placeholder="Enter an answer option...">
+            
+            <div class="modal-sidebar">
+                <button id="drag-box" type="button" class="add-drop-box drop-btn" onclick="addDraggableBox()" title="Add Drag Element">
+                    + Draggable Box
+                </button>
+
+                <button id="drop-box" type="button" class="add-drag-box drop-btn" onclick="addDropBox()" title="Add Drop Target">
+                    + Drop Box
+                </button>
+
+                <div class="sidebar-bottom-group">
+                    <button type="button" class="square-btn trash-btn" onclick="temp()" title="Delete Configuration">
+                        Delete
+                    </button>
+    
+                    <div class="modal-footer">
+                        <button id="modal-save-btn" class="square-btn drop-btn">Save Setup</button>
+                        <button type="button" onclick="areYouSurePopUp()" class="square-btn drop-btn">Cancel</button>
+                    </div>
+
+                </div>
             </div>
-            <div class="modal-footer">
-                <button id="modal-save-btn" class="btn-save">Save</button>
-                <button type="button" onclick="closeModal()" class="btn-cancel">Cancel</button>
+
+            <p> TEST</p>
+        </div>
+    </div>
+
+
+    <div id="popUpCancel" class="pop-up-overlay">
+        <div class="pop-up-content">
+            <p>⁉️ Are you sure you want to leave without saving ⁉️ </p>
+            <div class="pop-up-bottom-group">
+                <button type="button" onclick="closeModal('no')" class="square-btn drop-btn">↩ Go Back ↩</button>
+                <button type="button" onclick="closeModal('yes')" class="square-btn drop-btn">❌ Leave without saving ❌</button>
             </div>
         </div>
     </div>
-    
+        
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
 
     <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->

@@ -449,7 +449,6 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 
 function dragDropDesignPanel(cat_Id, q_Id){
-
     // Grab the modal element from quiz_builder.html
     const modal = document.getElementById('dragDropModal');
     if (!modal) {
@@ -459,24 +458,55 @@ function dragDropDesignPanel(cat_Id, q_Id){
     // Reveal the modal overlay
     modal.style.display = 'flex';
 
+    // Drop Box limit is 5
+    // Drag Box limit is 10
+    // You have to have >= number of drags vs drops
+    DragBoxCount = 0;
+    DropBoxCount = 0;
+}
+
+function addDraggableBox() {
+    
+}
+
+function deleteBox() {
 
 }
 
+function addDropBox(){
+
+}
+
+function deleteDropBox(){
+
+}
+
+function areYouSurePopUp(){
+    const modal = document.getElementById('popUpCancel');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
 
 /**
  * Hides the modal overlay and resets its inputs
  */
- function closeModal() {
+function closeModal(yesOrNo) {
     const modal = document.getElementById('dragDropModal');
-    if (modal) {
+    const popUp = document.getElementById('popUpCancel');
+    if (yesOrNo === 'yes') {
         modal.style.display = 'none';
+        popUp.style.display = 'none';
+    } else {
+        popUp.style.display = 'none';
     }
+}
 
-    // Clear the input text field so it's fresh for the next question clicked
-    const userInput = document.getElementById('drag-option-input');
-    if (userInput) {
-        userInput.value = '';
-    }
+/**
+ * Saves it to the JSON file in the proper format
+ */
+function saveDragDropQuestion(){
+
 }
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
