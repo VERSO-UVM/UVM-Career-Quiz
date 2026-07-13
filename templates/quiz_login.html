@@ -13,23 +13,29 @@
     <header>
         <h1>Log in</h1>
     </header>
-    <div>
-        {% if error %}
-        <p style="color: red;">{{ error }}</p>
-        {% endif %}
+    <main>
         <form method="POST" action="{{ url_for('quiz_login') }}">
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required><br>
-
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required><br>
-
-            <button type="submit">Log in </button>
-            <a href="{{ url_for('register') }}">
-                <button class="home_btn" type="button">Register</button>
-            </a>
+            <div id="form-container">
+                <div>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required><br>
+                </div>
+            </div>
+            <div id="button-container">
+                <button type="submit">Log in </button>
+                <a href="{{ url_for('register') }}">
+                    <button id="alt-btn" class="home_btn" type="button">Register Instead</button>
+                </a>
+            </div>
+            {% if error %}
+            <p style="color: red;">{{ error }}</p>
+            {% endif %}
         </form>
-    </div>
+    </main>
 
 </body>
 
