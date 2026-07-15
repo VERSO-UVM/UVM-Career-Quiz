@@ -5,4 +5,5 @@ career_quiz.db
 .DS_Store
 .vscode
 venv/
+carrer_quiz.db
 

@@ -159,8 +159,8 @@ def find_name_with_id(q_id : str) -> str | None:
     else :
         return None
 
-
-def find_id_with_uname(username: str) -> str | None:
+#TODO this comment can be generalized but I think we should look into strong typing the ret on these functions, unions with none may be a little weak as we might be passing a value when it should throw
+def find_id_with_uname(username: str) -> str: # was str | None
     """
     find the id of a USER with it's username
 
@@ -179,7 +179,7 @@ def find_id_with_uname(username: str) -> str | None:
     if row :
         return row[0]
     else :
-        return None
+        raise sqlite3.Error
 
 
 def find_uname_with_id(u_id :str ) -> str | None :
@@ -310,7 +310,7 @@ def user_with_access(q_id : str) -> list[str] | None:
         return None
 
 
-def quizzes_for_user(u_id : str) -> list[dict[str, str]]:
+def quizzes_for_user(u_id : str):
     """
     Retrieve all quizzes that a user has access to.
 

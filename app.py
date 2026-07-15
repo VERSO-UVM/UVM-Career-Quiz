@@ -124,7 +124,7 @@ def register():
         session['username'] = username 
         return redirect(url_for('quiz_selection'))
     return render_template("register.html")
-
+#TODO: there are 2 versions of require login not sure which one actually works
 def require_login(reason=None):
     """
     Render the access denied page when a user tries to access certain page without being logged in.
@@ -273,9 +273,11 @@ def show_available_quizzes():
         403: access_denied.html if the user is not logged in
     """
     if session["user_id"]:
+        #TODO: db.quizzes for user is legacy, new system is intending to use the response table interaction one, not sure how this will affect other functionality
+        # I'm tracking it right now but it seems like this is highly embedded, a jank solution may be required until everything can be updated accordingly
         assigned_quizzes = db.quizzes_for_user(session["user_id"])
         completed_quizzes = []    
-        _, completed = ri.lookup_user_todo_completed_quizzes(session['user_id'])
+        _, completed = ri.lookup_user_todo_completed_quizzes(session['user_id']) # idk anymore- wip seems to have to do with a case where completed has to have __iter__ but is None
         completed_quizzes = [
                 {"id": q, "name": db.find_name_with_id(q)}
                 for q in completed ]
@@ -284,7 +286,14 @@ def show_available_quizzes():
 
         return render_template("available_quizzes.html", assigned_quizzes=assigned_quizzes, completed_quizzes=completed_quizzes)
     return require_login("You need to log in see the quizzes available to you.")
-
+"""
+this is a possible fix
+@app.route("/available_quizzes", methods = ['GET', 'POST'] 
+def show_available_quizzes():
+    if session["user_id"]
+    assigned, completed = ri.lookup_user_todo_completed_quizzes(session['user_id'])
+    
+"""
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
@@ -393,14 +402,14 @@ def assign_quiz():
         return jsonify({"success": f"Quiz assigned to {username}."})
     return require_login("You need to log in to assign a quiz.")
 
-
+#TODO: same type problem as quiz revoke wip
 @app.route("/quiz_update_role", methods=["POST"])
 def quiz_update_role():
     """
     Update the role of a user for a specific quiz.
     The current user must have share permissions and cannot assign a role equal to or higher than their own.
 
-    Returns:
+    Returns: 
         200: JSON success message if the role was updated successfully
         200: JSON error message if permissions are insufficient or the role is invalid
         403: access_denied.html if the user is not logged in
@@ -433,7 +442,7 @@ def quiz_update_role():
     
         return jsonify({"success": f"Role updated to {new_role} for {username}."})
     return require_login("You need to log in to update the role of a user.")
-
+#TODO: this is throwing some type nonsense, I am following the path to see where it can be fixed - ej 7/9/26 
 @app.route('/quiz_revoke', methods=['POST'])
 def quiz_revoke():
     """
@@ -508,12 +517,19 @@ def quiz_delete():
     return require_login("You need to log in to delete a quiz.")
 
 
+#TODO: this is probably the wrong require login so it is commented out for now
+"""
 def require_login(reason=None):
     return render_template("access_denied.html", reason=reason)
-
+"""
 
 # Accepts the post request from flask that contains a users completed quiz data package
 # Then sends it to be processed into the database
+#TODO: WARNING!!!!
+# this will need significant encryption and other protections most likely, i would look into either an rsa or other encryption algorithm, 
+#this data needs circuit compression style algorithms and those cannot be done on encrypted data, so we should make sure that any data 
+#that gets sent to rti.py gets decrypted for joined on the table
+# the result if not could be un-recoverable 
 @app.route('/quiz-data', methods=['POST'])
 def receive_user_quiz_data():
 

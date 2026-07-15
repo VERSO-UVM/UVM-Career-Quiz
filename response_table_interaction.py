@@ -2,6 +2,7 @@ import json
 import sqlite3
 import csv
 import pickle
+from typing import Any
 import app
 #TODO: check sql queries to ensure correct data is being handled, make sure that any errors that occur for now cannot happen in prod, a lot of this can be dangerous if serial data can be mixed with unserialzed data and either re-serialized or joined wrong, all data types must be checked in every function. 
 #-----------------------------------WARNING!!!!!----------------------------------------------------
@@ -221,9 +222,67 @@ class TypeCheck:
         if type (data) in [list, tuple, dict]:
             return pickle.dumps(data)
         else:
+            # maybe we don't need this, looking to see if data can just be grabbed off a catch when no serialization is needed
+            return data
+"""
             raise IncompatibleType(message=f"Data is of type: {type(data)}, must be of type '<class 'bytes'>'")
-        
+"""
+# --------------------------------------- GENERIC QUERY TEST -----------------------------------------------------------------------
 
+def __generic_query_response(ptr_t_cursor, query, func,  write_query, write_args, read_args, write=False):
+    conn, cur = ptr_t_cursor()
+    if len(read_args) > 1:
+        cur.execute(query, (",".join(read_args),))
+        dat= cur.fetchall()
+    else:
+        cur.execute(query, (read_args[0],))
+        dat= cur.fetchone()
+    promise_comp = type(dat)
+    dat= return_from_serial(dat)
+
+    # call function
+    # promise asks if type of data up top is set to 
+    promise:bool= False
+    if type(dat) == promise_comp:
+        promise = True
+
+    if promise:
+        # commit and close 
+        pass
+    else:
+        if write: 
+            dat= serialize(dat)
+            cur.execute(write_query, (write_args,))
+        else: 
+            pass
+            # commit and close 
+
+
+
+
+
+
+
+
+        # call func, func will promise to have match and return behavior if promise keeps, promise val gets set to true and function goes out of scope if not panics
+
+        # check to see if promise caught
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+# not sure if this will work but we'll see 
+# ------------------------------------------------------------------------------------------------------------------------------------
 def connecting_to_sql():
     conn = sqlite3.connect("career_quiz.db")
     cur = conn.cursor()
@@ -327,6 +386,7 @@ def check_user_lookup_status(admin_id, u_id):
         return True
 
 # -----------------LOOKUP BEHAVIORS------------------------
+#TODO: WARNING NOT DONE
 def findall_users_cmp_quiz(user_id_array: list, quiz_id):
     # query completed_quizzes from user array
     # fetch data -- return from serial
