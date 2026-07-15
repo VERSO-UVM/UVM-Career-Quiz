@@ -153,25 +153,30 @@ def quiz_builder(quiz):
         302: redirect to quiz_selection if the user has no access
         403: access_denied.html if the user is not logged in
     """
-    if session["user_id"]:
- 
-        role = get_role(quiz)
+    if not session.get("user_id"):
+        return require_login("You need to log in to access the quiz builder.")
     
-        if not role:
-            
-            if os.path.exists(f"testing_quiz/{quiz}.json"):
-                return redirect(url_for("quiz_selection"))
-            role = db.ROLE_CREATOR
-    
-        quiz_ = {"title": "", "desc": "", "id": quiz, "categories": []}
-        try:
-            with open(f"testing_quiz/{quiz}.json") as f:
-                quiz_ = json.load(f)
-        except FileNotFoundError:
-            error = "So far this is just a way to bypass the problem of creating new quiz." 
-    
+    # Handle a new_quiz explicitly
+    if quiz == "new_quiz":
+        role = db.ROLE_CREATOR
+        quiz_ = {"title": "", "desc": "", "id": "new_quiz", "categories": []}
         return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
-    return require_login("You need to log in to access the quiz builder.")
+
+    role = get_role(quiz)
+
+    if not role:
+        if os.path.exists(f"testing_quiz/{quiz}.json"):
+            return redirect(url_for("quiz_selection"))
+        role = db.ROLE_CREATOR
+
+    quiz_ = {"title": "", "desc": "", "id": quiz, "categories": []}
+    try:
+        with open(f"testing_quiz/{quiz}.json") as f:
+            quiz_ = json.load(f)
+    except FileNotFoundError:
+        pass
+
+    return render_template("quiz_builder.html", quiz=quiz_, user_role=role)
 
 
 
@@ -187,30 +192,36 @@ def save_quiz():
         403: access_denied.html if the user is not logged in
     """
     if session["user_id"]:
-
         quiz = request.get_json()
 
-        if quiz["id"] == "new_quiz" or not quiz["id"]:
+        # Check if it's a brand new quiz
+        is_new = (quiz.get("id") == "new_quiz" or not quiz.get("id"))
+
+        # Generate the unique ID if it's new
+        if is_new:
             quiz["id"] = str(uuid.uuid4())
-
         
-        if get_role(quiz["id"]) and not db.can_edit(get_role(quiz["id"])):
-            return jsonify({"error" : "You do not have the permision to edit this quiz"}), 403
+        # Only enforce permission checks on existing quizzes
+        if not is_new:
+            role = get_role(quiz["id"])
+            if role and not db.can_edit(role):
+                return jsonify({"error" : "You do not have the permission to edit this quiz"}), 403
         
+        # Save the file layout
         path = f'testing_quiz/{quiz["id"]}.json'
-
         if os.path.exists(path):
             with open(path) as f:
                 saved = json.load(f)
             if saved.get('last_modified') != quiz.get('last_modified'):
-                return jsonify({"error": "This quiz was modified by someone else. Please refresh and redo your changes."}),409
-
+                return jsonify({"error": "This quiz was modified by someone else. Please refresh and redo your changes."}), 409
 
         quiz['last_modified'] = time.time()
         with open(path, 'w') as f:
             json.dump(quiz, f, indent=2)
 
+        # Save to database 
         db.save_quiz_in_the_db(quiz["id"], quiz["title"], session["user_id"])
+        
         return jsonify({"success": True, "id": quiz["id"], "last_modified": quiz["last_modified"]})
     
     return require_login("You need to log in to save a quiz.")
