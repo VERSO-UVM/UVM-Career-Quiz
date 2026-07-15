@@ -4,6 +4,7 @@ import csv
 import pickle
 from typing import Any
 import app
+import os 
 #TODO: check sql queries to ensure correct data is being handled, make sure that any errors that occur for now cannot happen in prod, a lot of this can be dangerous if serial data can be mixed with unserialzed data and either re-serialized or joined wrong, all data types must be checked in every function. 
 #-----------------------------------WARNING!!!!!----------------------------------------------------
 
@@ -307,7 +308,7 @@ def _json_data_convert(json_string: str):
                     ques_id = answer["id"]    
                     response = answer["UserAnswer"][0]["text"]
                     ans_id = answer["UserAnswer"][0]["id"]
-                    answers.append((ques_id,"Answer Details: " ,ans_id, response))
+                    answers.append((ques_id, ans_id, response))
                 else:
                     answers.append((answer["id"], "NULL_ID", "IDX_ERR"))
             except KeyError:
@@ -321,7 +322,7 @@ def _json_data_convert(json_string: str):
 
 
 
-def _incriment_quiz_ctr(u_id: str):
+def _increment_quiz_ctr(u_id: str):
     conn, cur = connecting_to_sql()
     query = """UPDATE USER_RESPONSES SET num_completed_quizzes += 1 WHERE u_ID = ?"""
     cur.execute(query, (u_id,))
@@ -362,7 +363,7 @@ def _append_answers(u_id, answer_list):
 
 def quiz_complete(json_string):
        u_id, q_id, len_quiz, answer_arr = _json_data_convert(json_string)
-       _incriment_quiz_ctr(u_id)
+       _increment_quiz_ctr(u_id)
        _move_quiz_id_todo_cmp(u_id, q_id, len_quiz)
        _append_answers(u_id, answer_arr)
 
@@ -478,16 +479,94 @@ def lookup_user_todo_completed_quizzes(u_id: str):
     else:
         return (["err"], ["could not fetch data"])
 
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
 
-    
+def quiz_id_to_quiz_title_translator(quiz_id, quiz_folder_MASTER):
+    '''
+    Translation function to get quiz title from inputting the quiz ID
+
+    :param quiz_folder_MASTER: The name of the folder that holds the JSON files for the quizzes
+
+    :returns: quiz title in text form
+    '''
+
+    # Finds matching JSON file in the master folder
+    quiz_file_name = f'{quiz_id}.json'
+    file_path = os.path.join(quiz_folder_MASTER, quiz_file_name)
+
+    if os.path.exists(file_path):
+        #print(f"Opening and parsing: {file_path}") TEST CODE
+
+        # opens quiz json file
+        with open(file_path, "r", encoding="utf-8") as file:
+            quiz_data = json.load(file)
+            return quiz_data['title']
+    else:
+        print(f" Error: The file {file_path} could not be found.")
         
+def question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_MASTER):
+    '''
+    Translation function to get question text from question IDs
 
+    :param answer_id_list: List of tuples in format [(question_id, answer_id, answer_text), ...]
+    :param quiz_folder_MASTER: The name of the folder that holds the JSON files for the quizzes
+
+    :returns: A list of all the questions from the quiz in text form
+    '''
+
+    # Finds matching JSON file in the master folder
+    quiz_file_name = f'{quiz_id}.json'
+    file_path = os.path.join(quiz_folder_MASTER, quiz_file_name)
     
+    # parse answer_id_list to get question ids
+    QUESTION_ID_INDEX = 0
+    question_ids = []
+    for answer in answers_id_list:
+        question_ids.append(answer[QUESTION_ID_INDEX])
+
+    # where the text for the questions will be stored
+    question_text = []
+    if os.path.exists(file_path):
+        #print(f"Opening and parsing: {file_path}") TEST CODE
+
+        # opens quiz json file
+        with open(file_path, "r", encoding="utf-8") as file:
+            quiz_data = json.load(file)
+        
+        # matches question id's and pulls text
+        for category in quiz_data["categories"]:
+            for item in category["items"]:
+                counter = 0
+                while item['id'] != question_ids[counter]:
+                    counter += 1
+                
+                # Failsafe against infinite loops
+                if counter == len(question_ids):
+                    question_text.append('NO MATCH SOMETHING IS BROKEN')
+                    break
+                question_text.append(item['text'])
+        return question_text  
+    else:
+        print(f" Error: The file {file_path} could not be found.")
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+# ------------------------------------------------TEST-CODE------------------------------------------------#
+
 
 if __name__ == "__main__":
-    #gerald = _json_data_convert(TEST_STRING)
-    #print((gerald))
-    ques = csv_lookup_to_list("resume")
-   
+    #gerald = _json_data_convert(TEST_STRING_TWO)
+    #print(gerald)
 
+    # (question_id, answer_id, answer_text)
+    TEST_QUIZ_ANSWERS = [('wu2k8f4', 't2u0y1r', 'HELLO'), ('umdk5o3', '43zaysu', 'Dragon Fruit'), ('5u83jdb', 'umo3d5g', 'VT')]
 
+    TEST_QUIZ_ID = 'pjo4roy'
+
+    print('-'*15 + 'QUIZ TITLE' + '-'*15)
+    print(quiz_id_to_quiz_title_translator(TEST_QUIZ_ID, 'testing_quiz'))
+    print('-'*43)
+    print('-'*15 + 'QUESTION TEXT' + '-'*15)
+    print(question_id_to_text_translator(TEST_QUIZ_ID, TEST_QUIZ_ANSWERS, 'testing_quiz'))
+    print('-'*43)

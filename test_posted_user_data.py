@@ -22,12 +22,12 @@ def main():
     'pjo4roy', <-- Quiz ID
     3, <-- # of questions in quiz
     [
-     ('wu2k8f4', 'Answer Details: ', 'r5ms0o8', 'HELLO'), 
-     ('umdk5o3', 'Answer Details: ', 'yq8rry9', 'banana'), 
-     ('5u83jdb', 'Answer Details: ', '3a1mirf', 'VT')
+     ('wu2k8f4', 'r5ms0o8', 'HELLO'), 
+     ('umdk5o3', 'yq8rry9', 'banana'), 
+     ('5u83jdb', '3a1mirf', 'VT')
     ]
 )
-    ('QuestionID', 'Answer Details: ', 'AnswerID', 'AnswerTEXT')
+    ('QuestionID', 'AnswerID', 'AnswerTEXT')
 '''
 
 if __name__ == '__main__':

@@ -18,23 +18,32 @@
         </a>
     </header>
     <main>
-        <aside>
-            {% for quiz in quizzes %}
+        <div>
+            <div id="quizzes">
+                <div>
+                    <h3>My Quizzes:</h3>
+                    <p>Choose a quiz to edit</p>
+                </div>
+                <ul>
+                    {% for quiz in quizzes %}
+                    <li>
+                        <a id="quiz_creation" href="{{ url_for('quiz_builder', quiz=quiz) }}">
+                            <button class="quiz-selector">{{ names[loop.index0] }}</button>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-            <a id="quiz_creation" href="{{ url_for('quiz_builder', quiz=quiz) }}">
-                <button class="quiz_selector">{{ names[loop.index0] }}</button>
-            </a>
-
-            {% endfor %}
- 
-            <br>
-            <a id="quiz_creation" href="{{ url_for('quiz_builder', quiz='new_quiz') }}">
-                <button class="quiz_selector">Create New Quiz</button>
-            </a>
-			<a id="quiz_creation" href="{{url_for('show_available_quizzes')}}">
-				<button class="quiz_selector">Take a Quiz</button>
-			</a>
-        </aside>
+            <div id="actions">
+                <a id="quiz_creation" href="{{ url_for('quiz_builder', quiz='new_quiz') }}">
+                    <button class="quiz_selector">+ New Quiz</button>
+                </a>
+                <a id="quiz_creation" href="{{url_for('show_available_quizzes')}}">
+                    <button class="quiz_selector">Take a Quiz</button>
+                </a>
+            </div>
+        </div>
     </main>
 </body>
 
