@@ -12,9 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='drawflow.css') }}">
 
-    <!--Drag and Drop Styles-->
-    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_builder.css') }}">
-
+    
 </head>
 
 <body>
@@ -198,26 +196,24 @@
                 </button>
 
                 <div class="sidebar-bottom-group">
-                    <button type="button" class="square-btn trash-btn" onclick="temp()" title="Delete Configuration">
-                        Delete
-                    </button>
-    
                     <div class="modal-footer">
-                        <button id="modal-save-btn" class="square-btn drop-btn">Save Setup</button>
-                        <button type="button" onclick="areYouSurePopUp()" class="square-btn drop-btn">Cancel</button>
+                        <button id="modal-save-btn" class="square-btn drop-btn" onclick="saveDragDropQuestion()">Save & Close</button>
+                        <button type="button" onclick="areYouSurePopUp()" class="square-btn drop-btn">Close</button>
                     </div>
-
                 </div>
             </div>
 
-            <p> TEST</p>
+            <div class="modal-body">
+                <div id="drag-box-window" class="Drag-Box-Window"></div>
+                <div id="drop-box-window" class="Drop-Box-Window"></div>
+            </div>
         </div>
     </div>
 
-
+    <!-- This my be obsolete not that save & close is one button but keeping it for now-->
     <div id="popUpCancel" class="pop-up-overlay">
         <div class="pop-up-content">
-            <p>⁉️ Are you sure you want to leave without saving ⁉️ </p>
+            <p>⁉️ Are you sure you want to close without saving ⁉️</p>
             <div class="pop-up-bottom-group">
                 <button type="button" onclick="closeModal('no')" class="square-btn drop-btn">↩ Go Back ↩</button>
                 <button type="button" onclick="closeModal('yes')" class="square-btn drop-btn">❌ Leave without saving ❌</button>

@@ -943,7 +943,7 @@ header a:hover h1 {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    display: none; /* Hidden by default; toggled via JS */
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 9999;
@@ -957,20 +957,94 @@ header a:hover h1 {
     padding: 30px;        
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    
-    /* Side-by-side flex layout for sidebar & body */
     display: flex;
-    flex-direction: row; 
+    flex-direction: row; /* Sidebar left, Workspace right */
     gap: 30px;           
 
-    /* Responsive Scaling Dimensions */
     width: 95vw;          
     max-width: 1500px;     
     min-width: 500px;     
     height: 90vh;         
     max-height: 1000px;    
-    min-height: 350px;    
+    min-height: 500px; /* Keep this tall enough to stack elements vertically */    
 }
+
+/* ==========================================
+   Drop and Drag Windows
+   ========================================== */
+.Drop-Box-Window,
+.Drag-Box-Window,
+.drop-drag-window-content {
+    background: #f8fafc;    
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    
+    /* --- KEY FIXES --- */
+    flex: 1;                /* Forces both zones to share 50% of the height each */
+    min-height: 0;          /* CSS Flexbox fix: allows flex items to shrink below content size */
+    
+    display: flex;
+    flex-direction: column; 
+    gap: 15px;           
+    overflow-y: auto;
+}
+
+.modal-body {
+    flex-grow: 1;         
+    display: flex !important; /* Force flex layout */
+    flex-direction: column !important; /* STRICTLY force stacking */
+    gap: 20px;              
+    height: 100%;           
+    min-height: 0;            /* Prevents the body from overflowing */
+    overflow: hidden;
+}
+
+/* BOX CSS
+
+/* Styling for the box when it spawns in the Drop Box Window */
+.created-drop-item {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.drop-label {
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.drop-item-input {
+    flex-grow: 1;
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.remove-item-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 4px;
+}
+
+.remove-item-btn:hover {
+    color: #b91c1c;
+}
+
+/* BOX CSS
 
 /* ==========================================
    LEFT SIDEBAR (THE VERTICAL BUTTON COLUMN)
@@ -1045,6 +1119,21 @@ header a:hover h1 {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ==========================================
    CANCEL POP UP
    ========================================== */
@@ -1100,14 +1189,6 @@ header a:hover h1 {
     width: 100%;
 }
 
-/* ==========================================
-   RIGHT MAIN AREA (CONTENT & FOOTER)
-   ========================================== */
-.modal-body {
-    flex-grow: 1;         /* Consumes remaining horizontal space */
-    display: flex;
-    flex-direction: column;
-}
 
 
 .btn-save { background-color: #007bff; color: white; }

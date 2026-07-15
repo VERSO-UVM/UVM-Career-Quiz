@@ -379,7 +379,7 @@ function setQuestionType(cat_Id, q_Id, new_type) {
     if (new_type === 'result' && !question.answer.length)
         question.answer = [{ id: uid(), text: '', leads_to: null }];
     if (new_type === 'drag' && !question.answer.length)
-        question.answer = [{ id: uid(), text: '' }];
+        question.answer = [{ id: uid(), text: '' }]; // <-- ADD is JSON text for answer format here
     renderAnswerPanel(cat_Id, q_Id);
     markDirty()
 }
@@ -448,7 +448,8 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 
-function dragDropDesignPanel(cat_Id, q_Id){
+function dragDropDesignPanel(){
+
     // Grab the modal element from quiz_builder.html
     const modal = document.getElementById('dragDropModal');
     if (!modal) {
@@ -458,27 +459,163 @@ function dragDropDesignPanel(cat_Id, q_Id){
     // Reveal the modal overlay
     modal.style.display = 'flex';
 
-    // Drop Box limit is 5
-    // Drag Box limit is 10
-    // You have to have >= number of drags vs drops
-    DragBoxCount = 0;
-    DropBoxCount = 0;
 }
 
 function addDraggableBox() {
+    console.log("DRAG ADDED");
+
+    // 1. Find the Drag Box Window on the screen
+    const dragBoxWindow = document.querySelector('.Drag-Box-Window');
+    if (!dragBoxWindow) {
+        console.error("Could not find .Drag-Box-Window on the page!");
+        return;
+    }
+
+    // 2. Create the physical box container element
+    const newDragBox = document.createElement('div');
+
+    newDragBox.id = uid() // random id for each box
+
+    // 3. Use the matching styling class
+    newDragBox.classList.add('created-drop-item');
+
+    // 4. Build the HTML structure (perfect match with the drop box)
+    newDragBox.innerHTML = `
+        <span class="drop-label">Drag Box:</span>
+        <input type="text" 
+               class="drop-item-input" 
+               placeholder="Enter draggable answer here" 
+               onfocus="this.placeholder = ''" 
+               onblur="this.placeholder = 'Enter draggable answer here'">
+        <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    // 5. Append the brand-new box directly inside the Drag Box Window
+    dragBoxWindow.appendChild(newDragBox);
     
 }
 
-function deleteBox() {
 
-}
 
 function addDropBox(){
+    console.log("DROP ADDED");
+    // 1. Find the Drop Box Window on screen
+    const dropBoxWindow = document.querySelector('.Drop-Box-Window');
+    if (!dropBoxWindow) {
+        console.error("Could not find .Drop-Box-Window on the page!");
+        return;
+    }
+
+    // 2. Create the physical box container element
+    const newDropBox = document.createElement('div');
+    
+
+    newDropBox.id = uid() // random id for each box
+
+    // 3. Use the matching styling class
+    newDropBox.classList.add('created-drop-item');
+
+    // 4. Build the HTML structure (perfect match with the drag box)
+    newDropBox.innerHTML = `
+        <span class="drop-label">Drop Box:</span>
+        <input type="text" 
+               class="drop-item-input" 
+               placeholder="Enter drop box text here" 
+               onfocus="this.placeholder = ''" 
+               onblur="this.placeholder = 'Enter drop box text here'">
+        <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    // 5. Append the brand-new box directly inside the Drop Box Window
+    dropBoxWindow.appendChild(newDropBox);
 
 }
 
-function deleteDropBox(){
+function getBoxTextAndId(windowName){
+    // Safety check to make sure a valid HTML element was passed in
+    if (!windowName) return [];
+    let AnswerList;
 
+    const allDragBoxes = windowName.querySelectorAll('.created-drop-item');
+
+    if (windowName.id === 'drop-box-window') {
+        AnswerList = {drops: []}
+        
+    } else if (windowName.id === 'drag-box-window') {
+        AnswerList = {drags: []}
+    }
+
+    
+    
+    for (const box of allDragBoxes) {
+        const input = box.querySelector('.drop-item-input');
+        if (input) {
+            
+            if (windowName.id === 'drop-box-window') {
+                AnswerList.drops.push({
+                    id: box.id,
+                    text: input.value
+                });
+            } else if (windowName.id === 'drag-box-window') {
+                AnswerList.drags.push({
+                    id: box.id,
+                    text: input.value
+                });
+            }
+        }
+    }
+    
+    console.log('========================================================================');
+    console.log("Answers gathered:", AnswerList);
+
+    return AnswerList; 
+}
+
+/**
+ * Saves it to the JSON file in the proper format
+ */
+function saveDragDropQuestion(){
+    // 1. Find both windows on the page
+    const dragBoxWindow = document.getElementById('drag-box-window');
+    const dropBoxWindow = document.getElementById('drop-box-window');
+
+    // 2. Safety check to make sure the windows actually exist before reading them
+    if (!dragBoxWindow || !dropBoxWindow) {
+        console.error("Could not find the drag or drop windows on the page!");
+        return;
+    }
+
+    let DROP_BoxTextAndIds = getBoxTextAndId(dropBoxWindow);
+    let DRAG_BoxTextAndIds = getBoxTextAndId(dragBoxWindow);
+
+    console.log("QuestionId: " + active_question_Id);
+    console.log("CategoryId: " + active_category_Id);
+    
+
+    // Overwrite old answer
+    for (const matchingCategory of quiz.categories){
+        if(matchingCategory.id === active_category_Id){
+            for(const matchingQuestion of matchingCategory.items){
+                if(matchingQuestion.id === active_question_Id){
+                    removeAnswer(active_category_Id, active_question_Id, matchingQuestion.answer.id);
+                }
+            }
+        }
+    }
+
+    // Save new JSON answers
+    for (const matchingCategory of quiz.categories){
+        if(matchingCategory.id === active_category_Id){
+            for(const matchingQuestion of matchingCategory.items){
+                if(matchingQuestion.id === active_question_Id){
+                    matchingQuestion.answer.push(DRAG_BoxTextAndIds);  
+                    matchingQuestion.answer.push(DROP_BoxTextAndIds);
+                }
+            }
+        }
+    }
+    
+    closeModal('yes');
 }
 
 function areYouSurePopUp(){
@@ -502,12 +639,6 @@ function closeModal(yesOrNo) {
     }
 }
 
-/**
- * Saves it to the JSON file in the proper format
- */
-function saveDragDropQuestion(){
-
-}
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
@@ -550,10 +681,10 @@ function renderAnswerPanel(cat_Id, q_Id) {
             `).join('')}
         </div>
         <button class="add_answer_btn" onclick="addAnswer_('${cat_Id}', '${q_Id}')">Add answer</button>
-    `: is_result ? `
+    ` : is_result ? `
            <div class="open_text_preview">
-        <textarea class="result_body" placeholder="Body text (optional)" oninput="changeResultBody('${cat_Id}', '${q_Id}', this.value)">${question.result_body || ''}</textarea>
-    </div>
+            <textarea class="result_body" placeholder="Body text (optional)" oninput="changeResultBody('${cat_Id}', '${q_Id}', this.value)">${question.result_body || ''}</textarea>
+            </div>
     ` : `
         <div class="open_text_preview">
             <p>Respondents will type a free-form answer.</p>
@@ -575,9 +706,9 @@ function renderAnswerPanel(cat_Id, q_Id) {
                 <button class="type_btn${is_result ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'result')">No Response</button>
 
 
-                <button class="type_btn${is_drag ? ' selected' : ''}" onclick="dragDropDesignPanel('${cat_Id}', '${q_Id}', 'drag')">Drag & Drop</button>
+                <button class="type_btn${is_drag ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'drag'); dragDropDesignPanel()">Drag & Drop</button>
 
-
+                
             </div>
             <div id="answer_config">${answers_html}</div>
         </div>
