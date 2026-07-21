@@ -283,19 +283,21 @@ def show_available_quizzes():
         200: the available_quizzes.html page with assigned and completed quiz lists
         403: access_denied.html if the user is not logged in
     """
-    if session["user_id"]:
-        #TODO: db.quizzes for user is legacy, new system is intending to use the response table interaction one, not sure how this will affect other functionality
-        # I'm tracking it right now but it seems like this is highly embedded, a jank solution may be required until everything can be updated accordingly
-        assigned_quizzes = db.quizzes_for_user(session["user_id"])
-        completed_quizzes = []    
-        _, completed = ri.lookup_user_todo_completed_quizzes(session['user_id']) # idk anymore- wip seems to have to do with a case where completed has to have __iter__ but is None
+    if session.get("user_id"):
+        assigned_ids, completed_ids = ri.lookup_user_todo_completed_quizzes(session["user_id"])
+        assigned_quizzes = [
+            {"id": quiz_id, "name": db.find_name_with_id(quiz_id)}
+            for quiz_id in assigned_ids
+        ]
         completed_quizzes = [
-                {"id": q, "name": db.find_name_with_id(q)}
-                for q in completed ]
-        
-        completed_quizzes = []
-
-        return render_template("available_quizzes.html", assigned_quizzes=assigned_quizzes, completed_quizzes=completed_quizzes)
+            {"id": quiz_id, "name": db.find_name_with_id(quiz_id)}
+            for quiz_id in completed_ids
+        ]
+        return render_template(
+            "available_quizzes.html",
+            assigned_quizzes=assigned_quizzes,
+            completed_quizzes=completed_quizzes,
+        )
     return require_login("You need to log in see the quizzes available to you.")
 """
 this is a possible fix
@@ -308,7 +310,7 @@ def show_available_quizzes():
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
-    """
+    """ 
     Handle sharing a quiz with another user.
     On GET, returns a JSON list of users who currently have access to the quiz, along with the current user's sharing permissions.
     On POST, shares the quiz with the specified user at the specified role, subject to permission checks.
@@ -409,7 +411,7 @@ def assign_quiz():
             return jsonify({"error": "This user already has access to this quiz"})
 
         # Assign as reader so the user can take the quiz
-        db.share_quiz(target_id, quiz_id, db.ROLE_READER)
+        db.share_quiz(target_id, quiz_id, db.ROLE_READER) #TODO i'm also looking at this to be changed, role reader is what we want, just trying to figure out how to make it appear in only the take a quiz section instead of both
         return jsonify({"success": f"Quiz assigned to {username}."})
     return require_login("You need to log in to assign a quiz.")
 
