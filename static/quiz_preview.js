@@ -177,14 +177,19 @@ function renderQuestionPage(page) {
             ${item.result_body ? `<p class="result-body">${esc(item.result_body)}</p>` : ''}
         </div>`;
     } else if (item.type === 'drag') {
-        //
         
+        // Return the container markup directly in the body string
+        body = `
+            <div class="drag-drop-container" id="drag-drop-container-${item.id}">
+                <div class="drop-zones-area"></div>
+                <div class="drag-items-area"></div>
+            </div>
+        `;
 
-
-
-
-        
-        //
+        // Wait a split second for the DOM string to render, then populate items & attach drag listeners
+        setTimeout(() => {
+            addAllDropsAndDrags(item);
+        }, 0);
     } else {
         body = `<p class="inline-note">Question type not yet configured.</p>`;
     }
@@ -193,6 +198,81 @@ function renderQuestionPage(page) {
     ${body}`;
 }
 
+function addAllDropsAndDrags(item) {
+    // Locate the container 
+    const container = document.getElementById(`drag-drop-container-${item.id}`);
+
+    if (!container) {
+        console.error(`Container #drag-drop-container-${item.id} not found in DOM.`);
+        return;
+    }
+
+    const dropArea = container.querySelector('.drop-zones-area');
+    const dragArea = container.querySelector('.drag-items-area');
+
+    // Clear any existing content
+    dropArea.innerHTML = '';
+    dragArea.innerHTML = '';
+
+    // Extract drags and drops from item.answer array
+    let dragsList = [];
+    let dropsList = [];
+
+    if (Array.isArray(item.answer)) {
+        item.answer.forEach(entry => {
+            if (entry.drags) dragsList = entry.drags;
+            if (entry.drops) dropsList = entry.drops;
+        });
+    }
+
+    // Render Drop Target Boxes
+    dropsList.forEach((drop, index) => {
+        const dropElem = document.createElement('div');
+        dropElem.id = drop.id || `drop-${item.id}-${index}`;
+        dropElem.className = 'box target-box';
+        dropElem.innerHTML = `<span>${drop.text || 'Drop Zone'}</span>`;
+
+        // drag & drop event handling
+        dropElem.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Essential to allow drop
+            dropElem.classList.add('drag-over');
+        });
+
+        dropElem.addEventListener('dragleave', () => {
+            dropElem.classList.remove('drag-over');
+        });
+
+        dropElem.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropElem.classList.remove('drag-over');
+
+            const draggedId = e.dataTransfer.getData('text/plain');
+            const draggedElem = document.getElementById(draggedId);
+
+            if (draggedElem) {
+                // Append the dragged box into the drop zone
+                dropElem.appendChild(draggedElem);
+            }
+        });
+
+        dropArea.appendChild(dropElem);
+    });
+
+    // Render Draggable Boxes
+    dragsList.forEach((drag, index) => {
+        const dragElem = document.createElement('div');
+        dragElem.id = drag.id || `drag-${item.id}-${index}`;
+        dragElem.className = 'box drag-box';
+        dragElem.setAttribute('draggable', 'true');
+        dragElem.textContent = drag.text || 'Drag Me';
+
+        dragElem.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', dragElem.id);
+        });
+
+        dragArea.appendChild(dragElem);
+    });
+}
 /**
  * Gets the userID from the current session which will be stored along with the users completed quiz data 
  */
