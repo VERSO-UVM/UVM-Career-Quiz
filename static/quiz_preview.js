@@ -248,31 +248,7 @@ function extractDragDropState(dropArea) {
     };
 }
 
-function selectDRAG(savedResponse){
-    if (savedResponse && savedResponse.dragDropId) {
-        // savedResponse.dragDropId looks like: "dropId|dragId1|dragId2, dropId2|dragId3"
-        const dropBoxGroups = savedResponse.dragDropId.split(', ');
 
-        for (const group of dropBoxGroups) {
-            const ids = group.split('|');
-            const dropBoxId = ids[0];
-            const dropBoxElem = document.getElementById(dropBoxId);
-
-            if (dropBoxElem) {
-                // Loop through all drag items belonging to this drop box (starting from index 1)
-                for (let i = 1; i < ids.length; i++) {
-                    const dragId = ids[i];
-                    const dragElem = document.getElementById(dragId);
-
-                    if (dragElem) {
-                        // Move the drag box back into its saved drop zone
-                        dropBoxElem.appendChild(dragElem);
-                    }
-                }
-            }
-        }
-    }
-}
 
 function addAllDropsAndDrags(item) {
     // Locate the container 
@@ -342,9 +318,6 @@ function addAllDropsAndDrags(item) {
                     dragDropId: questionResults.dragDropId,
                     dragDropText: questionResults.dragDropText
                 };
-                //console.log(JSON.stringify(responses[item.id], null, 2));
-
-                //console.log(JSON.stringify(extractDragDropState(dropArea), null, 2));
 
                 // TEST CODE - TEST CODE - TEST CODE - TEST CODE
                 // TEST CODE - TEST CODE - TEST CODE - TEST CODE
@@ -375,7 +348,31 @@ function addAllDropsAndDrags(item) {
     selectDRAG(responses[item.id]);
 }
 
+function selectDRAG(savedResponse){
+    if (savedResponse && savedResponse.dragDropId) {
+        // savedResponse.dragDropId looks like: "dropId|dragId1|dragId2, dropId2|dragId3"
+        const dropBoxGroups = savedResponse.dragDropId.split(', ');
 
+        for (const group of dropBoxGroups) {
+            const ids = group.split('|');
+            const dropBoxId = ids[0];
+            const dropBoxElem = document.getElementById(dropBoxId);
+
+            if (dropBoxElem) {
+                // Loop through all drag items belonging to this drop box (starting from index 1)
+                for (let i = 1; i < ids.length; i++) {
+                    const dragId = ids[i];
+                    const dragElem = document.getElementById(dragId);
+
+                    if (dragElem) {
+                        // Move the drag box back into its saved drop zone
+                        dropBoxElem.appendChild(dragElem);
+                    }
+                }
+            }
+        }
+    }
+}
 
 // TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
 // TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
@@ -404,8 +401,10 @@ async function getUserID(){
  */
 function formatCompletedQuizData(){
 
-    // TODO: Have it store the UserID of the person taking the quiz
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
+
+    //console.log(JSON.stringify(responseEntries, null, 2)); // TEST CODE
+
     const questionIdIndex = 0;
     const optionIdIndex = 1;
     const textResponseIndex = 1;
@@ -413,7 +412,7 @@ function formatCompletedQuizData(){
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
-        userID: CURRENT_USER_ID, // <--- Temporary id
+        userID: CURRENT_USER_ID,
         quizID: quiz.id,
         timeStamp: new Date().toUTCString(),
         quizCategories: []
@@ -454,16 +453,26 @@ function formatCompletedQuizData(){
                     question.UserAnswer.push(userAnswer);
                 } 
             }
-
+            // TODO: FIX THIS
             if(ques.type === 'drag'){
-                //
-                //
-                //
-                //
-                //
-                //
-                //
-                //
+                let userAnswer = null;
+                // Compare user response id to the answer id's
+                for(const response of responseEntries){
+
+                    //console.log(response[textResponseIndex].dragDropId);
+                    //console.log(response[textResponseIndex].dragDropText);
+
+                    if(ques.id === response[questionIdIndex]){
+                        userAnswer = {
+                            text: response[textResponseIndex].dragDropText,
+                            id: response[textResponseIndex].dragDropId
+                        };
+                        break;
+                    }
+                }
+                if (userAnswer) {
+                    question.UserAnswer.push(userAnswer);
+                }
             }
 
             // compare user response to the responseEntries optionID's for 'mc' and 'sldr'
