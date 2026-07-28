@@ -198,6 +198,82 @@ function renderQuestionPage(page) {
     ${body}`;
 }
 
+
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+
+
+function extractDragDropState(dropArea) {
+    const dropBoxes = dropArea.querySelectorAll('.target-box');
+    
+    let allIdsArray = [];
+    let allTextsArray = [];
+
+    for (const dropBox of dropBoxes) {
+        // Find all drag boxes currently dropped inside THIS specific drop box
+        const nestedDrags = dropBox.querySelectorAll('.drag-box');
+        
+        let dragDropIDString = dropBox.id;
+        
+        // Get just the drop box's title (ignoring nested drag elements)
+        let dropBoxTitle = "";
+        const titleSpan = dropBox.querySelector('span');
+        if (titleSpan) {
+            dropBoxTitle = titleSpan.textContent;
+        } else {
+            dropBoxTitle = Array.from(dropBox.childNodes)
+                .filter(node => node.nodeType === Node.TEXT_NODE)
+                .map(node => node.textContent.trim())
+                .join('');
+        }
+
+        let dragDropTextString = dropBoxTitle;
+
+        for (const drag of nestedDrags) {
+            dragDropIDString += "|" + drag.id;
+            dragDropTextString += "|" + drag.textContent;
+        }
+
+        // Push this box's pipe-separated string into our main arrays
+        allIdsArray.push(dragDropIDString);
+        allTextsArray.push(dragDropTextString);
+    }
+
+    // Return a single object with combined, comma-separated strings
+    return {
+        dragDropId: allIdsArray.join(', '),
+        dragDropText: allTextsArray.join(', ')
+    };
+}
+
+function selectDRAG(savedResponse){
+    if (savedResponse && savedResponse.dragDropId) {
+        // savedResponse.dragDropId looks like: "dropId|dragId1|dragId2, dropId2|dragId3"
+        const dropBoxGroups = savedResponse.dragDropId.split(', ');
+
+        for (const group of dropBoxGroups) {
+            const ids = group.split('|');
+            const dropBoxId = ids[0];
+            const dropBoxElem = document.getElementById(dropBoxId);
+
+            if (dropBoxElem) {
+                // Loop through all drag items belonging to this drop box (starting from index 1)
+                for (let i = 1; i < ids.length; i++) {
+                    const dragId = ids[i];
+                    const dragElem = document.getElementById(dragId);
+
+                    if (dragElem) {
+                        // Move the drag box back into its saved drop zone
+                        dropBoxElem.appendChild(dragElem);
+                    }
+                }
+            }
+        }
+    }
+}
+
 function addAllDropsAndDrags(item) {
     // Locate the container 
     const container = document.getElementById(`drag-drop-container-${item.id}`);
@@ -209,6 +285,7 @@ function addAllDropsAndDrags(item) {
 
     const dropArea = container.querySelector('.drop-zones-area');
     const dragArea = container.querySelector('.drag-items-area');
+    //console.log(dropArea);
 
     // Clear any existing content
     dropArea.innerHTML = '';
@@ -252,11 +329,33 @@ function addAllDropsAndDrags(item) {
             if (draggedElem) {
                 // Append the dragged box into the drop zone
                 dropElem.appendChild(draggedElem);
+                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
+                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
+
+                /** 
+                 * This will save the users response for JSON and 
+                 * if they want to go back and look at there answer during the quiz
+                 * */ 
+
+                const questionResults = extractDragDropState(dropArea)
+                responses[item.id] = {
+                    dragDropId: questionResults.dragDropId,
+                    dragDropText: questionResults.dragDropText
+                };
+                //console.log(JSON.stringify(responses[item.id], null, 2));
+
+                //console.log(JSON.stringify(extractDragDropState(dropArea), null, 2));
+
+                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
+                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
+                
+
             }
         });
 
-        dropArea.appendChild(dropElem);
+        dropArea.appendChild(dropElem);    
     });
+    
 
     // Render Draggable Boxes
     dragsList.forEach((drag, index) => {
@@ -271,8 +370,18 @@ function addAllDropsAndDrags(item) {
         });
 
         dragArea.appendChild(dragElem);
+
     });
+    selectDRAG(responses[item.id]);
 }
+
+
+
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
+
 /**
  * Gets the userID from the current session which will be stored along with the users completed quiz data 
  */
@@ -345,6 +454,18 @@ function formatCompletedQuizData(){
                     question.UserAnswer.push(userAnswer);
                 } 
             }
+
+            if(ques.type === 'drag'){
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+            }
+
             // compare user response to the responseEntries optionID's for 'mc' and 'sldr'
             for (const ans of ques.answer){
                 let userAnswer = null;
@@ -451,6 +572,7 @@ function isLastPage() {
  */
 let renderDepth = 0;
 function render() {
+
     renderDepth++;
     if (renderDepth > 50) { console.error('RENDER RECURSION'); renderDepth--; return; }
     const app = document.getElementById('app');
@@ -512,14 +634,21 @@ function resolveLeadsTo(leads_to) {
 
 function nextQuestion(qId) {
     const item = pages[cur].item;
-    const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(i => i.answer);
 
-    const answerId = responses[qId];
-    const answer = allAnswers.find(a => a.id === answerId) || item.answer?.[0];
-    const leads_to = answer?.leads_to;
+    if(item.type === 'drag'){
+        history.push(cur);
+        cur++; // Just go to the next chronological page normally
+    } else {
+        const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(i => i.answer);
 
-    history.push(cur);
-    cur = resolveLeadsTo(leads_to);
+        const answerId = responses[qId];
+        const answer = allAnswers.find(a => a.id === answerId) || item.answer?.[0];
+        const leads_to = answer?.leads_to;
+
+        history.push(cur);
+        cur = resolveLeadsTo(leads_to);
+    }
+    
     render();
     window.scrollTo({ top: 0 });
 }
@@ -597,6 +726,7 @@ function isCurrentAnswered() {
     const item = pages[cur]?.item;
     if (!item) return true;
 
+    // TODO: Eventually add drag parameters
     if (item.type == 'mc' || item.type == 'sldr') {
         return responses[item.id] != undefined && responses[item.id] != null && responses[item.id] != '';
     }

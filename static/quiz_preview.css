@@ -382,7 +382,7 @@ body {
     font-weight: 600;
     transition: all 0.2s ease;
 
-    padding: 10px;            /* Gives text some breathing room from the edges */
+    padding: 1px;            /* Gives text some breathing room from the edges */
     text-align: center;       /* Centers multi-line text nicely */
     word-break: break-word;   /* Breaks long words if they exceed box width */
     overflow-y: auto;         /* Allows scrolling if text exceeds the box height */
