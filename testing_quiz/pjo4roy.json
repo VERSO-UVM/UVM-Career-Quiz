@@ -4,70 +4,110 @@
       "id": "ea30snn",
       "items": [
         {
+          "answer": [
+            {
+              "auto_leads_to": false,
+              "id": "4k4afj0",
+              "leads_to": "hjleh8e",
+              "text": ""
+            }
+          ],
           "id": "wu2k8f4",
           "text": "type something",
-          "type": "text",
-          "answer": [
-            {
-              "id": "4k4afj0",
-              "text": "",
-              "leads_to": "umdk5o3"
-            }
-          ]
+          "type": "text"
         },
         {
+          "answer": [
+            {
+              "auto_leads_to": false,
+              "id": "66982n3",
+              "leads_to": "5u83jdb",
+              "text": "apple"
+            },
+            {
+              "auto_leads_to": false,
+              "id": "yq8rry9",
+              "leads_to": "5u83jdb",
+              "text": "banana"
+            },
+            {
+              "auto_leads_to": false,
+              "id": "43zaysu",
+              "leads_to": "5u83jdb",
+              "text": "Dragon Fruit"
+            }
+          ],
           "id": "umdk5o3",
           "text": "fav fruit",
-          "type": "mc",
-          "answer": [
-            {
-              "id": "66982n3",
-              "text": "apple",
-              "leads_to": "5u83jdb"
-            },
-            {
-              "id": "yq8rry9",
-              "text": "banana",
-              "leads_to": "5u83jdb"
-            },
-            {
-              "id": "43zaysu",
-              "text": "Dragon Fruit",
-              "leads_to": "5u83jdb"
-            }
-          ]
+          "type": "mc"
         },
         {
-          "id": "5u83jdb",
-          "text": "best state",
-          "type": "sldr",
           "answer": [
             {
+              "auto_leads_to": true,
               "id": "io4suly",
-              "text": "VT",
-              "leads_to": null
+              "leads_to": "hjleh8e",
+              "text": "VT"
             },
             {
+              "auto_leads_to": true,
               "id": "s33wxx8",
-              "text": "VT",
-              "leads_to": null
+              "leads_to": "hjleh8e",
+              "text": "VT"
             },
             {
+              "auto_leads_to": true,
               "id": "3a1mirf",
-              "text": "VT",
-              "leads_to": null
+              "leads_to": "hjleh8e",
+              "text": "VT"
             },
             {
+              "auto_leads_to": true,
               "id": "moqnmj9",
-              "text": "VT",
-              "leads_to": null
+              "leads_to": "hjleh8e",
+              "text": "VT"
             },
             {
+              "auto_leads_to": true,
               "id": "umo3d5g",
-              "text": "VT",
-              "leads_to": null
+              "leads_to": "hjleh8e",
+              "text": "VT"
             }
-          ]
+          ],
+          "id": "5u83jdb",
+          "text": "best state",
+          "type": "sldr"
+        },
+        {
+          "answer": [
+            {
+              "auto_leads_to": false,
+              "id": "ydgtf00",
+              "leads_to": "umdk5o3",
+              "text": ""
+            }
+          ],
+          "email-append": true,
+          "email-append-text": "Hello?",
+          "id": "hjleh8e",
+          "result_body": "",
+          "text": "Result",
+          "type": "result"
+        },
+        {
+          "answer": [
+            {
+              "id": "w0pi9hp",
+              "leads_to": null,
+              "text": ""
+            }
+          ],
+          "email-append": true,
+          "email-append-text": "",
+          "id": "kk5ulbc",
+          "result_body": "",
+          "text": "",
+          "type": "result"
         }
       ],
       "name": "Test_Quiz"
@@ -75,6 +115,6 @@
   ],
   "desc": "",
   "id": "pjo4roy",
-  "last_modified": 1782757353.0028758,
+  "last_modified": 1783975092.087522,
   "title": "testing quiz"
 }

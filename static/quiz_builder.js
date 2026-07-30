@@ -311,13 +311,14 @@ function applySequentialLeadsTo() {
         if (!question.answer) return;
 
         question.answer.forEach(answer => {
-            if (!answer.leads_to) {
+            // recompute every time unless the user manually wired this one in the branching editor
+            if (answer.auto_leads_to !== false) {
                 answer.leads_to = nextQuestion ? nextQuestion.id : null;
+                answer.auto_leads_to = true;
             }
         });
     });
 }
-
 
 /**
  * Open the right side editor, allowing you to add answer, as well as type, to/of the quiz
@@ -521,8 +522,15 @@ function renderAnswerPanel(cat_Id, q_Id) {
         </div>
         <button class="add_answer_btn" onclick="addAnswer_('${cat_Id}', '${q_Id}')">Add answer</button>
     `: is_result ? `
-           <div class="open_text_preview">
+       <div class="open_text_preview">
         <textarea class="result_body" placeholder="Body text (optional)" oninput="changeResultBody('${cat_Id}', '${q_Id}', this.value)">${question.result_body || ''}</textarea>
+        <label class="email_append_label">
+            <input type="checkbox" class="email_append_checkbox" ${question['email-append'] ? 'checked' : ''} onchange="toggleEmailAppend('${cat_Id}', '${q_Id}', this.checked)" />
+            Append to email?
+        </label>
+        ${question['email-append'] ? `
+        <textarea class="email_append_text" placeholder="Text to append to email (optional)" oninput="changeEmailAppendText('${cat_Id}', '${q_Id}', this.value)">${question['email-append-text'] || ''}</textarea>
+        ` : ''}
     </div>
     ` : `
         <div class="open_text_preview">
@@ -579,6 +587,25 @@ function changeResultBody(cat_Id, q_Id, new_text) {
     const question = category.items.find(q => q.id === q_Id);
     if (!question) return;
     question.result_body = new_text;
+    markDirty();
+}
+
+function toggleEmailAppend(cat_Id, q_Id, checked) {
+    const category = quiz.categories.find(b => b.id === cat_Id);
+    if (!category) return;
+    const question = category.items.find(q => q.id === q_Id);
+    if (!question) return;
+    question['email-append'] = checked;
+    markDirty();
+    renderAnswerPanel(cat_Id, q_Id); // re-render so the textarea appears/disappears
+}
+
+function changeEmailAppendText(cat_Id, q_Id, new_text) {
+    const category = quiz.categories.find(b => b.id === cat_Id);
+    if (!category) return;
+    const question = category.items.find(q => q.id === q_Id);
+    if (!question) return;
+    question['email-append-text'] = new_text;
     markDirty();
 }
 
@@ -785,7 +812,7 @@ async function changeUserRole(username, newRole) {
     msg.style.display = 'block';
     msg.style.color = result.error ? 'red' : 'green';
     msg.innerHTML = result.error || result.success;
-    if (result.error )
+    if (result.error)
         loadAccessList();
 }
 
@@ -898,10 +925,10 @@ window.onclick = function (event) {
     if (event.target == overlay_display) {
         closeBranching();
     }
-    if (event.target == delete_overlay){
+    if (event.target == delete_overlay) {
         closeDelete();
     }
-    if(event.target == assign_overlay){
+    if (event.target == assign_overlay) {
         closeAssign();
     }
 }
@@ -939,7 +966,7 @@ document.getElementById('drawflow').addEventListener('wheel', function (e) {
     } else {
         editor.zoom_out();
     }
-},{ passive: false });
+}, { passive: false });
 
 
 /**
@@ -969,6 +996,11 @@ const endTemplate = `
     <div class="end-node">
         <input class="end-title drawflow-input" type="text" placeholder="Title" oninput="updateResultText(this)"/>
         <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)"></textarea>
+        <label class="email-append-label">
+            <input type="checkbox" class="email-append-checkbox drawflow-input" onchange="updateEmailAppendToggle(this)">
+            Append to email?
+        </label>
+        <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:none" oninput="updateEmailAppendText(this)"></textarea>
     </div>
 `;
 
@@ -1124,6 +1156,8 @@ editor.on('connectionCreated', function (info) {
     const question = getQuizQuestion(info.output_id);
     if (question?.answer[answerIndex]) {
         question.answer[answerIndex].leads_to = targetNode.data.question_id || null;
+        // prevent leadsto from being automatically generated in the future
+        question.answer[answerIndex].auto_leads_to = false;
     }
 
     const allQuestions = quiz.categories.flatMap(cat => cat.items);
@@ -1148,6 +1182,7 @@ editor.on("connectionRemoved", function (info) {
     const question = getQuizQuestion(info.output_id);
     if (question?.answer[answerIndex]) {
         question.answer[answerIndex].leads_to = null;
+        question.answer[answerIndex].auto_leads_to = true;
     }
 
     const indicators = document.querySelectorAll('#answer_panel .answer-leadsto-indicator');
@@ -1317,11 +1352,18 @@ function loadQuizIntoDrawflow() {
         let nodeId;
 
         if (q.type == 'result') {
+            const emailChecked = q['email-append'] ? 'checked' : '';
+            const emailDisplay = q['email-append'] ? 'block' : 'none';
             const template = `
-                <div class="end-node">
-                    <input class="end-title drawflow-input" type="text" placeholder="Title" value="${q.text || ''}" oninput="updateResultText(this)"/>
-                    <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)">${q.result_body || ''}</textarea>
-                 </div>`;
+        <div class="end-node">
+            <input class="end-title drawflow-input" type="text" placeholder="Title" value="${q.text || ''}" oninput="updateResultText(this)"/>
+            <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)">${q.result_body || ''}</textarea>
+            <label class="email-append-label">
+                <input type="checkbox" class="email-append-checkbox drawflow-input" ${emailChecked} onchange="updateEmailAppendToggle(this)">
+                Append to email?
+            </label>
+            <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:${emailDisplay}" oninput="updateEmailAppendText(this)">${q['email-append-text'] || ''}</textarea>
+         </div>`;
             nodeId = editor.addNode('result', 1, 1, x, y, 'result', { question_id: q.id }, template);
             nodeQuestionMap[nodeId] = q.id;
         } else if (q.type == 'text') {
@@ -1370,11 +1412,17 @@ function loadQuizIntoDrawflow() {
                     editor.addConnection(sourceNodeId, questionToNode[a.leads_to], outputKey, 'input_1');
                 }
             });
-        });drawflowDirty = false;
+        }); drawflowDirty = false;
     }, 100);
 }
 
-//TODO COMMENT THIS FUNCTION 
+/**
+ * Fired by drawflow whenever a new node is dropped onto the canvas. Creates the corresponding
+ * question object in quiz.categories (result, free response, or multiple choice depending on
+ * the node's type), links it back to that question via nodeQuestionMap, and (for question nodes)
+ * rebuilds the node's inner HTML so its inputs are wired up to the update functions.
+ * @param {*} nodeId the id of the newly created drawflow node
+ */
 editor.on('nodeCreated', function (nodeId) {
     const node = editor.getNodeFromId(nodeId);
 
@@ -1503,12 +1551,31 @@ function updateResultBody(input) {
     if (question) question.result_body = input.value;
 }
 
+function updateEmailAppendToggle(checkbox) {
+    drawflowDirty = true;
+    const nodeEl = checkbox.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+    const question = getQuizQuestion(nodeId);
+    if (question) question['email-append'] = checkbox.checked;
+
+    const textarea = nodeEl.querySelector('.email-text');
+    if (textarea) textarea.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+function updateEmailAppendText(input) {
+    drawflowDirty = true;
+    const nodeEl = input.closest('.drawflow-node');
+    const nodeId = nodeEl.id.replace('node-', '');
+    const question = getQuizQuestion(nodeId);
+    if (question) question['email-append-text'] = input.value;
+}
+
 
 /**
  * read every node's current DOM state and write to quiz
  */
 function saveDrawflowChanges() {
-    
+
     const allNodes = editor.export().drawflow.Home.data;
 
     for (const nodeId in allNodes) {
@@ -1530,8 +1597,12 @@ function saveDrawflowChanges() {
         } else if (node.name === 'result') {
             const titleInput = nodeEl.querySelector('.end-title');
             const bodyInput = nodeEl.querySelector('.end-body');
+            const emailCheckbox = nodeEl.querySelector('.email-append-checkbox');
+            const emailTextarea = nodeEl.querySelector('.email-text');
             if (titleInput) question.text = titleInput.value;
             if (bodyInput) question.result_body = bodyInput.value;
+            if (emailCheckbox) question['email-append'] = emailCheckbox.checked;
+            if (emailTextarea) question['email-append-text'] = emailTextarea.value;
         }
     }
     if (deletedQuestionIds.size > 0) {

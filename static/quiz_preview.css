@@ -333,9 +333,48 @@ body {
 
 .summary-wrap {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50vh;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.summary-wrap > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.email-prompt {
+  background-color: #154734;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  transition: .2s ease;
+  font-family: 'DM Serif Display', Georgia, serif;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.2);
+  border-width: 2px;
+
+}
+
+.email-prompt:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.email-prompt:active {
+  translate: 0 2px;
+  opacity: 0.75;
+}
+
+pre {
+    max-height: 400px;
+    overflow-y: scroll;
+    overflow-wrap:normal;
+    padding: 8px;
+    background-color: #232323;
+    color: white;
+    border-radius: 6px;
 }
 
 
@@ -347,6 +386,20 @@ body {
     margin-bottom: 10px;
 }
 
+#email-followup input {
+    padding: 0 4px;
+    border-bottom:#154734 2px solid;
+    background-color:#22956930;
+}
+#email-followup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+#email-followup-steps {
+    gap: 4px;
+    display: flex;
+}
 
 
 

@@ -8,16 +8,68 @@ import database_interaction as db
 import log_in
 import response_table_interaction as ri
 import subprocess
+from flask_mailing import Mail, Message
 
 
 app = Flask(__name__)
 #TODO this is for testing purpose and will need to be changed as soon as we get a server
 app.secret_key = "flask_is_making_me_do_this"
 
-
-
 # This allows JS frontend to talk to this backend without security blocks TBD on weather this is a long term solution.
 CORS(app) 
+
+app.config.update(
+    MAIL_SERVER="localhost",
+    MAIL_PORT=1025,
+    MAIL_USE_TLS=False,
+    MAIL_USE_SSL=False,
+    USE_CREDENTIALS=False,
+    MAIL_USERNAME="dev",
+    MAIL_PASSWORD="dev",
+    MAIL_DEFAULT_SENDER="test@example.com",
+    MAIL_FROM_NAME="Quiz App (dev)"
+)
+mail = Mail(app)
+
+# @app.route('/send-test-email', methods=['POST'])
+# async def send_test_email():
+#     message = Message(
+#         subject="Quiz app notification",
+#         recipients=["shadekopf@gmail.com"],
+#         body="Hello from the quiz app!",
+#         subtype="plain"
+#     )
+#     await mail.send_message(message)
+#     return jsonify({"status": "Email sent"})
+
+
+@app.route('/send-quiz-email', methods=['POST'])
+async def send_quiz_email():
+    if not session.get("user_id"):
+        return require_login("Please log in first")
+
+    data = request.get_json() or {}
+    email = data.get('email', '').strip()
+    body = data.get('body', '').strip()
+    quiz_id = data.get('quizID', '').strip()
+
+    if not email:
+        return jsonify({"error": "missing email address"}), 400
+
+    message = Message(
+        subject="Your quiz results",
+        recipients=[email],
+        body = body,
+        subtype= "plain"
+    )
+
+    try:
+        await mail.send_message(message)
+    except Exception as e:
+        print(f"Failed to send quiz email: {e}")
+        return jsonify({"error": "Failed to send email"}), 500
+
+    return jsonify({"success": "Email sent"}), 200
 
 
 def get_role(quiz_id: str) -> str:

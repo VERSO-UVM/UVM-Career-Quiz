@@ -5,6 +5,23 @@ let responses = {};
 let history = [];
 let CURRENT_USER_ID = null;
 
+// Ordered, de-duplicated list of every question id the user has actually landed on while
+// taking the quiz (unlike `history`, this is never popped -- it's a permanent travel log).
+// Used at the end of the quiz to know which "append to email" text to include.
+let visitedNodeIds = [];
+
+/**
+ * Record that the user has landed on a given page, if it hasn't already been recorded.
+ * @param {*} idx the pages[] index the user just landed on
+ */
+function recordVisit(idx) {
+    const item = pages[idx]?.item;
+    if (!item) return;
+    if (!visitedNodeIds.includes(item.id)) {
+        visitedNodeIds.push(item.id);
+    }
+}
+
 /**
  * @param {*} quiz the quiz that is being previewed 
  * @returns a list containing every question
@@ -33,20 +50,20 @@ function updateFooter() {
         return;
     }
 
-    
+
     const [min, max] = getRemainingRange(cur);
 
-    
+
     const worstTotal = answered + max;
-    const bestTotal  = answered + min;  
+    const bestTotal = answered + min;
 
     const worstPct = worstTotal > 0 ? Math.round((answered / worstTotal) * 100) : 0;
-    const bestPct  = bestTotal  > 0 ? Math.round((answered / bestTotal)  * 100) : 0;
+    const bestPct = bestTotal > 0 ? Math.round((answered / bestTotal) * 100) : 0;
 
     // progress bar just goesd off worst case scenario for the time being. maybe we could add a range later? not sure best way to do this.
     document.getElementById('footer-fill').style.width = worstPct + '%';
 
-    
+
     document.getElementById('footer-label').textContent = (worstPct == bestPct)
         ? `${worstPct}% complete`
         : `${worstPct}–${bestPct}% complete`;
@@ -68,7 +85,7 @@ function getRemainingRange(startIdx) {
     const visiting = new Set();
 
     function crawl(idx) {
-        if (idx >= pages.length) return [0, 0];  
+        if (idx >= pages.length) return [0, 0];
         if (visiting.has(idx)) return [0, 0];
         if (memo.has(idx)) return memo.get(idx);
 
@@ -187,15 +204,15 @@ function renderQuestionPage(page) {
 /**
  * Gets the userID from the current session which will be stored along with the users completed quiz data 
  */
-async function getUserID(){
+async function getUserID() {
     try {
         const response = await fetch('/get-user-id');
         const data = await response.json();
-        
-        CURRENT_USER_ID = data.userId; 
+
+        CURRENT_USER_ID = data.userId;
         console.log("User ID set to:", CURRENT_USER_ID);
     } catch (error) {
-        CURRENT_USER_ID = 'NO User ID Found'; 
+        CURRENT_USER_ID = 'NO User ID Found';
         console.error("Error getting user ID:", error);
     }
 }
@@ -204,14 +221,14 @@ async function getUserID(){
  * Takes in completed quiz and collects and formats the answers the user gave to correspond the the question and category.
  * @returns usersQuizResponseData this is the users answers to the questions in JSON format.
  */
-function formatCompletedQuizData(){
+function formatCompletedQuizData() {
 
     // TODO: Have it store the UserID of the person taking the quiz
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
     const questionIdIndex = 0;
     const optionIdIndex = 1;
     const textResponseIndex = 1;
-    
+
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
@@ -222,17 +239,17 @@ function formatCompletedQuizData(){
     };
 
     // Loop though all category types and load id of each 
-        // Load question ids 
-            // Load answer text and id the user selected
-    for (const cat of quiz.categories){
+    // Load question ids 
+    // Load answer text and id the user selected
+    for (const cat of quiz.categories) {
 
         // Load current category name and ID
         const category = {
             id: cat.id,
-            questions: [] 
+            questions: []
         };
         // Load Questions into the category
-        for (const ques of cat.items){
+        for (const ques of cat.items) {
             const question = {
                 id: ques.id,
                 //type: ques.type,
@@ -240,11 +257,11 @@ function formatCompletedQuizData(){
             };
 
             // Special case for 'text' questions since there not stored normally
-            if(ques.type === 'text'){
+            if (ques.type === 'text') {
                 let userAnswer = null;
                 // Compare user response id to the answer id's
-                for(const response of responseEntries){
-                    if(ques.id === response[questionIdIndex]){
+                for (const response of responseEntries) {
+                    if (ques.id === response[questionIdIndex]) {
                         userAnswer = {
                             text: response[textResponseIndex],
                             id: Math.random().toString(36).slice(2, 9) //TEST
@@ -254,15 +271,15 @@ function formatCompletedQuizData(){
                 }
                 if (userAnswer) {
                     question.UserAnswer.push(userAnswer);
-                } 
+                }
             }
             // compare user response to the responseEntries optionID's for 'mc' and 'sldr'
-            for (const ans of ques.answer){
+            for (const ans of ques.answer) {
                 let userAnswer = null;
                 // Compare user response id to the answer id's
-                for(const response of responseEntries){
+                for (const response of responseEntries) {
 
-                    if(ans.id === response[optionIdIndex]){
+                    if (ans.id === response[optionIdIndex]) {
                         userAnswer = {
                             text: ans.text,
                             id: ans.id
@@ -271,7 +288,7 @@ function formatCompletedQuizData(){
                 }
                 if (userAnswer) {
                     question.UserAnswer.push(userAnswer);
-                } 
+                }
             }
             category.questions.push(question);
         }
@@ -281,22 +298,22 @@ function formatCompletedQuizData(){
 }
 
 // Sends out POST with users quiz data for the database to process
-async function postUserData(usersQuizResponseData){
+async function postUserData(usersQuizResponseData) {
     data = usersQuizResponseData;
 
     try {
         const response = await fetch('/quiz-data', {
-          method: 'POST', 
-          headers: {
-            'Content-Type': 'application/json' 
-          },
-          body: JSON.stringify(data) 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
-    
+
         if (!response.ok) {
-          throw new Error(`HTTP error!`);
+            throw new Error(`HTTP error!`);
         }
-    
+
         const result = await response.json();
         console.log('Success:', result);
 
@@ -306,21 +323,129 @@ async function postUserData(usersQuizResponseData){
 }
 
 /**
+ * Look through every node the user actually traveled to during the quiz and pull out
+ * the ones that have "append to email" checked, in the order they were visited.
+ * @returns an array of question items (from quiz.categories) that have email-append set
+ */
+function getVisitedEmailAppendItems() {
+    const allQuestions = quiz.categories.flatMap(cat => cat.items);
+    return visitedNodeIds
+        .map(id => allQuestions.find(q => q.id === id))
+        .filter(item => item && item['email-append']);
+}
+
+/**
+ * Join together the "email-append-text" of every visited node that has email-append checked,
+ * one after the other, in the order the user traveled through them.
+ * @returns the combined email body text
+ */
+function buildEmailFollowupBody() {
+    return getVisitedEmailAppendItems()
+        .map(item => (item['email-append-text'] || '').trim())
+        .filter(text => text !== '')
+        .join('\n\n');
+}
+
+/**
+ * Show the email input + submit button in place of the "send me an email" button.
+ */
+function showEmailFollowupInput() {
+    const container = document.getElementById('email-followup');
+    if (!container) return;
+    container.innerHTML = `
+        <div id="email-followup-steps">
+            <input type="email" id="email-followup-address" placeholder="hello@gmail.com"/>
+            <button class="email-prompt" onclick="submitEmailFollowup()">
+                Send
+            </button>
+        </div>
+        <p id="email-followup-status"></p>
+    `;
+    const input = document.getElementById('email-followup-address');
+    if (input) input.focus();
+}
+
+/**
+ * Validate the entered email, then POST it (along with the combined email-append text
+ * for every visited node) to the backend so it can be sent via flask-mailing.
+ */
+async function submitEmailFollowup() {
+    const input = document.getElementById('email-followup-address');
+    const status = document.getElementById('email-followup-status');
+    const submitBtn = document.getElementById('email-followup-submit');
+    const email = (input?.value || '').trim();
+
+    // very light client-side sanity check; the backend should still validate this
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (status) status.textContent = `'${email}' is not a valid address.`;
+        return;
+    }
+
+    const body = buildEmailFollowupBody();
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (input) input.disabled = true;
+    if (status) status.textContent = 'Sending...';
+
+    try {
+        const response = await fetch('/send-quiz-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userID: CURRENT_USER_ID,
+                quizID: quiz.id,
+                email,
+                body
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('HTTP error');
+        }
+
+        const container = document.getElementById('email-followup');
+        if (container) {
+            container.innerHTML = `<p> Email sent.</p>`;
+        }
+    } catch (error) {
+        console.error(error);
+        if (status) status.textContent = "email failed, check console.";
+        if (submitBtn) submitBtn.disabled = false;
+        if (input) input.disabled = false;
+    }
+}
+
+/**
  * Called at the end of the survey to indicate that it's done
  * @returns the page at the end of the survey
  */
 function renderSummary() {
-    
+
     testData = formatCompletedQuizData();
     postUserData(testData);
+
+    const hasEmailAppendContent = getVisitedEmailAppendItems().length > 0;
+
     return `
     <div class="summary-wrap">
-        <h2 class="summary-title">Quiz Results JSON Preview</h2>
-        <pre style="margin-top: 400px; background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; text-align: left; overflow-x: auto;">
-          <code>${JSON.stringify(testData, null, 1)}</code>
-        </pre>
+        <h2 class="summary-title">Quiz Complete!</h2>
+       <div>
+           <div>
+                <h3>JSON Preview:</h3>
+                <pre>
+                  <code>${JSON.stringify(testData, null, 1)}</code>
+                </pre>
+           </div>
+            ${hasEmailAppendContent ? `
+            <div id="email-followup">
+                <button class="email-prompt" onclick="showEmailFollowupInput()">
+                    Send me an email with next steps
+                </button>
+            </div>
+       </div>
+        ` : ''}
     </div>
-    `; 
+    `;
 }
 
 /**
@@ -329,12 +454,12 @@ function renderSummary() {
  */
 function isLastPage() {
     const item = pages[cur]?.item;
-    if (!item) 
+    if (!item)
         return true;
 
     if (item.type === 'result' || item.type === 'text') {
         const leads_to = item.answer?.[0]?.leads_to;
-        if (!leads_to) 
+        if (!leads_to)
             return true;
         return resolveLeadsTo(leads_to) >= pages.length;
     }
@@ -345,7 +470,7 @@ function isLastPage() {
     }
 
     const answer = item.answer?.find(a => a.id === answerId);
-    if (!answer) 
+    if (!answer)
         return false;
 
     const leads_to = answer.leads_to;
@@ -431,6 +556,7 @@ function nextQuestion(qId) {
 
     history.push(cur);
     cur = resolveLeadsTo(leads_to);
+    recordVisit(cur);
     render();
     window.scrollTo({ top: 0 });
 }
@@ -453,6 +579,8 @@ function restart() {
     responses = {};
     cur = 0;
     history = [];
+    visitedNodeIds = [];
+    recordVisit(cur);
     render();
     window.scrollTo({ top: 0 });
 }
@@ -464,6 +592,8 @@ function loadQuiz() {
     pages = buildPages(quiz);
     responses = {};
     cur = 0;
+    visitedNodeIds = [];
+    recordVisit(cur);
     render();
 }
 
