@@ -599,10 +599,26 @@ def require_login(reason=None):
 def receive_user_quiz_data():
 
     data = request.get_json()
-    nice_json_string = json.dumps(data, indent=2)
 
     if not data:
         return jsonify({"status": "error", "message": "No data received"}), 400
+
+    if not isinstance(data, dict):
+        return jsonify({"status": "error", "message": "Malformed quiz data"}), 400
+
+    # the session is the only trustworthy source for who took the quiz, the posted
+    # userID would let a client write into somebody else's USER_RESPONSES row
+    if session.get("user_id"):
+        data["userID"] = session["user_id"]
+
+    nice_json_string = json.dumps(data, indent=2)
+
+    # moves the quiz from quizzes_assigned to quizzes_completed and stores the answers
+    try:
+        recorded = ri.quiz_complete(nice_json_string)
+    except Exception as exc:
+        print(f"--- Failed to record quiz completion: {type(exc).__name__}: {exc} ---")
+        return jsonify({"status": "error", "message": "Could not record quiz completion"}), 500
 
     # runs command to execute the test file
     result = subprocess.run(
@@ -617,4 +633,5 @@ def receive_user_quiz_data():
 
     return jsonify({
         "status": "success",
+        "recorded": recorded,
     }), 200

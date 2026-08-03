@@ -346,6 +346,23 @@ def _fetch_user_response_record(u_id: str):
     }
 
 
+def _ensure_user_response_row(u_id: str):
+    conn, cur = connecting_to_sql()
+    try:
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO USER_RESPONSES (
+                u_ID, num_completed_quizzes, quizzes_assigned, quizzes_completed, quiz_response_answers
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (u_id, 0, serialize([]), serialize([]), serialize([])),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def _sync_legacy_user_response_table(
     u_id: str,
     num_completed_quizzes,
@@ -420,16 +437,23 @@ def _sync_user_response_state(
 #------------------------- from quiz_preview.js fn -> formatQuizResultsJSON() -> call the below function -- def quiz_complete()
 
 def user_assigned_new_quiz(u_id: str, q_id: str):
-    def append_on(tail, data):
-        return data.append(tail)
-    #testing generic query here
-    data = __generic_query_response(connecting_to_sql, 
-                             "SELECT quizzes_assigned FROM USER_RESPONSES WHERE u_ID = ?",
-                             append_on,
-                             "UPDATE USE_RESPONSES SET quizzes_assigned = ? WHERE u_ID = ?",
-                             u_id,
-                             write_args= (q_id ,u_id),
-                             write=True)
+    # a user has no USER_RESPONSES row until something is assigned to them
+    _ensure_user_response_row(u_id)
+    record = _fetch_user_response_record(u_id)
+    if record is None:
+        return
+
+    quizzes_assigned = list(record["quizzes_assigned"])
+    if q_id not in quizzes_assigned:
+        quizzes_assigned.append(q_id)
+
+    _sync_user_response_state(
+        u_id,
+        record["num_completed_quizzes"],
+        quizzes_assigned,
+        record["quizzes_completed"],
+        record["quiz_response_answers"],
+    )
 
 
 
@@ -515,9 +539,17 @@ def _append_answers(u_id, answer_list):
 
 def quiz_complete(json_string):
        u_id, q_id, len_quiz, answer_arr = _json_data_convert(json_string)
+       # the row may not exist yet, a quiz can be taken by its creator without ever being assigned
+       _ensure_user_response_row(u_id)
+       record = _fetch_user_response_record(u_id)
+       if record is not None and any(quiz[0] == q_id for quiz in record["quizzes_completed"]):
+           # already recorded, appending the answers a second time would desync the
+           # offsets that get_user_response_to_quiz walks across quizzes_completed
+           return False
        _increment_quiz_ctr(u_id)
        _move_quiz_id_todo_cmp(u_id, q_id, len_quiz)
        _append_answers(u_id, answer_arr)
+       return True
 
 
     # -----------------HELPER FUNCTIONS------------------------

@@ -212,10 +212,13 @@ def share_quiz(u_id : str , q_id : str, role : str):
 
     conn, cur = connecting_to_sql()
     cur.execute("INSERT INTO ACCESS (q_id, u_id,role) VALUES(?,?,?) ", (q_id, u_id,role))
-    if role is ROLE_READER:
-        rti.user_assigned_new_quiz(u_id, q_id)
     conn.commit()
     conn.close()
+
+    # must run on its own connection AFTER the commit above, an open write
+    # transaction here locks the db out from under USER_RESPONSES
+    if role == ROLE_READER:
+        rti.user_assigned_new_quiz(u_id, q_id)
 
 
 def save_quiz_in_the_db(q_id : str, q_title : str , u_ID :str ):
