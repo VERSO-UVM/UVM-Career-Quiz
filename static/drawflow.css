@@ -1,5 +1,5 @@
 .drawflow-input,
-.end-body {
+textarea {
   all: revert;
   color: black;
   font-family: 'DM Serif Display', Georgia, serif;
@@ -14,12 +14,12 @@
   color: rgba(0, 0, 0, 0.8);
 }
 
-.end-body {
+#drawflow textarea {
   height: 20px;
   padding: 8px !important;
   min-height: 40px;
   max-width: calc(100% - 30px + 12px);
-  min-width: calc(100% - 30px + 12px);
+  min-width: 20ch;
   field-sizing: content;
 }
 
@@ -68,6 +68,15 @@
   transition: .1s;
 }
 
+#drawflow .email-append-label {
+  color:#164734;
+  font-size: small;
+  accent-color:#164734;
+  display: flex;
+  align-items: center;
+  gap:2px;
+
+}
 .end-node {
   display: flex;
   flex-direction: column;

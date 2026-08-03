@@ -524,12 +524,15 @@ function renderAnswerPanel(cat_Id, q_Id) {
     `: is_result ? `
        <div class="open_text_preview">
         <textarea class="result_body" placeholder="Body text (optional)" oninput="changeResultBody('${cat_Id}', '${q_Id}', this.value)">${question.result_body || ''}</textarea>
-        <label class="email_append_label">
-            <input type="checkbox" class="email_append_checkbox" ${question['email-append'] ? 'checked' : ''} onchange="toggleEmailAppend('${cat_Id}', '${q_Id}', this.checked)" />
-            Append to email?
-        </label>
-        ${question['email-append'] ? `
-        <textarea class="email_append_text" placeholder="Text to append to email (optional)" oninput="changeEmailAppendText('${cat_Id}', '${q_Id}', this.value)">${question['email-append-text'] || ''}</textarea>
+        <div>
+            
+            <label class="email_append_label">
+                <input type="checkbox" class="email_append_checkbox" ${question['email-append'] ? 'checked' : ''} onchange="toggleEmailAppend('${cat_Id}', '${q_Id}', this.checked)" />
+                Append to email?
+            </label>
+            ${question['email-append'] ? `
+            <textarea class="email_append_text" placeholder="Text to append to email (optional)" oninput="changeEmailAppendText('${cat_Id}', '${q_Id}', this.value)">${question['email-append-text'] || ''}</textarea>
+        </div>
         ` : ''}
     </div>
     ` : `
@@ -996,11 +999,13 @@ const endTemplate = `
     <div class="end-node">
         <input class="end-title drawflow-input" type="text" placeholder="Title" oninput="updateResultText(this)"/>
         <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)"></textarea>
-        <label class="email-append-label">
-            <input type="checkbox" class="email-append-checkbox drawflow-input" onchange="updateEmailAppendToggle(this)">
-            Append to email?
-        </label>
-        <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:none" oninput="updateEmailAppendText(this)"></textarea>
+        <div>
+            <label class="email-append-label">
+                <input type="checkbox" class="email-append-checkbox drawflow-input" onchange="updateEmailAppendToggle(this)">
+                Append to email?
+            </label>
+            <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:none" oninput="updateEmailAppendText(this)"></textarea>
+        </div>
     </div>
 `;
 
@@ -1358,11 +1363,13 @@ function loadQuizIntoDrawflow() {
         <div class="end-node">
             <input class="end-title drawflow-input" type="text" placeholder="Title" value="${q.text || ''}" oninput="updateResultText(this)"/>
             <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)">${q.result_body || ''}</textarea>
-            <label class="email-append-label">
-                <input type="checkbox" class="email-append-checkbox drawflow-input" ${emailChecked} onchange="updateEmailAppendToggle(this)">
-                Append to email?
-            </label>
-            <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:${emailDisplay}" oninput="updateEmailAppendText(this)">${q['email-append-text'] || ''}</textarea>
+            <div>
+                <label class="email-append-label">
+                    <input type="checkbox" class="email-append-checkbox drawflow-input" ${emailChecked} onchange="updateEmailAppendToggle(this)">
+                    Append to email?
+                </label>
+                <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:${emailDisplay}" oninput="updateEmailAppendText(this)">${q['email-append-text'] || ''}</textarea>
+            </div>
          </div>`;
             nodeId = editor.addNode('result', 1, 1, x, y, 'result', { question_id: q.id }, template);
             nodeQuestionMap[nodeId] = q.id;
