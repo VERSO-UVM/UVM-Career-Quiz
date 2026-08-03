@@ -6,6 +6,7 @@ To be used by an admin to wipe all data
 
 import sqlite3
 from sqlite3 import Connection, Cursor
+import response_table_interaction as rti
 
 ROLE_CREATOR = "creator"
 ROLE_ADMIN   = "admin"
@@ -199,7 +200,7 @@ def find_uname_with_id(u_id :str ) -> str | None :
         return None
 
 
-def share_quiz(u_id : str , q_id : str, role : str) :
+def share_quiz(u_id : str , q_id : str, role : str):
     """
     allow for sharing of a quiz with someone else
 
@@ -208,8 +209,11 @@ def share_quiz(u_id : str , q_id : str, role : str) :
         q_id(str) : the id of the quiz who's being shared 
         role (str) : the role that is being given to the user
     """
+
     conn, cur = connecting_to_sql()
     cur.execute("INSERT INTO ACCESS (q_id, u_id,role) VALUES(?,?,?) ", (q_id, u_id,role))
+    if role is ROLE_READER:
+        rti.user_assigned_new_quiz(u_id, q_id)
     conn.commit()
     conn.close()
 
