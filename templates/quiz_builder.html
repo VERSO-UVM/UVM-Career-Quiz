@@ -180,9 +180,7 @@
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
 
 
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
+
     <div id="dragDropModal" class="modal-overlay">
         <div class="modal-content">
             
@@ -198,7 +196,6 @@
                 <div class="sidebar-bottom-group">
                     <div class="modal-footer">
                         <button id="modal-save-btn" class="square-btn drop-btn" onclick="saveDragDropQuestion()">Save & Close</button>
-                        <button type="button" onclick="areYouSurePopUp()" class="square-btn drop-btn">Close</button>
                     </div>
                 </div>
             </div>
@@ -209,24 +206,8 @@
             </div>
         </div>
     </div>
-
-    <!-- This my be obsolete not that save & close is one button but keeping it for now-->
-    <div id="popUpCancel" class="pop-up-overlay">
-        <div class="pop-up-content">
-            <p>⁉️ Are you sure you want to close without saving ⁉️</p>
-            <div class="pop-up-bottom-group">
-                <button type="button" onclick="closeModal('no')" class="square-btn drop-btn">↩ Go Back ↩</button>
-                <button type="button" onclick="closeModal('yes')" class="square-btn drop-btn">❌ Leave without saving ❌</button>
-            </div>
-        </div>
-    </div>
         
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
-
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-
 
 </body>
 

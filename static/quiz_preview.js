@@ -204,7 +204,11 @@ function renderQuestionPage(page) {
 // TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
 // TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
 
-
+/**
+ * Extract the current location of the drag and drop boxes and puts them is string format for storage in database
+ * @param {*} dropArea <div> that holds the drop boxes on the page
+ * @returns JSON formatted list of the current order of the drags and drops
+ */
 function extractDragDropState(dropArea) {
     const dropBoxes = dropArea.querySelectorAll('.target-box');
     
@@ -249,7 +253,11 @@ function extractDragDropState(dropArea) {
 }
 
 
-
+/**
+ * Populates and updates the question page for the drag style question.
+ * @param {*} item The current question that is being answered on the quiz: item = page.item
+ * @returns Will only return if there is an error
+ */
 function addAllDropsAndDrags(item) {
     // Locate the container 
     const container = document.getElementById(`drag-drop-container-${item.id}`);
@@ -261,7 +269,6 @@ function addAllDropsAndDrags(item) {
 
     const dropArea = container.querySelector('.drop-zones-area');
     const dragArea = container.querySelector('.drag-items-area');
-    //console.log(dropArea);
 
     // Clear any existing content
     dropArea.innerHTML = '';
@@ -305,24 +312,15 @@ function addAllDropsAndDrags(item) {
             if (draggedElem) {
                 // Append the dragged box into the drop zone
                 dropElem.appendChild(draggedElem);
-                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
-                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
-
                 /** 
                  * This will save the users response for JSON and 
                  * if they want to go back and look at there answer during the quiz
                  * */ 
-
                 const questionResults = extractDragDropState(dropArea)
                 responses[item.id] = {
                     dragDropId: questionResults.dragDropId,
                     dragDropText: questionResults.dragDropText
                 };
-
-                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
-                // TEST CODE - TEST CODE - TEST CODE - TEST CODE
-                
-
             }
         });
 
@@ -348,6 +346,11 @@ function addAllDropsAndDrags(item) {
     selectDRAG(responses[item.id]);
 }
 
+/**
+ * Keeps the users response to the question saved for when the 
+ * data is formatted to be accepted into the data base
+ * @param {*} savedResponse The users response to the question
+ */
 function selectDRAG(savedResponse){
     if (savedResponse && savedResponse.dragDropId) {
         // savedResponse.dragDropId looks like: "dropId|dragId1|dragId2, dropId2|dragId3"
@@ -359,7 +362,7 @@ function selectDRAG(savedResponse){
             const dropBoxElem = document.getElementById(dropBoxId);
 
             if (dropBoxElem) {
-                // Loop through all drag items belonging to this drop box (starting from index 1)
+                // Loop through all drag items belonging to this drop box
                 for (let i = 1; i < ids.length; i++) {
                     const dragId = ids[i];
                     const dragElem = document.getElementById(dragId);
@@ -403,8 +406,6 @@ function formatCompletedQuizData(){
 
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
 
-    //console.log(JSON.stringify(responseEntries, null, 2)); // TEST CODE
-
     const questionIdIndex = 0;
     const optionIdIndex = 1;
     const textResponseIndex = 1;
@@ -444,7 +445,7 @@ function formatCompletedQuizData(){
                     if(ques.id === response[questionIdIndex]){
                         userAnswer = {
                             text: response[textResponseIndex],
-                            id: Math.random().toString(36).slice(2, 9) //TEST
+                            id: Math.random().toString(36).slice(2, 9)
                         };
                         break;
                     }
@@ -453,14 +454,11 @@ function formatCompletedQuizData(){
                     question.UserAnswer.push(userAnswer);
                 } 
             }
-            // TODO: FIX THIS
+            //  Special case for 'drag' questions since there not stored normally
             if(ques.type === 'drag'){
                 let userAnswer = null;
                 // Compare user response id to the answer id's
                 for(const response of responseEntries){
-
-                    //console.log(response[textResponseIndex].dragDropId);
-                    //console.log(response[textResponseIndex].dragDropText);
 
                     if(ques.id === response[questionIdIndex]){
                         userAnswer = {

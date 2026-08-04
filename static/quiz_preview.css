@@ -172,6 +172,7 @@ body {
     white-space: nowrap;
     font-size: 15px;
 }
+
 .slider-label-selected {
     font-weight: bold;
     font-size: 20px;
@@ -347,11 +348,7 @@ body {
     margin-bottom: 10px;
 }
 
-/* TEST CODE */ /* TEST CODE */ /* TEST CODE */ /* TEST CODE */
-/* TEST CODE */ /* TEST CODE */ /* TEST CODE */ /* TEST CODE */
-/* TEST CODE */ /* TEST CODE */ /* TEST CODE */ /* TEST CODE */
-/* Container sizing so it sits nicely in your page-wrap */
-/* Container layout */
+/* Drag Drop CSS*/
 .drag-drop-container {
     display: flex;
     flex-direction: column;
@@ -370,7 +367,6 @@ body {
     width: 100%;
 }
   
-/* Box styles */
 .drag-drop-container .box {
     width: 140px;
     height: 140px;
@@ -382,58 +378,51 @@ body {
     font-weight: 600;
     transition: all 0.2s ease;
 
-    padding: 1px;            /* Gives text some breathing room from the edges */
-    text-align: center;       /* Centers multi-line text nicely */
-    word-break: break-word;   /* Breaks long words if they exceed box width */
-    overflow-y: auto;         /* Allows scrolling if text exceeds the box height */
+    padding: 1px;             
+    text-align: center;       
+    word-break: break-word;   
+    overflow-y: auto;         
 }
   
-/* Target Drop Zone */
 .drag-drop-container .target-box {
     border: 2px dashed #b0b0b0;
     background-color: #ffffff;
     color: #888888;
-
-    /* --- CHANGES FOR DYNAMIC RESIZING --- */
-    height: auto;               /* Remove fixed height so it grows */
-    min-height: 140px;          /* Minimum starting size */
+    height: auto;               
+    min-height: 140px;         
     display: flex;
-    flex-direction: row;        /* Lay dropped boxes side-by-side */
-    flex-wrap: wrap;            /* Wrap to next line if it gets too wide */
+    flex-direction: row;        
+    flex-wrap: wrap;            
     justify-content: center;
     align-items: center;
-    gap: 3px;                  /* Space between dropped items */
-    padding: 1px;              /* Breathing room as it expands */
-    position: relative; /* Allows precise placement if needed */
+    gap: 3px;                  
+    padding: 1px;              
+    position: relative;
 }
 
-/* Style for the drop box title/label */
 .target-box > span {
     font-weight: bold;
     margin-bottom: 5px;
     width: 100%;
     text-align: center;
-    flex-shrink: 0; /* Prevents the title from compressing */
+    flex-shrink: 0; 
 }
   
-/* Ensure dropped boxes inside the drop zone do NOT shrink or distort */
 .target-box .drag-box {
-    width: 100% !important;   /* Forces it to stretch across the full width of the drop box */
-    max-width: 100%;          /* Prevents it from overflowing */
+    width: 100% !important;   
+    max-width: 100%;          
     min-height: 50px;         
     height: auto;             
-    flex-shrink: 0;           /* Prevents vertical shrinking */
-    box-sizing: border-box;   /* Ensures padding doesn't push it outside the box */
-  }
+    flex-shrink: 0;           
+    box-sizing: border-box;   
+}
 
-/* Highlight style when dragging over */
 .drag-drop-container .target-box.drag-over {
     border-color: #4a90e2;
     background-color: #eaf2fc;
     color: #4a90e2;
 }
   
-/* Draggable Box */
 .drag-drop-container .drag-box {
     background-color: #4a90e2;
     color: white;
@@ -444,10 +433,6 @@ body {
 .drag-drop-container .drag-box:active {
     cursor: grabbing;
 }
-/* TEST CODE */ /* TEST CODE */ /* TEST CODE */ /* TEST CODE */
-/* TEST CODE */ /* TEST CODE */ /* TEST CODE */ /* TEST CODE */
-/* TEST CODE */ /* TEST CODE */ /* TEST CODE */ /* TEST CODE */
-
 
 @media (max-width: 540px) {
 

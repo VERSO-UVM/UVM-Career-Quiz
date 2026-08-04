@@ -212,6 +212,7 @@ function renderQuestions(cat_Id) {
         return;
     }
 
+
     container.innerHTML = category.items.map((q, index) => `
             <div class="question_item${active_question_Id === q.id ? ' active' : ''}" data-id="${q.id}" onclick="openAnswerPanel('${cat_Id}', '${q.id}')">
             <span class="question_number">Q${index + 1}</span>
@@ -447,90 +448,132 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+//TODO: Fix issue with change question type from drag to any other type like mc
+//      Make it so that if a different question type is selected for the same 
+//      question that the 'drags' and 'drops' are deleted from the JSON file
 
+/**
+ * renders the drag drop question editor/maker
+ * If the user is trying to edit an existing question then it will render the already existing 
+ * @returns error if the panel doesn't exist
+ */
 function dragDropDesignPanel(){
-
     // Grab the modal element from quiz_builder.html
     const modal = document.getElementById('dragDropModal');
     if (!modal) {
         console.error("Error: #dragDropModal not found in the HTML DOM.");
         return;
     }
+
+    // if there was already existing drags and drops in the panel render those onto the screen this is kind of bloated and will be cleaned up later but it all works
+    for (const matchingCategory of quiz.categories) {
+        if (matchingCategory.id === active_category_Id) {
+            for (const matchingQuestion of matchingCategory.items) {
+                if (matchingQuestion.id === active_question_Id) {
+    
+                    const dragsObj = matchingQuestion.answer.find(a => a.drags);
+                    const dropsObj = matchingQuestion.answer.find(a => a.drops);
+    
+                    // Populate existing Drag Boxes
+                    if (dragsObj?.drags) {
+                        for (const drag of dragsObj.drags) {
+                            addDraggableBox(drag);
+                        }
+                    }
+    
+                    // Populate existing Drop Boxes
+                    if (dropsObj?.drops) {
+                        for (const drop of dropsObj.drops) {
+                            addDropBox(drop);
+                        }
+                    }
+    
+                }
+            }
+        }
+    }
     // Reveal the modal overlay
     modal.style.display = 'flex';
-
 }
 
-function addDraggableBox() {
-    console.log("DRAG ADDED");
-
-    // 1. Find the Drag Box Window on the screen
+/**
+ * Adds draggable box to the editing screen to enter text into
+ * @param {*} drag JSON element that contains an existing drag boxes text and id so the user can edit/view the contents
+ * @returns error if no window is found
+ */
+function addDraggableBox(drag = null) {
     const dragBoxWindow = document.querySelector('.Drag-Box-Window');
     if (!dragBoxWindow) {
         console.error("Could not find .Drag-Box-Window on the page!");
         return;
     }
 
-    // 2. Create the physical box container element
     const newDragBox = document.createElement('div');
 
-    newDragBox.id = uid() // random id for each box
-
-    // 3. Use the matching styling class
+    // Use the saved ID if editing, or generate a new random ID
+    newDragBox.id = drag?.id || uid(); 
     newDragBox.classList.add('created-drop-item');
 
-    // 4. Build the HTML structure (perfect match with the drop box)
+    // Determine default text or existing saved text
+    const initialText = drag?.text || '';
+    const defaultPlaceholder = 'Enter draggable answer here';
+
+    // Build HTML with dynamic value setting and delete button
     newDragBox.innerHTML = `
         <span class="drop-label">Drag Box:</span>
         <input type="text" 
                class="drop-item-input" 
-               placeholder="Enter draggable answer here" 
+               value="${initialText}" 
+               placeholder="${initialText ? '' : defaultPlaceholder}" 
                onfocus="this.placeholder = ''" 
-               onblur="this.placeholder = 'Enter draggable answer here'">
+               onblur="this.placeholder = this.value ? '' : '${defaultPlaceholder}'">
         <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">×</button>
     `;
 
-    // 5. Append the brand-new box directly inside the Drag Box Window
     dragBoxWindow.appendChild(newDragBox);
-    
 }
 
-
-
-function addDropBox(){
-    console.log("DROP ADDED");
-    // 1. Find the Drop Box Window on screen
+/**
+ * Adds drop box to the editing screen to enter text into
+ * @param {*} drop JSON element that contains an existing drop boxes text and id so the user can edit/view the contents
+ * @returns error if no window is found
+ */
+function addDropBox(drop = null) {
     const dropBoxWindow = document.querySelector('.Drop-Box-Window');
     if (!dropBoxWindow) {
         console.error("Could not find .Drop-Box-Window on the page!");
         return;
     }
 
-    // 2. Create the physical box container element
     const newDropBox = document.createElement('div');
-    
 
-    newDropBox.id = uid() // random id for each box
-
-    // 3. Use the matching styling class
+    // Use the saved ID if editing, or generate a new random ID
+    newDropBox.id = drop?.id || uid(); 
     newDropBox.classList.add('created-drop-item');
 
-    // 4. Build the HTML structure (perfect match with the drag box)
+    // Determine default text or existing saved text
+    const initialText = drop?.text || '';
+    const defaultPlaceholder = 'Enter drop box text here';
+
+    // Build HTML with value setting and delete button
     newDropBox.innerHTML = `
         <span class="drop-label">Drop Box:</span>
         <input type="text" 
                class="drop-item-input" 
-               placeholder="Enter drop box text here" 
+               value="${initialText}" 
+               placeholder="${initialText ? '' : defaultPlaceholder}" 
                onfocus="this.placeholder = ''" 
-               onblur="this.placeholder = 'Enter drop box text here'">
+               onblur="this.placeholder = this.value ? '' : '${defaultPlaceholder}'">
         <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">×</button>
     `;
 
-    // 5. Append the brand-new box directly inside the Drop Box Window
     dropBoxWindow.appendChild(newDropBox);
-
 }
-
+/**
+ * Gets users answers from the quiz question page
+ * @param {*} windowName div that holds the text and id's of the drag and drop elements
+ * @returns AnswerList formatted JSON elements that that used to store the users answers in the database
+ */
 function getBoxTextAndId(windowName){
     // Safety check to make sure a valid HTML element was passed in
     if (!windowName) return [];
@@ -544,8 +587,6 @@ function getBoxTextAndId(windowName){
     } else if (windowName.id === 'drag-box-window') {
         AnswerList = {drags: []}
     }
-
-    
     
     for (const box of allDragBoxes) {
         const input = box.querySelector('.drop-item-input');
@@ -564,10 +605,6 @@ function getBoxTextAndId(windowName){
             }
         }
     }
-    
-    console.log('========================================================================');
-    console.log("Answers gathered:", AnswerList);
-
     return AnswerList; 
 }
 
@@ -575,11 +612,11 @@ function getBoxTextAndId(windowName){
  * Saves it to the JSON file in the proper format
  */
 function saveDragDropQuestion(){
-    // 1. Find both windows on the page
+    // Find both windows on the page
     const dragBoxWindow = document.getElementById('drag-box-window');
     const dropBoxWindow = document.getElementById('drop-box-window');
 
-    // 2. Safety check to make sure the windows actually exist before reading them
+    // Safety check to make sure the windows actually exist before reading them
     if (!dragBoxWindow || !dropBoxWindow) {
         console.error("Could not find the drag or drop windows on the page!");
         return;
@@ -591,7 +628,6 @@ function saveDragDropQuestion(){
     console.log("QuestionId: " + active_question_Id);
     console.log("CategoryId: " + active_category_Id);
     
-
     // Overwrite old answer
     for (const matchingCategory of quiz.categories){
         if(matchingCategory.id === active_category_Id){
@@ -614,29 +650,15 @@ function saveDragDropQuestion(){
             }
         }
     }
-    
-    closeModal('yes');
-}
-
-function areYouSurePopUp(){
-    const modal = document.getElementById('popUpCancel');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
+    closeModal();
 }
 
 /**
  * Hides the modal overlay and resets its inputs
  */
-function closeModal(yesOrNo) {
+function closeModal() {
     const modal = document.getElementById('dragDropModal');
-    const popUp = document.getElementById('popUpCancel');
-    if (yesOrNo === 'yes') {
-        modal.style.display = 'none';
-        popUp.style.display = 'none';
-    } else {
-        popUp.style.display = 'none';
-    }
+    modal.style.display = 'none';
 }
 
 /** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
@@ -705,10 +727,8 @@ function renderAnswerPanel(cat_Id, q_Id) {
                 <button class="type_btn${is_sldr ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'sldr')">Slider</button>
                 <button class="type_btn${is_result ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'result')">No Response</button>
 
-
                 <button class="type_btn${is_drag ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'drag'); dragDropDesignPanel()">Drag & Drop</button>
-
-                
+  
             </div>
             <div id="answer_config">${answers_html}</div>
         </div>

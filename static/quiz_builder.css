@@ -924,18 +924,8 @@ header a:hover h1 {
 }
 
 
-
-/* TEST CODE TEST CODE TEST CODE TEST CODE --- TEST CODE TEST CODE TEST CODE TEST CODE -- TEST CODE TEST CODE TEST CODE TEST CODE */
-/* TEST CODE TEST CODE TEST CODE TEST CODE --- TEST CODE TEST CODE TEST CODE TEST CODE -- TEST CODE TEST CODE TEST CODE TEST CODE */
-/* TEST CODE TEST CODE TEST CODE TEST CODE --- TEST CODE TEST CODE TEST CODE TEST CODE -- TEST CODE TEST CODE TEST CODE TEST CODE */
-/* TEST CODE TEST CODE TEST CODE TEST CODE --- TEST CODE TEST CODE TEST CODE TEST CODE -- TEST CODE TEST CODE TEST CODE TEST CODE */
-
-
 /* css/drag-drop-modal.css */
 
-/* ==========================================
-   MODAL OVERLAY (BACKGROUND DIMMER)
-   ========================================== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -949,16 +939,13 @@ header a:hover h1 {
     z-index: 9999;
 }
 
-/* ==========================================
-   MODAL CONTAINER (THE PHYSICAL WHITE BOARD)
-   ========================================== */
 .modal-content {
     background: #ffffff;
     padding: 30px;        
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     display: flex;
-    flex-direction: row; /* Sidebar left, Workspace right */
+    flex-direction: row; 
     gap: 30px;           
 
     width: 95vw;          
@@ -966,12 +953,9 @@ header a:hover h1 {
     min-width: 500px;     
     height: 90vh;         
     max-height: 1000px;    
-    min-height: 500px; /* Keep this tall enough to stack elements vertically */    
+    min-height: 500px; 
 }
 
-/* ==========================================
-   Drop and Drag Windows
-   ========================================== */
 .Drop-Box-Window,
 .Drag-Box-Window,
 .drop-drag-window-content {
@@ -979,11 +963,8 @@ header a:hover h1 {
     border: 2px dashed #cbd5e1;
     border-radius: 12px;
     padding: 20px;
-    
-    /* --- KEY FIXES --- */
-    flex: 1;                /* Forces both zones to share 50% of the height each */
-    min-height: 0;          /* CSS Flexbox fix: allows flex items to shrink below content size */
-    
+    flex: 1;                
+    min-height: 0;          
     display: flex;
     flex-direction: column; 
     gap: 15px;           
@@ -992,17 +973,14 @@ header a:hover h1 {
 
 .modal-body {
     flex-grow: 1;         
-    display: flex !important; /* Force flex layout */
-    flex-direction: column !important; /* STRICTLY force stacking */
+    display: flex !important; 
+    flex-direction: column !important; 
     gap: 20px;              
     height: 100%;           
-    min-height: 0;            /* Prevents the body from overflowing */
+    min-height: 0;            
     overflow: hidden;
 }
 
-/* BOX CSS
-
-/* Styling for the box when it spawns in the Drop Box Window */
 .created-drop-item {
     background: #ffffff;
     border: 1px solid #cbd5e1;
@@ -1044,21 +1022,15 @@ header a:hover h1 {
     color: #b91c1c;
 }
 
-/* BOX CSS
-
-/* ==========================================
-   LEFT SIDEBAR (THE VERTICAL BUTTON COLUMN)
-   ========================================== */
 .modal-sidebar {
     display: flex;
-    flex-direction: column; /* Stacks items vertically */
-    gap: 12px;              /* Spacing down the column */
+    flex-direction: column; 
+    gap: 12px;              
     border-right: 1px solid #e2e8f0; 
     padding-right: 20px;
-    min-width: 140px;       /* Ensures text buttons don't clip */
+    min-width: 140px;       
 }
 
-/* Sidebar Buttons Styling */
 .add-drop-box,
 .add-drag-box,
 .square-btn {
@@ -1071,7 +1043,6 @@ header a:hover h1 {
     text-align: center;
 }
 
-/* Drop-btn Class Styles (+ Drag / + Drop) */
 .drop-btn {
     border: 1px solid #e2e8f0;
     background-color: #f8fafc;
@@ -1083,7 +1054,6 @@ header a:hover h1 {
     border-color: #4a5568;
 }
 
-/* Trash-btn Class Styles */
 .trash-btn {
     border: 1px solid #f8d7da;
     background-color: #fff5f5;
@@ -1095,107 +1065,29 @@ header a:hover h1 {
     border-color: #dc3545;
 }
 
-/* This is the magic wrapper that forces everything inside it to the bottom */
 .sidebar-bottom-group {
-    margin-top: auto;       /* Pushes this container to the absolute bottom of the flexbox */
+    margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;              /* Spacing between Delete and the Cancel/Save footer */
+    gap: 12px;
 }
 
-/* Adjust the footer layout inside the sidebar to stack neatly if needed */
 .modal-footer {
     display: flex;
-    flex-direction: column; /* Stacks Cancel and Save vertically */
+    flex-direction: column; 
     gap: 8px;
-    margin-top: 0;          /* Reset old top margin */
+    margin-top: 0;          
 }
 
-/* Ensure the pill buttons look good stacked inside a narrow column */
 .btn-save, .btn-cancel {
-    width: 100%;            /* Makes them span the full width of the sidebar */
-    padding: 10px 0;        /* Comfortable vertical padding */
+    width: 100%;            
+    padding: 10px 0;        
     text-align: center;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ==========================================
-   CANCEL POP UP
-   ========================================== */
-
-.pop-up-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: none; /* Hidden by default; toggled via JS */
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.pop-up-content {
-    background: #000000;
-    padding: 30px;        
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    
-    display: flex;
-    flex-direction: column;   /* Stacks the warning text on top of the buttons */
-    align-items: center;      /* Centers the text paragraph horizontally */
-    text-align: center;
-    font-size: 30px; 
-    font-family: 'Impact';
-    
-    color: red;
-    text-shadow: 
-    -1px -1px 0 #000,  
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;
-
-    /* Responsive Scaling Dimensions */
-    width: 95vw;          
-    max-width: 700px;     
-    min-width: 200px;     
-    height: 90vh;         
-    max-height: 250px;    
-    min-height: 200px;    
-}
-
-.pop-up-bottom-group {
-    margin-top: auto;       /* Pushes this container to the absolute bottom of the flexbox */
-    display: flex;
-    flex-direction: row;
-    justify-content: center; /* Optional: Aligns both buttons to the bottom-right corner */
-    gap: 18px;              /* Keeps a clean 12px gap between the two buttons */
-    width: 100%;
-}
-
-
 
 .btn-save { background-color: #007bff; color: white; }
 .btn-save:hover { background-color: #0056b3; }
 
 .btn-cancel { background-color: #e2e8f0; color: #4a5568; }
 .btn-cancel:hover { background-color: #cbd5e1; }
-
-/* TEST CODE TEST CODE TEST CODE TEST CODE */
-/* TEST CODE TEST CODE TEST CODE TEST CODE */
+/* End of drag drop CSS */
