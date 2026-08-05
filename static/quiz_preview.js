@@ -100,7 +100,6 @@ function getRemainingRange(startIdx) {
     return crawl(startIdx);
 }
 
-
 /**
  * render a question on the page
  * @param {*} page the specific question that is being displayed
@@ -198,12 +197,6 @@ function renderQuestionPage(page) {
     ${body}`;
 }
 
-
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
-
 /**
  * Extract the current location of the drag and drop boxes and puts them is string format for storage in database
  * @param {*} dropArea <div> that holds the drop boxes on the page
@@ -251,7 +244,6 @@ function extractDragDropState(dropArea) {
         dragDropText: allTextsArray.join(', ')
     };
 }
-
 
 /**
  * Populates and updates the question page for the drag style question.
@@ -376,11 +368,6 @@ function selectDRAG(savedResponse){
         }
     }
 }
-
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
-// TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE TEST CODE
 
 /**
  * Gets the userID from the current session which will be stored along with the users completed quiz data 

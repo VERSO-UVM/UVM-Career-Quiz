@@ -370,6 +370,9 @@ function setQuestionType(cat_Id, q_Id, new_type) {
     const question = category.items.find(q => q.id === q_Id);
     if (!question)
         return;
+
+    handleQuestionTypeChange(new_type, cat_Id, q_Id, question);
+
     question.type = new_type;
     if (new_type === 'text' && !question.answer.length)
         question.answer = [{ id: uid(), text: '', leads_to: null }];
@@ -444,13 +447,6 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
         answer.text = new_text;
     markDirty()
 }
-
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-//TODO: Fix issue with change question type from drag to any other type like mc
-//      Make it so that if a different question type is selected for the same 
-//      question that the 'drags' and 'drops' are deleted from the JSON file
 
 /**
  * renders the drag drop question editor/maker
@@ -654,16 +650,67 @@ function saveDragDropQuestion(){
 }
 
 /**
- * Hides the modal overlay and resets its inputs
+ * Hides the drag drop modal overlay and resets its inputs
  */
 function closeModal() {
     const modal = document.getElementById('dragDropModal');
     modal.style.display = 'none';
 }
 
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+/**
+ * If the admin wants to change a 'darg' question to any other question type 
+ * this function deletes the JSON elements for the drags and drops
+ * 
+ * @param {*} categoryId Current category id of the question
+ * @param {*} questionId Current question id 
+ * @returns error if the question id isn't found
+ */
+function removeDragAndDropData(categoryId, questionId) {
+    // Find the target category
+    const category = quiz.categories.find(cat => cat.id === categoryId);
+    if (!category) {
+        console.error(`Category with ID ${categoryId} not found.`);
+        return;
+    }
+
+    // Find the target question within that category
+    const question = category.items.find(q => q.id === questionId);
+    if (!question || !Array.isArray(question.answer)) {
+        console.error(`Question with ID ${questionId} not found or missing answer array.`);
+        return;
+    }
+
+    // Filter out objects containing 'drags' or 'drops' properties
+    question.answer = question.answer.filter(item => !item.drags && !item.drops);
+}
+
+/**
+ * This function checks for if the new question type is not 'drag' and will call the removeDragAndDropData function
+ * to make sure that if the question was previously 'drag' that it reformats correctly in the JSON
+ * 
+ * Currently this is only for 'drag' questions but when new question types are added more remove functions can be put here
+ * 
+ * @param {*} newType The new question type that the question is set to
+ * @param {*} cat_Id Current category id of the question
+ * @param {*} q_id Current question id
+ * * @param {*} question Current question object
+ */
+function handleQuestionTypeChange(newType, cat_Id, q_id, question) {
+    // Check if user is changing away from drag & drop
+    if (newType !== 'drag') {
+        // Remove drags and drops from the JSON structure
+        removeDragAndDropData(cat_Id, q_id);
+        console.log(`Drag & drop data cleared.`);
+        
+    } else if (newType === 'drag'){
+        console.log("DRAG FUNCTION HIT");
+        for(const ans of question.answer){
+            console.log(ans.id);
+            removeAnswer(cat_Id, q_id, ans.id);
+        }
+    }
+}
+
 
 /**
  * Render the right side panel when you click on a question
