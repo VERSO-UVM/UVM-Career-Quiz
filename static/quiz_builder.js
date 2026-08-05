@@ -703,9 +703,7 @@ function handleQuestionTypeChange(newType, cat_Id, q_id, question) {
         console.log(`Drag & drop data cleared.`);
         
     } else if (newType === 'drag'){
-        console.log("DRAG FUNCTION HIT");
         for(const ans of question.answer){
-            console.log(ans.id);
             removeAnswer(cat_Id, q_id, ans.id);
         }
     }
