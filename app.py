@@ -8,16 +8,68 @@ import database_interaction as db
 import log_in
 import response_table_interaction as ri
 import subprocess
+from flask_mailing import Mail, Message
 
 
 app = Flask(__name__)
 #TODO this is for testing purpose and will need to be changed as soon as we get a server
 app.secret_key = "flask_is_making_me_do_this"
 
-
-
 # This allows JS frontend to talk to this backend without security blocks TBD on weather this is a long term solution.
 CORS(app) 
+
+app.config.update(
+    MAIL_SERVER="localhost",
+    MAIL_PORT=1025,
+    MAIL_USE_TLS=False,
+    MAIL_USE_SSL=False,
+    USE_CREDENTIALS=False,
+    MAIL_USERNAME="dev",
+    MAIL_PASSWORD="dev",
+    MAIL_DEFAULT_SENDER="test@example.com",
+    MAIL_FROM_NAME="Quiz App (dev)"
+)
+mail = Mail(app)
+
+# @app.route('/send-test-email', methods=['POST'])
+# async def send_test_email():
+#     message = Message(
+#         subject="Quiz app notification",
+#         recipients=["shadekopf@gmail.com"],
+#         body="Hello from the quiz app!",
+#         subtype="plain"
+#     )
+#     await mail.send_message(message)
+#     return jsonify({"status": "Email sent"})
+
+
+@app.route('/send-quiz-email', methods=['POST'])
+async def send_quiz_email():
+    if not session.get("user_id"):
+        return require_login("Please log in first")
+
+    data = request.get_json() or {}
+    email = data.get('email', '').strip()
+    body = data.get('body', '').strip()
+    quiz_id = data.get('quizID', '').strip()
+
+    if not email:
+        return jsonify({"error": "missing email address"}), 400
+
+    message = Message(
+        subject="Your quiz results",
+        recipients=[email],
+        body = body,
+        subtype= "plain"
+    )
+
+    try:
+        await mail.send_message(message)
+    except Exception as e:
+        print(f"Failed to send quiz email: {e}")
+        return jsonify({"error": "Failed to send email"}), 500
+
+    return jsonify({"success": "Email sent"}), 200
 
 
 def get_role(quiz_id: str) -> str:
@@ -124,7 +176,7 @@ def register():
         session['username'] = username 
         return redirect(url_for('quiz_selection'))
     return render_template("register.html")
-
+#TODO: there are 2 versions of require login not sure which one actually works
 def require_login(reason=None):
     """
     Render the access denied page when a user tries to access certain page without being logged in.
@@ -283,23 +335,34 @@ def show_available_quizzes():
         200: the available_quizzes.html page with assigned and completed quiz lists
         403: access_denied.html if the user is not logged in
     """
-    if session["user_id"]:
-        assigned_quizzes = db.quizzes_for_user(session["user_id"])
-        completed_quizzes = []    
-        _, completed = ri.lookup_user_todo_completed_quizzes(session['user_id'])
+    if session.get("user_id"):
+        assigned_ids, completed_ids = ri.lookup_user_todo_completed_quizzes(session["user_id"])
+        assigned_quizzes = [
+            {"id": quiz_id, "name": db.find_name_with_id(quiz_id)}
+            for quiz_id in assigned_ids
+        ]
         completed_quizzes = [
-                {"id": q, "name": db.find_name_with_id(q)}
-                for q in completed ]
-        
-        completed_quizzes = []
-
-        return render_template("available_quizzes.html", assigned_quizzes=assigned_quizzes, completed_quizzes=completed_quizzes)
+            {"id": quiz_id, "name": db.find_name_with_id(quiz_id)}
+            for quiz_id in completed_ids
+        ]
+        return render_template(
+            "available_quizzes.html",
+            assigned_quizzes=assigned_quizzes,
+            completed_quizzes=completed_quizzes,
+        )
     return require_login("You need to log in see the quizzes available to you.")
-
+"""
+this is a possible fix
+@app.route("/available_quizzes", methods = ['GET', 'POST'] 
+def show_available_quizzes():
+    if session["user_id"]
+    assigned, completed = ri.lookup_user_todo_completed_quizzes(session['user_id'])
+    
+"""
 
 @app.route("/quiz_share", methods=['GET','POST'])
 def quiz_share():
-    """
+    """ 
     Handle sharing a quiz with another user.
     On GET, returns a JSON list of users who currently have access to the quiz, along with the current user's sharing permissions.
     On POST, shares the quiz with the specified user at the specified role, subject to permission checks.
@@ -400,18 +463,18 @@ def assign_quiz():
             return jsonify({"error": "This user already has access to this quiz"})
 
         # Assign as reader so the user can take the quiz
-        db.share_quiz(target_id, quiz_id, db.ROLE_READER)
+        db.share_quiz(target_id, quiz_id, db.ROLE_READER) #TODO i'm also looking at this to be changed, role reader is what we want, just trying to figure out how to make it appear in only the take a quiz section instead of both
         return jsonify({"success": f"Quiz assigned to {username}."})
     return require_login("You need to log in to assign a quiz.")
 
-
+#TODO: same type problem as quiz revoke wip
 @app.route("/quiz_update_role", methods=["POST"])
 def quiz_update_role():
     """
     Update the role of a user for a specific quiz.
     The current user must have share permissions and cannot assign a role equal to or higher than their own.
 
-    Returns:
+    Returns: 
         200: JSON success message if the role was updated successfully
         200: JSON error message if permissions are insufficient or the role is invalid
         403: access_denied.html if the user is not logged in
@@ -444,7 +507,7 @@ def quiz_update_role():
     
         return jsonify({"success": f"Role updated to {new_role} for {username}."})
     return require_login("You need to log in to update the role of a user.")
-
+#TODO: this is throwing some type nonsense, I am following the path to see where it can be fixed - ej 7/9/26 
 @app.route('/quiz_revoke', methods=['POST'])
 def quiz_revoke():
     """
@@ -519,20 +582,43 @@ def quiz_delete():
     return require_login("You need to log in to delete a quiz.")
 
 
+#TODO: this is probably the wrong require login so it is commented out for now
+"""
 def require_login(reason=None):
     return render_template("access_denied.html", reason=reason)
-
+"""
 
 # Accepts the post request from flask that contains a users completed quiz data package
 # Then sends it to be processed into the database
+#TODO: WARNING!!!!
+# this will need significant encryption and other protections most likely, i would look into either an rsa or other encryption algorithm, 
+#this data needs circuit compression style algorithms and those cannot be done on encrypted data, so we should make sure that any data 
+#that gets sent to rti.py gets decrypted for joined on the table
+# the result if not could be un-recoverable 
 @app.route('/quiz-data', methods=['POST'])
 def receive_user_quiz_data():
 
     data = request.get_json()
-    nice_json_string = json.dumps(data, indent=2)
 
     if not data:
         return jsonify({"status": "error", "message": "No data received"}), 400
+
+    if not isinstance(data, dict):
+        return jsonify({"status": "error", "message": "Malformed quiz data"}), 400
+
+    # the session is the only trustworthy source for who took the quiz, the posted
+    # userID would let a client write into somebody else's USER_RESPONSES row
+    if session.get("user_id"):
+        data["userID"] = session["user_id"]
+
+    nice_json_string = json.dumps(data, indent=2)
+
+    # moves the quiz from quizzes_assigned to quizzes_completed and stores the answers
+    try:
+        recorded = ri.quiz_complete(nice_json_string)
+    except Exception as exc:
+        print(f"--- Failed to record quiz completion: {type(exc).__name__}: {exc} ---")
+        return jsonify({"status": "error", "message": "Could not record quiz completion"}), 500
 
     # runs command to execute the test file
     result = subprocess.run(
@@ -547,4 +633,5 @@ def receive_user_quiz_data():
 
     return jsonify({
         "status": "success",
+        "recorded": recorded,
     }), 200

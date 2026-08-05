@@ -6,6 +6,7 @@ To be used by an admin to wipe all data
 
 import sqlite3
 from sqlite3 import Connection, Cursor
+import response_table_interaction as rti
 
 ROLE_CREATOR = "creator"
 ROLE_ADMIN   = "admin"
@@ -159,8 +160,8 @@ def find_name_with_id(q_id : str) -> str | None:
     else :
         return None
 
-
-def find_id_with_uname(username: str) -> str | None:
+#TODO this comment can be generalized but I think we should look into strong typing the ret on these functions, unions with none may be a little weak as we might be passing a value when it should throw
+def find_id_with_uname(username: str) -> str: # was str | None
     """
     find the id of a USER with it's username
 
@@ -179,7 +180,7 @@ def find_id_with_uname(username: str) -> str | None:
     if row :
         return row[0]
     else :
-        return None
+        raise sqlite3.Error
 
 
 def find_uname_with_id(u_id :str ) -> str | None :
@@ -199,7 +200,7 @@ def find_uname_with_id(u_id :str ) -> str | None :
         return None
 
 
-def share_quiz(u_id : str , q_id : str, role : str) :
+def share_quiz(u_id : str , q_id : str, role : str):
     """
     allow for sharing of a quiz with someone else
 
@@ -208,10 +209,16 @@ def share_quiz(u_id : str , q_id : str, role : str) :
         q_id(str) : the id of the quiz who's being shared 
         role (str) : the role that is being given to the user
     """
+
     conn, cur = connecting_to_sql()
     cur.execute("INSERT INTO ACCESS (q_id, u_id,role) VALUES(?,?,?) ", (q_id, u_id,role))
     conn.commit()
     conn.close()
+
+    # must run on its own connection AFTER the commit above, an open write
+    # transaction here locks the db out from under USER_RESPONSES
+    if role == ROLE_READER:
+        rti.user_assigned_new_quiz(u_id, q_id)
 
 
 def save_quiz_in_the_db(q_id : str, q_title : str , u_ID :str ):
@@ -310,7 +317,7 @@ def user_with_access(q_id : str) -> list[str] | None:
         return None
 
 
-def quizzes_for_user(u_id : str) -> list[dict[str, str]]:
+def quizzes_for_user(u_id : str):
     """
     Retrieve all quizzes that a user has access to.
 

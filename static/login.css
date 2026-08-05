@@ -48,7 +48,22 @@ button {
   padding: 10px 20px;
   border: none;
   cursor: pointer;
+  transition: .2s ease;
+  font-family: 'DM Serif Display', Georgia, serif;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.2);
+  border-width: 2px;
 
+}
+
+button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+button:active {
+  translate: 0 2px;
+  opacity: 0.75;
 }
 
 .status_message {
@@ -66,10 +81,25 @@ button {
   font-size: 16px;
   margin-bottom: 20px;
 }
+
+h3 {
+  color:#154734;
+}
 main {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  margin-top: 130px;
   align-items: center;
   height: 90vh;
+  gap:20px;
+}
+
+main > div {
+  display: flex;
+  padding: 30px 60px;
+  flex-direction: column;
+  gap:50px;
+  justify-content: center;
+  background-color: white;
+  box-shadow: 0 5px 10px 5px rgba(0,0,0,0.1);
 }

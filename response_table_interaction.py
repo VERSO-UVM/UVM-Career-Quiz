@@ -2,6 +2,7 @@ import json
 import sqlite3
 import csv
 import pickle
+from typing import Any
 import app
 import os 
 #TODO: check sql queries to ensure correct data is being handled, make sure that any errors that occur for now cannot happen in prod, a lot of this can be dangerous if serial data can be mixed with unserialzed data and either re-serialized or joined wrong, all data types must be checked in every function. 
@@ -214,17 +215,63 @@ class TypeCheck:
             pass
 
     def import_data(self, data):
-        if type(data) is bytes:
+        if isinstance(data ,bytes):
             return pickle.loads(data)
         else:
             raise IncompatibleType(f"Unable to transform data: {type(data)} from bytes to {type(data)}.")
     def export_data(self, data):
-        if type (data) in [list, tuple, dict]:
+        if isinstance(data, (list, tuple, dict)):
             return pickle.dumps(data)
         else:
+            # maybe we don't need this, looking to see if data can just be grabbed off a catch when no serialization is needed
+            return data
+"""
             raise IncompatibleType(message=f"Data is of type: {type(data)}, must be of type '<class 'bytes'>'")
-        
+"""
+# --------------------------------------- GENERIC QUERY TEST -----------------------------------------------------------------------
+def __generic_query_response(ptr_t_cursor, query, func,  write_query, read_args, write_args=None, write=False, fn_val=None):
+    conn, cur = ptr_t_cursor()
+    try:
+        if len(read_args) == 1:
+            cur.execute(query, (read_args[0],))
+            dat = cur.fetchone()
+        else:
+            cur.execute(query, tuple(read_args))
+            dat = cur.fetchall()
 
+        dat = _deserialize_db_row(dat)
+        _dat = dat
+        if isinstance(dat, tuple) and len(dat) == 1:
+            dat = dat[0]
+        elif isinstance(dat, list):
+            dat = [
+                item[0] if isinstance(item, tuple) and len(item) == 1 else item
+                for item in dat
+            ]
+        if callable(func):
+            if fn_val is None:
+                dat = func(dat)
+            else:
+                if write_args is None:
+                    dat = func(fn_val, dat)
+                else:
+                    write_args[0] = func(write_args[0], dat)
+
+        if write and write_args:
+            write_args = (serialize(write_args[0]), write_args[1])
+            cur.execute(write_query, write_args)
+            conn.commit()
+            
+
+        return _dat
+    finally:
+        conn.close()
+
+
+
+
+# not sure if this will work but we'll see 
+# ------------------------------------------------------------------------------------------------------------------------------------
 def connecting_to_sql():
     conn = sqlite3.connect("career_quiz.db")
     cur = conn.cursor()
@@ -235,7 +282,182 @@ def serialize(data):
 #MUST BE DONE ON ALL SERIALIZATIONS PRIOR TO MODIFICATION
 def return_from_serial(data):
     return TypeCheck().import_data(data)
+
+
+
+def _deserialize_db_value(value):
+    if isinstance(value, (bytes, bytearray)):
+        return return_from_serial(value)
+    return value
+
+def _deserialize_db_row(row):
+    if isinstance(row, tuple):
+        return tuple(_deserialize_db_value(item) for item in row)
+    if isinstance(row, list):
+        return [_deserialize_db_value(item) for item in row]
+    return _deserialize_db_value(row)
+
+
+def _fetch_ordered_user_rows(user_id_array: list, columns: str):
+    if not user_id_array:
+        return []
+
+    conn, cur = connecting_to_sql()
+    try:
+        placeholders = ", ".join("?" for _ in user_id_array)
+        query = f"SELECT u_ID, {columns} FROM USER_RESPONSES WHERE u_ID IN ({placeholders})"
+        cur.execute(query, tuple(user_id_array))
+        fetched_rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    row_map = {row[0]: _deserialize_db_row(row[1:]) for row in fetched_rows}
+    ordered_rows = []
+    for u_id in user_id_array:
+        if u_id in row_map:
+            ordered_rows.append((u_id, *row_map[u_id]))
+    return ordered_rows
+
+
+def _fetch_user_response_record(u_id: str):
+    conn, cur = connecting_to_sql()
+    try:
+        cur.execute(
+            """
+            SELECT num_completed_quizzes, quizzes_assigned, quizzes_completed, quiz_response_answers
+            FROM USER_RESPONSES
+            WHERE u_ID = ?
+            """,
+            (u_id,),
+        )
+        row = cur.fetchone()
+    finally:
+        conn.close()
+
+    if row is None:
+        return None
+
+    num_completed_quizzes, quizzes_assigned, quizzes_completed, quiz_response_answers = _deserialize_db_row(row)
+    return {
+        "num_completed_quizzes": num_completed_quizzes or 0,
+        "quizzes_assigned": quizzes_assigned or [],
+        "quizzes_completed": quizzes_completed or [],
+        "quiz_response_answers": quiz_response_answers or [],
+    }
+
+
+def _ensure_user_response_row(u_id: str):
+    conn, cur = connecting_to_sql()
+    try:
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO USER_RESPONSES (
+                u_ID, num_completed_quizzes, quizzes_assigned, quizzes_completed, quiz_response_answers
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (u_id, 0, serialize([]), serialize([]), serialize([])),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _sync_legacy_user_response_table(
+    u_id: str,
+    num_completed_quizzes,
+    quizzes_to_do,
+    completed_quizzes,
+    user_answers,
+):
+    conn, cur = connecting_to_sql()
+    try:
+        cur.execute(
+            """
+            UPDATE USER_RESPONSE
+            SET num_completed_quizzes = ?,
+                quizzes_to_do = ?,
+                completed_quizzes = ?,
+                user_answers = ?
+            WHERE u_ID = ?
+            """,
+            (
+                num_completed_quizzes,
+                serialize(quizzes_to_do),
+                serialize(completed_quizzes),
+                serialize(user_answers),
+                u_id,
+            ),
+        )
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+    finally:
+        conn.close()
+
+
+def _sync_user_response_state(
+    u_id: str,
+    num_completed_quizzes,
+    quizzes_assigned,
+    quizzes_completed,
+    quiz_response_answers,
+):
+    conn, cur = connecting_to_sql()
+    try:
+        cur.execute(
+            """
+            UPDATE USER_RESPONSES
+            SET num_completed_quizzes = ?,
+                quizzes_assigned = ?,
+                quizzes_completed = ?,
+                quiz_response_answers = ?
+            WHERE u_ID = ?
+            """,
+            (
+                num_completed_quizzes,
+                serialize(quizzes_assigned),
+                serialize(quizzes_completed),
+                serialize(quiz_response_answers),
+                u_id,
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    _sync_legacy_user_response_table(
+        u_id,
+        num_completed_quizzes,
+        quizzes_assigned,
+        quizzes_completed,
+        quiz_response_answers,
+    )
+
 #------------------------- from quiz_preview.js fn -> formatQuizResultsJSON() -> call the below function -- def quiz_complete()
+
+def user_assigned_new_quiz(u_id: str, q_id: str):
+    # a user has no USER_RESPONSES row until something is assigned to them
+    _ensure_user_response_row(u_id)
+    record = _fetch_user_response_record(u_id)
+    if record is None:
+        return
+
+    quizzes_assigned = list(record["quizzes_assigned"])
+    if q_id not in quizzes_assigned:
+        quizzes_assigned.append(q_id)
+
+    _sync_user_response_state(
+        u_id,
+        record["num_completed_quizzes"],
+        quizzes_assigned,
+        record["quizzes_completed"],
+        record["quiz_response_answers"],
+    )
+
+
+
+
 def _json_data_convert(json_string: str):
         quiz_results = json.loads(json_string)
         user_id = quiz_results["userID"]
@@ -265,48 +487,69 @@ def _json_data_convert(json_string: str):
 
 def _increment_quiz_ctr(u_id: str):
     conn, cur = connecting_to_sql()
-    query = """UPDATE USER_RESPONSES SET num_completed_quizzes += 1 WHERE u_ID = ?"""
-    cur.execute(query, (u_id,))
-    conn.commit()
-    conn.close()
+    try:
+        cur.execute(
+            """
+            UPDATE USER_RESPONSES
+            SET num_completed_quizzes = COALESCE(num_completed_quizzes, 0) + 1
+            WHERE u_ID = ?
+            """,
+            (u_id,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 def _move_quiz_id_todo_cmp(u_id, q_id, len_quiz):
-    conn, cur = connecting_to_sql()
-    query = """SELECT quizzes_to_do FROM USER_RESPONSES WHERE u_ID = ?"""
-    #TODO: more
-    cur.execute(query, (u_id,))
-    todo = cur.fetchone()
-    todo = return_from_serial(todo)
-    query = """SELECT completed_quizzes FROM USER_RESPONSE WHERE u_ID = ?"""
-    cmp = cur.execute(query, (u_id,))
-    cmp = return_from_serial(cmp)
-    for i in range(len(todo)):
-        if todo[i][0] == q_id:
-            _ = todo[i].pop()
-            cmp.append((q_id, len_quiz))
-    todo = serialize(todo)
-    cmp = serialize(cmp)
-    cur.execute("UPDATE USER_RESPONSE SET quizzes_to_do = ?, completed_quizzes = ? WHERE u_ID = ?", (todo, cmp, u_id))
-    conn.commit()
-    conn.close()
+    record = _fetch_user_response_record(u_id)
+    if record is None:
+        return
+
+    quizzes_assigned = list(record["quizzes_assigned"])
+    quizzes_completed = list(record["quizzes_completed"])
+    quiz_response_answers = list(record["quiz_response_answers"])
+
+    quizzes_assigned = [quiz for quiz in quizzes_assigned if quiz != q_id]
+    if not any(quiz[0] == q_id for quiz in quizzes_completed):
+        quizzes_completed.append((q_id, len_quiz))
+
+    _sync_user_response_state(
+        u_id,
+        record["num_completed_quizzes"],
+        quizzes_assigned,
+        quizzes_completed,
+        quiz_response_answers,
+    )
 
 def _append_answers(u_id, answer_list):
-    conn,cur = connecting_to_sql()
-    query = """SELECT user_answers FROM USER_RESPONSE WHERE u_ID = ?"""
-    cur.execute(query, (u_id))
-    u_ans = cur.fetchone()
-    u_ans = return_from_serial(u_ans)
-    updated_ans = u_ans.append(answer_list)
-    updated_ans = serialize(updated_ans)
-    cur.execute("UPDATE USER_RESPONSE SET user_answers = ? WHERE u_ID = ?", (updated_ans, u_id))
-    conn.commit()
-    conn.close()
+    record = _fetch_user_response_record(u_id)
+    if record is None:
+        return
+
+    quiz_response_answers = list(record["quiz_response_answers"])
+    quiz_response_answers.extend(answer_list)
+
+    _sync_user_response_state(
+        u_id,
+        record["num_completed_quizzes"],
+        record["quizzes_assigned"],
+        record["quizzes_completed"],
+        quiz_response_answers,
+    )
 
 def quiz_complete(json_string):
        u_id, q_id, len_quiz, answer_arr = _json_data_convert(json_string)
+       # the row may not exist yet, a quiz can be taken by its creator without ever being assigned
+       _ensure_user_response_row(u_id)
+       record = _fetch_user_response_record(u_id)
+       if record is not None and any(quiz[0] == q_id for quiz in record["quizzes_completed"]):
+           # already recorded, appending the answers a second time would desync the
+           # offsets that get_user_response_to_quiz walks across quizzes_completed
+           return False
        _increment_quiz_ctr(u_id)
        _move_quiz_id_todo_cmp(u_id, q_id, len_quiz)
        _append_answers(u_id, answer_arr)
+       return True
 
 
     # -----------------HELPER FUNCTIONS------------------------
@@ -315,109 +558,90 @@ def csv_lookup_to_list(topic ,filename="question_keyword_lookup.csv")-> list:
     with open(filename, newline = '') as file_:
         filereader = csv.reader(file_)
         for row in filereader:
+            if not row:
+                continue
             if topic == row[0]:
-                result.append(row[1:])
-            else:
-                result.append(f"no results for : {topic}")
+                result.extend(row[1:])
     return result
         # admin can lookup keywords and will provide questions that relate to that, then can be queried for. 
 
 def check_user_lookup_status(admin_id, u_id):
+    #TODO asap probably 
 
         # check to see if all users are accessible to admin, should kill the request to data 
         return True
 
 # -----------------LOOKUP BEHAVIORS------------------------
+#TODO: WARNING NOT DONE
 def findall_users_cmp_quiz(user_id_array: list, quiz_id):
-    # query completed_quizzes from user array
-    # fetch data -- return from serial
     users_completed = []
-    data = "query response"
-    for idx, user in enumerate(user_id_array):
-        for quiz in data[idx]:
-            if quiz[0] == quiz_id:
-                if user not in users_completed:
-                    users_completed.append(user)
+    ordered_rows = _fetch_ordered_user_rows(user_id_array, "quizzes_completed")
+    for u_id, quizzes_completed in ordered_rows:
+        if any(quiz[0] == quiz_id for quiz in quizzes_completed):
+            users_completed.append(u_id)
+    return users_completed
 
 def get_user_response_to_quiz(u_id, q_id):
     conn, cur = connecting_to_sql()
-    query = """SELECT num_completed_quizzes, completed_quizzes, user_answers FROM USER_RESPONSE WHERE u_ID = ?"""
-    cur.execute(query, (u_id,))
-    num_cmp_quiz, completed_quizzes, user_answers = cur.fetchone()
-    conn.close()
-    completed_quizzes = return_from_serial(completed_quizzes)
-    user_answers = return_from_serial(user_answers)
-    offset= 0
-    end= 0
-    for i in range(len(completed_quizzes)):
-        if completed_quizzes[i][0] == q_id:
-            offset= sum(completed_quizzes[:i-1][1])
-            end= offset + completed_quizzes[i][1]
-    curr_quiz_answers = user_answers[offset:end]
-    return curr_quiz_answers
+    try:
+        query = """SELECT quizzes_completed, quiz_response_answers FROM USER_RESPONSES WHERE u_ID = ?"""
+        cur.execute(query, (u_id,))
+        row = cur.fetchone()
+    finally:
+        conn.close()
+
+    if row is None:
+        return []
+
+    completed_quizzes, user_answers = _deserialize_db_row(row)
+    offset = 0
+    for quiz_id, quiz_len in completed_quizzes:
+        if quiz_id == q_id:
+            return user_answers[offset:offset + quiz_len]
+        offset += quiz_len
+    return []
     
 def get_user_responses_of_question_id(ques_id, user_id_array):
-    conn, cur = connecting_to_sql()
     responses = []
-    query = """SELECT completed_quizzes, user_answers FROM USER_RESPONSE WHERE u_ID IN ?"""
-    """this query returns json that looks like [
-    {cmp_quizzes}, {user_answers}
-    ...]
-    for each user in the query"""
-    cur.execute(query, (user_id_array,))
-    result = cur.fetchall()
-    conn.close()
-    result = return_from_serial(result)
-    for user_index, user in enumerate(result):
-        for ques in user[1]:
-            if ques[0] == ques_id:
-                responses.append((user_id_array[user_index], ques[1]))
-                
-
+    ordered_rows = _fetch_ordered_user_rows(user_id_array, "quiz_response_answers")
+    for u_id, user_answers in ordered_rows:
+        matching = [answer for answer in user_answers if answer[0] == ques_id]
+        if matching:
+            responses.append((u_id, matching))
     return responses
             
 def get_users_completed_quiz_quiz_id(user_id_array, q_id):
     result = []
-    #TODO: query
-    response = ""
-    response = return_from_serial(response)
-    for idx, user in (user_id_array):
-        for quiz in response[idx]:
-            if quiz[0]== q_id:
-                result.append(user)
-
-        return result
+    ordered_rows = _fetch_ordered_user_rows(user_id_array, "quizzes_completed")
+    for u_id, quizzes_completed in ordered_rows:
+        if any(quiz[0] == q_id for quiz in quizzes_completed):
+            result.append(u_id)
+    return result
 def lookup_kw_arg_on_user_set(keyword:str , user_array: list):
-    ques_ids = csv_lookup_to_list(keyword)
+    ques_ids = set(csv_lookup_to_list(keyword))
     result = []
-    for user in user_array:
-        # lookup user_responses
-        usr_responses = [] # query
-        user_responses_in_topic = []
-        for ques in usr_responses:
-            if ques[0] in ques_ids:
-                user_responses_in_topic.append(ques)
+    ordered_rows = _fetch_ordered_user_rows(user_array, "quiz_response_answers")
+    for user, usr_responses in ordered_rows:
+        user_responses_in_topic = [
+            ques for ques in usr_responses
+            if ques[0] in ques_ids
+        ]
         if len(user_responses_in_topic) > 0:
             result.append((user, user_responses_in_topic))
 
     return result
 
 def lookup_user_todo_completed_quizzes(u_id: str):
-    conn, cur = connecting_to_sql()
+    record = _fetch_user_response_record(u_id)
+    if record is None:
+        return ([], [])
 
-    query = """SELECT quizzes_assigned, quizzes_completed FROM USER_RESPONSES WHERE U_ID = ?"""
-    returned_results = []
-    cur.execute(query, (u_id,))
-    result = cur.fetchone()
-    conn.close()
-    if result is not None:
-        for item in result:
-            returned_results.append(return_from_serial(item))
-        if len(result) == 2:
-            quiz_ids = [quiz[0] for quiz in result[1]]
-            return (result[0], quiz_ids)
-    else:
-        return (["err"], ["could not fetch data"])
+    completed_ids = [quiz[0] for quiz in record["quizzes_completed"]]
+    assigned = [
+        quiz_id for quiz_id in record["quizzes_assigned"]
+        if quiz_id not in completed_ids
+    ]
+    return (assigned, completed_ids)
 
 # ------------------------------------------------TEST-CODE------------------------------------------------#
 # ------------------------------------------------TEST-CODE------------------------------------------------#
@@ -493,8 +717,189 @@ def question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_MASTER)
 # ------------------------------------------------TEST-CODE------------------------------------------------#
 # ------------------------------------------------TEST-CODE------------------------------------------------#
 # ------------------------------------------------TEST-CODE------------------------------------------------#
+ 
 
 
+def _api_normalize_value(value: Any):
+    if isinstance(value, dict):
+        return {str(key): _api_normalize_value(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_api_normalize_value(item) for item in value]
+    if isinstance(value, list):
+        return [_api_normalize_value(item) for item in value]
+    return value
+
+
+def _api_response(action: str, data=None, **meta):
+    payload = {
+        "ok": True,
+        "action": action,
+        "data": _api_normalize_value(data),
+    }
+    for key, value in meta.items():
+        if value is not None:
+            payload[key] = _api_normalize_value(value)
+    return payload
+
+
+def _api_error(action: str, message: str, **meta):
+    payload = {
+        "ok": False,
+        "action": action,
+        "error": message,
+    }
+    for key, value in meta.items():
+        if value is not None:
+            payload[key] = _api_normalize_value(value)
+    return payload
+
+
+# this is the head pointer to this file, all dashboard functions should be able to be called from here
+def api_header(action: str = None, **kwargs):
+    """
+    Unified entry point for database/report lookups.
+
+    The header returns dictionaries for every supported query so callers do
+    not need to sequence lower-level helpers manually. Known calls preserve the
+    shape of the underlying helper data, but the outer result is always a dict.
+    """
+    if action is None:
+        action = kwargs.pop("query", None) or kwargs.pop("request", None) or kwargs.pop("report", None)
+
+    if not action:
+        return _api_error("unknown", "Missing action/query name.")
+
+    action = str(action)
+
+    try:
+        if action in {"lookup_user_todo_completed_quizzes", "user_quiz_status"}:
+            u_id = kwargs["u_id"]
+            assigned, completed = lookup_user_todo_completed_quizzes(u_id)
+            response = {
+                "user_id": u_id,
+                "assigned": assigned,
+                "completed": completed,
+            }
+            quiz_folder = kwargs.get("quiz_folder_MASTER")
+            if quiz_folder:
+                response["assigned_titles"] = [
+                    {
+                        "quiz_id": quiz_id,
+                        "title": quiz_id_to_quiz_title_translator(quiz_id, quiz_folder),
+                    }
+                    for quiz_id in assigned
+                ]
+                response["completed_titles"] = [
+                    {
+                        "quiz_id": quiz_id,
+                        "title": quiz_id_to_quiz_title_translator(quiz_id, quiz_folder),
+                    }
+                    for quiz_id in completed
+                ]
+            return _api_response(action, response)
+
+        if action in {"get_user_response_to_quiz", "user_quiz_responses"}:
+            u_id = kwargs["u_id"]
+            q_id = kwargs["q_id"]
+            answers = get_user_response_to_quiz(u_id, q_id)
+            response = {
+                "user_id": u_id,
+                "quiz_id": q_id,
+                "answers": answers,
+            }
+            quiz_folder = kwargs.get("quiz_folder_MASTER")
+            if quiz_folder:
+                response["quiz_title"] = quiz_id_to_quiz_title_translator(q_id, quiz_folder)
+                response["question_text"] = question_id_to_text_translator(q_id, answers, quiz_folder)
+            return _api_response(action, response)
+
+        if action in {"findall_users_cmp_quiz", "get_users_completed_quiz_quiz_id"}:
+            user_id_array = kwargs["user_id_array"]
+            q_id = kwargs["q_id"]
+            users = get_users_completed_quiz_quiz_id(user_id_array, q_id)
+            return _api_response(action, {
+                "quiz_id": q_id,
+                "user_ids": users,
+            })
+
+        if action == "get_user_responses_of_question_id":
+            ques_id = kwargs["ques_id"]
+            user_id_array = kwargs["user_id_array"]
+            responses = get_user_responses_of_question_id(ques_id, user_id_array)
+            return _api_response(action, {
+                "question_id": ques_id,
+                "responses": responses,
+            })
+
+        if action == "lookup_kw_arg_on_user_set":
+            keyword = kwargs["keyword"]
+            user_array = kwargs["user_array"]
+            responses = lookup_kw_arg_on_user_set(keyword, user_array)
+            return _api_response(action, {
+                "keyword": keyword,
+                "responses": responses,
+            })
+
+        if action == "quiz_id_to_quiz_title_translator":
+            quiz_id = kwargs["quiz_id"]
+            quiz_folder_MASTER = kwargs["quiz_folder_MASTER"]
+            title = quiz_id_to_quiz_title_translator(quiz_id, quiz_folder_MASTER)
+            return _api_response(action, {
+                "quiz_id": quiz_id,
+                "title": title,
+            })
+
+        if action == "question_id_to_text_translator":
+            quiz_id = kwargs["quiz_id"]
+            answers_id_list = kwargs["answers_id_list"]
+            quiz_folder_MASTER = kwargs["quiz_folder_MASTER"]
+            question_text = question_id_to_text_translator(quiz_id, answers_id_list, quiz_folder_MASTER)
+            return _api_response(action, {
+                "quiz_id": quiz_id,
+                "questions": question_text,
+            })
+
+        if action == "quiz_report":
+            u_id = kwargs["u_id"]
+            q_id = kwargs["q_id"]
+            quiz_folder = kwargs.get("quiz_folder_MASTER")
+            answers = get_user_response_to_quiz(u_id, q_id)
+            assigned, completed = lookup_user_todo_completed_quizzes(u_id)
+            response = {
+                "user_id": u_id,
+                "quiz_id": q_id,
+                "assigned": assigned,
+                "completed": completed,
+                "answers": answers,
+            }
+            if quiz_folder:
+                response["quiz_title"] = quiz_id_to_quiz_title_translator(q_id, quiz_folder)
+                response["question_text"] = question_id_to_text_translator(q_id, answers, quiz_folder)
+            return _api_response(action, response)
+
+        if action == "question_report":
+            ques_id = kwargs["ques_id"]
+            user_id_array = kwargs["user_id_array"]
+            responses = get_user_responses_of_question_id(ques_id, user_id_array)
+            return _api_response(action, {
+                "question_id": ques_id,
+                "responses": responses,
+            })
+
+        if action == "keyword_report":
+            keyword = kwargs["keyword"]
+            user_array = kwargs["user_array"]
+            responses = lookup_kw_arg_on_user_set(keyword, user_array)
+            return _api_response(action, {
+                "keyword": keyword,
+                "responses": responses,
+            })
+
+        return _api_error(action, f"Unsupported action: {action}")
+    except KeyError as exc:
+        return _api_error(action, f"Missing required parameter: {exc.args[0]}")
+    except Exception as exc:
+        return _api_error(action, f"{type(exc).__name__}: {exc}")
 if __name__ == "__main__":
     #gerald = _json_data_convert(TEST_STRING_TWO)
     #print(gerald)

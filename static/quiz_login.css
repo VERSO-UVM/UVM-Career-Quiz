@@ -1,41 +1,125 @@
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    background-color: lightgray;
-
+  background-color: lightgray;
 }
 
 header {
-    background: #154734;
-    color: whitesmoke;
-    padding: 0 20px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
+  background: #154734;
+  color: whitesmoke;
+  padding: 0 20px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
 }
 
-div{
+body>div {
   display: flex;
   justify-content: center;
-  flex-direction: column; 
-  align-items: center; 
-  gap:25px;
-  height : 90vh
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
 }
 
-button{
-    background: #154734;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-family: 'DM Serif Display', Georgia, serif;
-    font-size: 14px;
-    padding :10px;
+div form {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+form div:not(#button-container) {
+  display: flex;
+}
+
+#button-container {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+button {
+  background-color: #154734;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  transition: .2s ease;
+  font-family: 'DM Serif Display', Georgia, serif;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.2);
+  border-width: 2px;
+
+}
+
+button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+button:active {
+  translate: 0 2px;
+  opacity: 0.75;
+}
+
+#alt-btn {
+  background-color: rgb(111, 111, 111);
+}
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 130px;
+}
+
+main>form {
+  display: inline-flex;
+  padding: 30px 60px;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+  justify-content: center;
+  background-color: white;
+  box-shadow: 0 5px 10px 5px rgba(0, 0, 0, 0.1);
+}
+
+#form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#form-container div {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+  color:#154734;
+
+}
+
+input {
+  border-radius: 0;
+  flex: 1;
+  font-family: 'DM Serif Display', Georgia, serif;
+  border: none;
+  border-bottom:#15473480 2px solid;
+  background: rgba(204, 204, 204, 0.174);
+  width: 100%;
+  padding: 3px 6px;
+  resize: none;
+  outline: none;
+  transition: 0.2s ease all;
+
+}
+
+
+input:hover {
+  background-color: #1547341c;
 }
