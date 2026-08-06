@@ -1,5 +1,5 @@
-.drawflow-input,
-textarea {
+#drawflow .drawflow-input,
+#drawflow textarea {
   all: revert;
   color: black;
   font-family: 'DM Serif Display', Georgia, serif;
@@ -43,11 +43,11 @@ textarea {
 
 #nodes {
   position: absolute;
-  display:flex;
+  display: flex;
   left: 10px;
   top: 10px;
   flex-direction: column;
-  gap:10px;
+  gap: 10px;
   z-index: 100;
 }
 
@@ -63,20 +63,22 @@ textarea {
   border-width: 2px;
   border-color: #ffffff0e;
 }
+
 .node-type:hover {
   background-color: #215f47;
   transition: .1s;
 }
 
 #drawflow .email-append-label {
-  color:#164734;
+  color: #164734;
   font-size: small;
-  accent-color:#164734;
+  accent-color: #164734;
   display: flex;
   align-items: center;
-  gap:2px;
+  gap: 2px;
 
 }
+
 .end-node {
   display: flex;
   flex-direction: column;
@@ -142,7 +144,7 @@ textarea {
 }
 
 #drawflow-save {
-  position:absolute;
+  position: absolute;
   right: 10px;
   bottom: 10px;
   z-index: 100;
@@ -151,14 +153,14 @@ textarea {
   border-style: solid;
   border-width: 2px;
   border-color: #1647348a;
-  color:#164734;
+  color: #164734;
   font-family: 'DM Serif Display', Georgia, serif;
   font-weight: bold;
   background-color: white;
 }
 
 #drawflow-save:hover {
-  border-color:#164734;
+  border-color: #164734;
   background-color: #164734;
   color: white;
   transition: .1s;
@@ -179,12 +181,27 @@ textarea {
   border-radius: 6px;
   border-style: solid;
   border-width: 2px;
-  border-color:#1647345a;
+  border-color: #1647345a;
 }
 
 .drawflow .drawflow-node {
   width: 250px;
   max-width: 400px;
+  transition: all .2s ease, top 0s, left 0s;
+  animation: zoomIn .3s ease;
+}
+
+@keyframes zoomIn {
+  from {
+    transform-origin: top left;
+    opacity: 0;
+    scale:0;
+  }
+
+  to {
+    opacity: 1;
+    scale:1;
+  }
 }
 
 
@@ -233,7 +250,7 @@ textarea {
   --dfNodeHoverBoxShadowS: 2px;
   --dfNodeHoverBoxShadowColor: rgba(126, 255, 202, 1);
 
-  --dfNodeSelectedBackgroundColor: rgba(218, 218, 218, 1);
+  --dfNodeSelectedBackgroundColor: rgb(230, 239, 234);
   --dfNodeSelectedTextColor: rgba(0, 0, 0, 1);
   --dfNodeSelectedBorderSize: 2px;
   --dfNodeSelectedBorderColor: #000000;
@@ -243,7 +260,7 @@ textarea {
   --dfNodeSelectedBoxShadowVL: 2px;
   --dfNodeSelectedBoxShadowBR: 15px;
   --dfNodeSelectedBoxShadowS: 2px;
-  --dfNodeSelectedBoxShadowColor: rgba(126, 255, 202, 1);
+  --dfNodeSelectedBoxShadowColor: rgba(0, 0, 0, 0.135);
 
   --dfInputBackgroundColor: #ffffff;
   --dfInputBorderSize: 2px;
@@ -330,6 +347,7 @@ textarea {
   border-radius: var(--dfNodeHoverBorderRadius);
   -webkit-box-shadow: var(--dfNodeHoverBoxShadowHL) var(--dfNodeHoverBoxShadowVL) var(--dfNodeHoverBoxShadowBR) var(--dfNodeHoverBoxShadowS) var(--dfNodeHoverBoxShadowColor);
   box-shadow: var(--dfNodeHoverBoxShadowHL) var(--dfNodeHoverBoxShadowVL) var(--dfNodeHoverBoxShadowBR) var(--dfNodeHoverBoxShadowS) var(--dfNodeHoverBoxShadowColor);
+  scale: 1.02;
 }
 
 .drawflow .drawflow-node.selected {
@@ -339,6 +357,7 @@ textarea {
   border-radius: var(--dfNodeSelectedBorderRadius);
   -webkit-box-shadow: var(--dfNodeSelectedBoxShadowHL) var(--dfNodeSelectedBoxShadowVL) var(--dfNodeSelectedBoxShadowBR) var(--dfNodeSelectedBoxShadowS) var(--dfNodeSelectedBoxShadowColor);
   box-shadow: var(--dfNodeSelectedBoxShadowHL) var(--dfNodeSelectedBoxShadowVL) var(--dfNodeSelectedBoxShadowBR) var(--dfNodeSelectedBoxShadowS) var(--dfNodeSelectedBoxShadowColor);
+  scale: 1.02;
 }
 
 .drawflow .drawflow-node .input {

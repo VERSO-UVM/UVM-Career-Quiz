@@ -752,6 +752,7 @@ function renderAnswerPanel(cat_Id, q_Id) {
     `: is_result ? `
        <div class="open_text_preview">
         <textarea class="result_body" placeholder="Body text (optional)" oninput="changeResultBody('${cat_Id}', '${q_Id}', this.value)">${question.result_body || ''}</textarea>
+        <hr></hr>
         <div>
             
             <label class="email_append_label">
@@ -766,7 +767,6 @@ function renderAnswerPanel(cat_Id, q_Id) {
     ` : `
         <div class="open_text_preview">
             <p>Respondents will type a free-form answer.</p>
-            <div class="open_text_mock">Answer</div>
         </div>
     `;
 

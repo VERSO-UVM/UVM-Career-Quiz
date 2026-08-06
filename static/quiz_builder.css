@@ -95,12 +95,29 @@ textarea {
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 15px;
     border: none;
-    background: transparent;
-    color: #154734;
-    width: 100%;
-    padding: 0;
+    background:transparent;
+    color:#164733;
+    padding: 2px 4px;
     resize: none;
     outline: none;
+    border: none;
+    max-width: 100%;
+}
+
+.result_body, .email_append_text {
+    max-height: 30vh;
+    min-height: 60px;
+    field-sizing: content;
+    resize: vertical;
+    overflow-y: scroll;
+    background:white;
+}
+
+hr {
+    border: .5px solid #16473333;
+    width: 80%;
+    align-self: center;
+    
 }
 
 
@@ -347,6 +364,8 @@ main#empty_state {
     background: white;
     border-left: 1px solid white;
     overflow-y: auto;
+    max-width: 33vw;
+    overflow-x: hidden;
 }
 
 #answer_panel_header {
@@ -472,10 +491,22 @@ main#empty_state {
     width: auto;
 }
 
-.result_body {
-    all: revert;
-    field-sizing: content;
-    font-family: 'DM Serif Display', Georgia, serif;
+
+div:has(> .email_append_label){
+    display: flex;
+    flex-direction: column;
+    gap:6px;
+}
+
+.email_append_label {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    gap:6px;
+    align-items: center;
+    accent-color: #164733;
+    color:#164733;
+    font-size: small;
 }
 
 .answer_input::placeholder {
@@ -515,8 +546,25 @@ main#empty_state {
 .open_text_preview {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
 }
+
+.modal {
+    animation: fadeIn .3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(.95);
+
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 
 .open_text_preview p {
     font-size: 13px;

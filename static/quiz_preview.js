@@ -589,7 +589,6 @@ async function submitEmailFollowup() {
 
     if (submitBtn) submitBtn.disabled = true;
     if (input) input.disabled = true;
-    if (status) status.textContent = 'Sending...';
 
     try {
         const response = await fetch('/send-quiz-email', {
@@ -609,11 +608,13 @@ async function submitEmailFollowup() {
 
         const container = document.getElementById('email-followup');
         if (container) {
-            container.innerHTML = `<p> Email sent.</p>`;
+            container.innerHTML = `<p> Email sent.
+            <br/>
+            ${body}</p>`;
         }
     } catch (error) {
         console.error(error);
-        if (status) status.textContent = "email failed, check console.";
+        if (status) status.textContent = error;
         if (submitBtn) submitBtn.disabled = false;
         if (input) input.disabled = false;
     }

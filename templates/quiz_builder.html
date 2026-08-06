@@ -84,7 +84,7 @@
 
 
     <div id="share_overlay" class="share_overlay">
-        <div class="share_content">
+        <div class="share_content modal">
             <div class="share_header">
                 <h2>Search for the person you want to share with below</h2>
                 <button class="close_btn" onclick="closeShare()">x</button>
@@ -112,7 +112,7 @@
     </div>
 
     <div id="assign_overlay" class="share_overlay">
-        <div class="share_content">
+        <div class="share_content modal">
             <div class="share_header">
                 <h2>Assign quiz to a user</h2>
                 <button class="close_btn" onclick="closeAssign()">x</button>
@@ -127,7 +127,7 @@
     </div>
 
     <div id="delete_overlay" class="delete_overlay">
-        <div class="delete_content">
+        <div class="delete_content modal">
             <div class="share_header">
                 <h2>Are you completly sure you want to delete this quiz?</h2>
                 <button class="close_btn" onclick="closeDelete()">x</button>
@@ -141,7 +141,7 @@
     </div>
 
     <div id="branching_overlay">
-        <div id="branching_content">
+        <div id="branching_content" class="modal">
             <div class="share_header">
                 <h2>Drag and drop to decide on the branching logic of your quiz below.</h2>
                 <button class="close_btn" onclick="closeBranching()">✕</button>
@@ -182,7 +182,7 @@
 
 
     <div id="dragDropModal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal modal-content">
             
             <div class="modal-sidebar">
                 <button id="drag-box" type="button" class="add-drop-box drop-btn" onclick="addDraggableBox()" title="Add Drag Element">
