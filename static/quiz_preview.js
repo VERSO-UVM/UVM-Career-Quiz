@@ -117,7 +117,6 @@ function getRemainingRange(startIdx) {
     return crawl(startIdx);
 }
 
-
 /**
  * render a question on the page
  * @param {*} page the specific question that is being displayed
@@ -193,12 +192,198 @@ function renderQuestionPage(page) {
         <div class="result-display">
             ${item.result_body ? `<p class="result-body">${esc(item.result_body)}</p>` : ''}
         </div>`;
+    } else if (item.type === 'drag') {
+        
+        // Return the container markup directly in the body string
+        body = `
+            <div class="drag-drop-container" id="drag-drop-container-${item.id}">
+                <div class="drop-zones-area"></div>
+                <div class="drag-items-area"></div>
+            </div>
+        `;
+
+        // Wait a split second for the DOM string to render, then populate items & attach drag listeners
+        setTimeout(() => {
+            addAllDropsAndDrags(item);
+        }, 0);
     } else {
         body = `<p class="inline-note">Question type not yet configured.</p>`;
     }
     return `
     <p class="question-text">${esc(item.text) || 'This question has not yet been defined'}</p>
     ${body}`;
+}
+
+/**
+ * Extract the current location of the drag and drop boxes and puts them is string format for storage in database
+ * @param {*} dropArea <div> that holds the drop boxes on the page
+ * @returns JSON formatted list of the current order of the drags and drops
+ */
+function extractDragDropState(dropArea) {
+    const dropBoxes = dropArea.querySelectorAll('.target-box');
+    
+    let allIdsArray = [];
+    let allTextsArray = [];
+
+    for (const dropBox of dropBoxes) {
+        // Find all drag boxes currently dropped inside THIS specific drop box
+        const nestedDrags = dropBox.querySelectorAll('.drag-box');
+        
+        let dragDropIDString = dropBox.id;
+        
+        // Get just the drop box's title (ignoring nested drag elements)
+        let dropBoxTitle = "";
+        const titleSpan = dropBox.querySelector('span');
+        if (titleSpan) {
+            dropBoxTitle = titleSpan.textContent;
+        } else {
+            dropBoxTitle = Array.from(dropBox.childNodes)
+                .filter(node => node.nodeType === Node.TEXT_NODE)
+                .map(node => node.textContent.trim())
+                .join('');
+        }
+
+        let dragDropTextString = dropBoxTitle;
+
+        for (const drag of nestedDrags) {
+            dragDropIDString += "|" + drag.id;
+            dragDropTextString += "|" + drag.textContent;
+        }
+
+        // Push this box's pipe-separated string into our main arrays
+        allIdsArray.push(dragDropIDString);
+        allTextsArray.push(dragDropTextString);
+    }
+
+    // Return a single object with combined, comma-separated strings
+    return {
+        dragDropId: allIdsArray.join(', '),
+        dragDropText: allTextsArray.join(', ')
+    };
+}
+
+/**
+ * Populates and updates the question page for the drag style question.
+ * @param {*} item The current question that is being answered on the quiz: item = page.item
+ * @returns Will only return if there is an error
+ */
+function addAllDropsAndDrags(item) {
+    // Locate the container 
+    const container = document.getElementById(`drag-drop-container-${item.id}`);
+
+    if (!container) {
+        console.error(`Container #drag-drop-container-${item.id} not found in DOM.`);
+        return;
+    }
+
+    const dropArea = container.querySelector('.drop-zones-area');
+    const dragArea = container.querySelector('.drag-items-area');
+
+    // Clear any existing content
+    dropArea.innerHTML = '';
+    dragArea.innerHTML = '';
+
+    // Extract drags and drops from item.answer array
+    let dragsList = [];
+    let dropsList = [];
+
+    if (Array.isArray(item.answer)) {
+        item.answer.forEach(entry => {
+            if (entry.drags) dragsList = entry.drags;
+            if (entry.drops) dropsList = entry.drops;
+        });
+    }
+
+    // Render Drop Target Boxes
+    dropsList.forEach((drop, index) => {
+        const dropElem = document.createElement('div');
+        dropElem.id = drop.id || `drop-${item.id}-${index}`;
+        dropElem.className = 'box target-box';
+        dropElem.innerHTML = `<span>${drop.text || 'Drop Zone'}</span>`;
+
+        // drag & drop event handling
+        dropElem.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Essential to allow drop
+            dropElem.classList.add('drag-over');
+        });
+
+        dropElem.addEventListener('dragleave', () => {
+            dropElem.classList.remove('drag-over');
+        });
+
+        dropElem.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropElem.classList.remove('drag-over');
+
+            const draggedId = e.dataTransfer.getData('text/plain');
+            const draggedElem = document.getElementById(draggedId);
+
+            if (draggedElem) {
+                // Append the dragged box into the drop zone
+                dropElem.appendChild(draggedElem);
+                /** 
+                 * This will save the users response for JSON and 
+                 * if they want to go back and look at there answer during the quiz
+                 * */ 
+                const questionResults = extractDragDropState(dropArea)
+                responses[item.id] = {
+                    dragDropId: questionResults.dragDropId,
+                    dragDropText: questionResults.dragDropText
+                };
+            }
+        });
+
+        dropArea.appendChild(dropElem);    
+    });
+    
+
+    // Render Draggable Boxes
+    dragsList.forEach((drag, index) => {
+        const dragElem = document.createElement('div');
+        dragElem.id = drag.id || `drag-${item.id}-${index}`;
+        dragElem.className = 'box drag-box';
+        dragElem.setAttribute('draggable', 'true');
+        dragElem.textContent = drag.text || 'Drag Me';
+
+        dragElem.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', dragElem.id);
+        });
+
+        dragArea.appendChild(dragElem);
+
+    });
+    selectDRAG(responses[item.id]);
+}
+
+/**
+ * Keeps the users response to the question saved for when the 
+ * data is formatted to be accepted into the data base
+ * @param {*} savedResponse The users response to the question
+ */
+function selectDRAG(savedResponse){
+    if (savedResponse && savedResponse.dragDropId) {
+        // savedResponse.dragDropId looks like: "dropId|dragId1|dragId2, dropId2|dragId3"
+        const dropBoxGroups = savedResponse.dragDropId.split(', ');
+
+        for (const group of dropBoxGroups) {
+            const ids = group.split('|');
+            const dropBoxId = ids[0];
+            const dropBoxElem = document.getElementById(dropBoxId);
+
+            if (dropBoxElem) {
+                // Loop through all drag items belonging to this drop box
+                for (let i = 1; i < ids.length; i++) {
+                    const dragId = ids[i];
+                    const dragElem = document.getElementById(dragId);
+
+                    if (dragElem) {
+                        // Move the drag box back into its saved drop zone
+                        dropBoxElem.appendChild(dragElem);
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -223,8 +408,8 @@ async function getUserID() {
  */
 function formatCompletedQuizData() {
 
-    // TODO: Have it store the UserID of the person taking the quiz
     const responseEntries = Object.entries(responses); // <--- [[questionId, optionID],[index 0, index 1]]
+
     const questionIdIndex = 0;
     const optionIdIndex = 1;
     const textResponseIndex = 1;
@@ -232,7 +417,7 @@ function formatCompletedQuizData() {
 
     //Grabs the title and id of the quiz being taken and makes catagories array
     const usersQuizResponseData = {
-        userID: CURRENT_USER_ID, // <--- Temporary id
+        userID: CURRENT_USER_ID,
         quizID: quiz.id,
         timeStamp: new Date().toUTCString(),
         quizCategories: []
@@ -257,14 +442,14 @@ function formatCompletedQuizData() {
             };
 
             // Special case for 'text' questions since there not stored normally
-            if (ques.type === 'text') {
+            if(ques.type === 'text'){
                 let userAnswer = null;
                 // Compare user response id to the answer id's
-                for (const response of responseEntries) {
-                    if (ques.id === response[questionIdIndex]) {
+                for(const response of responseEntries){
+                    if(ques.id === response[questionIdIndex]){
                         userAnswer = {
                             text: response[textResponseIndex],
-                            id: Math.random().toString(36).slice(2, 9) //TEST
+                            id: Math.random().toString(36).slice(2, 9)
                         };
                         break;
                     }
@@ -273,6 +458,25 @@ function formatCompletedQuizData() {
                     question.UserAnswer.push(userAnswer);
                 }
             }
+            //  Special case for 'drag' questions since there not stored normally
+            if(ques.type === 'drag'){
+                let userAnswer = null;
+                // Compare user response id to the answer id's
+                for(const response of responseEntries){
+
+                    if(ques.id === response[questionIdIndex]){
+                        userAnswer = {
+                            text: response[textResponseIndex].dragDropText,
+                            id: response[textResponseIndex].dragDropId
+                        };
+                        break;
+                    }
+                }
+                if (userAnswer) {
+                    question.UserAnswer.push(userAnswer);
+                }
+            }
+
             // compare user response to the responseEntries optionID's for 'mc' and 'sldr'
             for (const ans of ques.answer) {
                 let userAnswer = null;
@@ -487,6 +691,7 @@ function isLastPage() {
  */
 let renderDepth = 0;
 function render() {
+
     renderDepth++;
     if (renderDepth > 50) { console.error('RENDER RECURSION'); renderDepth--; return; }
     const app = document.getElementById('app');
@@ -548,15 +753,24 @@ function resolveLeadsTo(leads_to) {
 
 function nextQuestion(qId) {
     const item = pages[cur].item;
-    const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(i => i.answer);
 
-    const answerId = responses[qId];
-    const answer = allAnswers.find(a => a.id === answerId) || item.answer?.[0];
-    const leads_to = answer?.leads_to;
+    if(item.type === 'drag'){
+        history.push(cur);
+        cur++; // Just go to the next chronological page normally
+    } else {
+        const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(i => i.answer);
+
+        const answerId = responses[qId];
+        const answer = allAnswers.find(a => a.id === answerId) || item.answer?.[0];
+        const leads_to = answer?.leads_to;
 
     history.push(cur);
     cur = resolveLeadsTo(leads_to);
     recordVisit(cur);
+        history.push(cur);
+        cur = resolveLeadsTo(leads_to);
+    }
+    
     render();
     window.scrollTo({ top: 0 });
 }
@@ -638,6 +852,7 @@ function isCurrentAnswered() {
     const item = pages[cur]?.item;
     if (!item) return true;
 
+    // TODO: Eventually add drag parameters
     if (item.type == 'mc' || item.type == 'sldr') {
         return responses[item.id] != undefined && responses[item.id] != null && responses[item.id] != '';
     }
