@@ -212,6 +212,7 @@ function renderQuestions(cat_Id) {
         return;
     }
 
+
     container.innerHTML = category.items.map((q, index) => `
             <div class="question_item${active_question_Id === q.id ? ' active' : ''}" data-id="${q.id}" onclick="openAnswerPanel('${cat_Id}', '${q.id}')">
             <span class="question_number">Q${index + 1}</span>
@@ -370,6 +371,9 @@ function setQuestionType(cat_Id, q_Id, new_type) {
     const question = category.items.find(q => q.id === q_Id);
     if (!question)
         return;
+
+    handleQuestionTypeChange(new_type, cat_Id, q_Id, question);
+
     question.type = new_type;
     if (new_type === 'text' && !question.answer.length)
         question.answer = [{ id: uid(), text: '', leads_to: null }];
@@ -380,7 +384,7 @@ function setQuestionType(cat_Id, q_Id, new_type) {
     if (new_type === 'result' && !question.answer.length)
         question.answer = [{ id: uid(), text: '', leads_to: null }];
     if (new_type === 'drag' && !question.answer.length)
-        question.answer = [{ id: uid(), text: '' }];
+        question.answer = [{ id: uid(), text: '' }]; // <-- ADD is JSON text for answer format here
     renderAnswerPanel(cat_Id, q_Id);
     markDirty()
 }
@@ -445,43 +449,267 @@ function changeAnswerText(cat_Id, q_Id, opt_Id, new_text) {
     markDirty()
 }
 
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-
-function dragDropDesignPanel(cat_Id, q_Id){
-
+/**
+ * renders the drag drop question editor/maker
+ * If the user is trying to edit an existing question then it will render the already existing 
+ * @returns error if the panel doesn't exist
+ */
+function dragDropDesignPanel(){
     // Grab the modal element from quiz_builder.html
     const modal = document.getElementById('dragDropModal');
     if (!modal) {
         console.error("Error: #dragDropModal not found in the HTML DOM.");
         return;
     }
+
+    // if there was already existing drags and drops in the panel render those onto the screen this is kind of bloated and will be cleaned up later but it all works
+    for (const matchingCategory of quiz.categories) {
+        if (matchingCategory.id === active_category_Id) {
+            for (const matchingQuestion of matchingCategory.items) {
+                if (matchingQuestion.id === active_question_Id) {
+    
+                    const dragsObj = matchingQuestion.answer.find(a => a.drags);
+                    const dropsObj = matchingQuestion.answer.find(a => a.drops);
+    
+                    // Populate existing Drag Boxes
+                    if (dragsObj?.drags) {
+                        for (const drag of dragsObj.drags) {
+                            addDraggableBox(drag);
+                        }
+                    }
+    
+                    // Populate existing Drop Boxes
+                    if (dropsObj?.drops) {
+                        for (const drop of dropsObj.drops) {
+                            addDropBox(drop);
+                        }
+                    }
+    
+                }
+            }
+        }
+    }
     // Reveal the modal overlay
     modal.style.display = 'flex';
-
-
 }
-
 
 /**
- * Hides the modal overlay and resets its inputs
+ * Adds draggable box to the editing screen to enter text into
+ * @param {*} drag JSON element that contains an existing drag boxes text and id so the user can edit/view the contents
+ * @returns error if no window is found
  */
- function closeModal() {
-    const modal = document.getElementById('dragDropModal');
-    if (modal) {
-        modal.style.display = 'none';
+function addDraggableBox(drag = null) {
+    const dragBoxWindow = document.querySelector('.Drag-Box-Window');
+    if (!dragBoxWindow) {
+        console.error("Could not find .Drag-Box-Window on the page!");
+        return;
     }
 
-    // Clear the input text field so it's fresh for the next question clicked
-    const userInput = document.getElementById('drag-option-input');
-    if (userInput) {
-        userInput.value = '';
+    const newDragBox = document.createElement('div');
+
+    // Use the saved ID if editing, or generate a new random ID
+    newDragBox.id = drag?.id || uid(); 
+    newDragBox.classList.add('created-drop-item');
+
+    // Determine default text or existing saved text
+    const initialText = drag?.text || '';
+    const defaultPlaceholder = 'Enter draggable answer here';
+
+    // Build HTML with dynamic value setting and delete button
+    newDragBox.innerHTML = `
+        <span class="drop-label">Drag Box:</span>
+        <input type="text" 
+               class="drop-item-input" 
+               value="${initialText}" 
+               placeholder="${initialText ? '' : defaultPlaceholder}" 
+               onfocus="this.placeholder = ''" 
+               onblur="this.placeholder = this.value ? '' : '${defaultPlaceholder}'">
+        <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    dragBoxWindow.appendChild(newDragBox);
+}
+
+/**
+ * Adds drop box to the editing screen to enter text into
+ * @param {*} drop JSON element that contains an existing drop boxes text and id so the user can edit/view the contents
+ * @returns error if no window is found
+ */
+function addDropBox(drop = null) {
+    const dropBoxWindow = document.querySelector('.Drop-Box-Window');
+    if (!dropBoxWindow) {
+        console.error("Could not find .Drop-Box-Window on the page!");
+        return;
+    }
+
+    const newDropBox = document.createElement('div');
+
+    // Use the saved ID if editing, or generate a new random ID
+    newDropBox.id = drop?.id || uid(); 
+    newDropBox.classList.add('created-drop-item');
+
+    // Determine default text or existing saved text
+    const initialText = drop?.text || '';
+    const defaultPlaceholder = 'Enter drop box text here';
+
+    // Build HTML with value setting and delete button
+    newDropBox.innerHTML = `
+        <span class="drop-label">Drop Box:</span>
+        <input type="text" 
+               class="drop-item-input" 
+               value="${initialText}" 
+               placeholder="${initialText ? '' : defaultPlaceholder}" 
+               onfocus="this.placeholder = ''" 
+               onblur="this.placeholder = this.value ? '' : '${defaultPlaceholder}'">
+        <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    dropBoxWindow.appendChild(newDropBox);
+}
+/**
+ * Gets users answers from the quiz question page
+ * @param {*} windowName div that holds the text and id's of the drag and drop elements
+ * @returns AnswerList formatted JSON elements that that used to store the users answers in the database
+ */
+function getBoxTextAndId(windowName){
+    // Safety check to make sure a valid HTML element was passed in
+    if (!windowName) return [];
+    let AnswerList;
+
+    const allDragBoxes = windowName.querySelectorAll('.created-drop-item');
+
+    if (windowName.id === 'drop-box-window') {
+        AnswerList = {drops: []}
+        
+    } else if (windowName.id === 'drag-box-window') {
+        AnswerList = {drags: []}
+    }
+    
+    for (const box of allDragBoxes) {
+        const input = box.querySelector('.drop-item-input');
+        if (input) {
+            
+            if (windowName.id === 'drop-box-window') {
+                AnswerList.drops.push({
+                    id: box.id,
+                    text: input.value
+                });
+            } else if (windowName.id === 'drag-box-window') {
+                AnswerList.drags.push({
+                    id: box.id,
+                    text: input.value
+                });
+            }
+        }
+    }
+    return AnswerList; 
+}
+
+/**
+ * Saves it to the JSON file in the proper format
+ */
+function saveDragDropQuestion(){
+    // Find both windows on the page
+    const dragBoxWindow = document.getElementById('drag-box-window');
+    const dropBoxWindow = document.getElementById('drop-box-window');
+
+    // Safety check to make sure the windows actually exist before reading them
+    if (!dragBoxWindow || !dropBoxWindow) {
+        console.error("Could not find the drag or drop windows on the page!");
+        return;
+    }
+
+    let DROP_BoxTextAndIds = getBoxTextAndId(dropBoxWindow);
+    let DRAG_BoxTextAndIds = getBoxTextAndId(dragBoxWindow);
+
+    console.log("QuestionId: " + active_question_Id);
+    console.log("CategoryId: " + active_category_Id);
+    
+    // Overwrite old answer
+    for (const matchingCategory of quiz.categories){
+        if(matchingCategory.id === active_category_Id){
+            for(const matchingQuestion of matchingCategory.items){
+                if(matchingQuestion.id === active_question_Id){
+                    removeAnswer(active_category_Id, active_question_Id, matchingQuestion.answer.id);
+                }
+            }
+        }
+    }
+
+    // Save new JSON answers
+    for (const matchingCategory of quiz.categories){
+        if(matchingCategory.id === active_category_Id){
+            for(const matchingQuestion of matchingCategory.items){
+                if(matchingQuestion.id === active_question_Id){
+                    matchingQuestion.answer.push(DRAG_BoxTextAndIds);  
+                    matchingQuestion.answer.push(DROP_BoxTextAndIds);
+                }
+            }
+        }
+    }
+    closeModal();
+}
+
+/**
+ * Hides the drag drop modal overlay and resets its inputs
+ */
+function closeModal() {
+    const modal = document.getElementById('dragDropModal');
+    modal.style.display = 'none';
+}
+
+/**
+ * If the admin wants to change a 'darg' question to any other question type 
+ * this function deletes the JSON elements for the drags and drops
+ * 
+ * @param {*} categoryId Current category id of the question
+ * @param {*} questionId Current question id 
+ * @returns error if the question id isn't found
+ */
+function removeDragAndDropData(categoryId, questionId) {
+    // Find the target category
+    const category = quiz.categories.find(cat => cat.id === categoryId);
+    if (!category) {
+        console.error(`Category with ID ${categoryId} not found.`);
+        return;
+    }
+
+    // Find the target question within that category
+    const question = category.items.find(q => q.id === questionId);
+    if (!question || !Array.isArray(question.answer)) {
+        console.error(`Question with ID ${questionId} not found or missing answer array.`);
+        return;
+    }
+
+    // Filter out objects containing 'drags' or 'drops' properties
+    question.answer = question.answer.filter(item => !item.drags && !item.drops);
+}
+
+/**
+ * This function checks for if the new question type is not 'drag' and will call the removeDragAndDropData function
+ * to make sure that if the question was previously 'drag' that it reformats correctly in the JSON
+ * 
+ * Currently this is only for 'drag' questions but when new question types are added more remove functions can be put here
+ * 
+ * @param {*} newType The new question type that the question is set to
+ * @param {*} cat_Id Current category id of the question
+ * @param {*} q_id Current question id
+ * * @param {*} question Current question object
+ */
+function handleQuestionTypeChange(newType, cat_Id, q_id, question) {
+    // Check if user is changing away from drag & drop
+    if (newType !== 'drag') {
+        // Remove drags and drops from the JSON structure
+        removeDragAndDropData(cat_Id, q_id);
+        console.log(`Drag & drop data cleared.`);
+        
+    } else if (newType === 'drag'){
+        for(const ans of question.answer){
+            removeAnswer(cat_Id, q_id, ans.id);
+        }
     }
 }
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
-/** ---------- ---------- ---------- TEST CODE ---------- ---------- ---------- **/
+
 
 /**
  * Render the right side panel when you click on a question
@@ -524,18 +752,21 @@ function renderAnswerPanel(cat_Id, q_Id) {
     `: is_result ? `
        <div class="open_text_preview">
         <textarea class="result_body" placeholder="Body text (optional)" oninput="changeResultBody('${cat_Id}', '${q_Id}', this.value)">${question.result_body || ''}</textarea>
-        <label class="email_append_label">
-            <input type="checkbox" class="email_append_checkbox" ${question['email-append'] ? 'checked' : ''} onchange="toggleEmailAppend('${cat_Id}', '${q_Id}', this.checked)" />
-            Append to email?
-        </label>
-        ${question['email-append'] ? `
-        <textarea class="email_append_text" placeholder="Text to append to email (optional)" oninput="changeEmailAppendText('${cat_Id}', '${q_Id}', this.value)">${question['email-append-text'] || ''}</textarea>
+        <hr></hr>
+        <div>
+            
+            <label class="email_append_label">
+                <input type="checkbox" class="email_append_checkbox" ${question['email-append'] ? 'checked' : ''} onchange="toggleEmailAppend('${cat_Id}', '${q_Id}', this.checked)" />
+                Append to email?
+            </label>
+            ${question['email-append'] ? `
+            <textarea class="email_append_text" placeholder="Text to append to email (optional)" oninput="changeEmailAppendText('${cat_Id}', '${q_Id}', this.value)">${question['email-append-text'] || ''}</textarea>
+        </div>
         ` : ''}
     </div>
     ` : `
         <div class="open_text_preview">
             <p>Respondents will type a free-form answer.</p>
-            <div class="open_text_mock">Answer</div>
         </div>
     `;
 
@@ -552,10 +783,8 @@ function renderAnswerPanel(cat_Id, q_Id) {
                 <button class="type_btn${is_sldr ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'sldr')">Slider</button>
                 <button class="type_btn${is_result ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'result')">No Response</button>
 
-
-                <button class="type_btn${is_drag ? ' selected' : ''}" onclick="dragDropDesignPanel('${cat_Id}', '${q_Id}', 'drag')">Drag & Drop</button>
-
-
+                <button class="type_btn${is_drag ? ' selected' : ''}" onclick="setQuestionType('${cat_Id}', '${q_Id}', 'drag'); dragDropDesignPanel()">Drag & Drop</button>
+  
             </div>
             <div id="answer_config">${answers_html}</div>
         </div>
@@ -996,11 +1225,13 @@ const endTemplate = `
     <div class="end-node">
         <input class="end-title drawflow-input" type="text" placeholder="Title" oninput="updateResultText(this)"/>
         <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)"></textarea>
-        <label class="email-append-label">
-            <input type="checkbox" class="email-append-checkbox drawflow-input" onchange="updateEmailAppendToggle(this)">
-            Append to email?
-        </label>
-        <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:none" oninput="updateEmailAppendText(this)"></textarea>
+        <div>
+            <label class="email-append-label">
+                <input type="checkbox" class="email-append-checkbox drawflow-input" onchange="updateEmailAppendToggle(this)">
+                Append to email?
+            </label>
+            <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:none" oninput="updateEmailAppendText(this)"></textarea>
+        </div>
     </div>
 `;
 
@@ -1358,11 +1589,13 @@ function loadQuizIntoDrawflow() {
         <div class="end-node">
             <input class="end-title drawflow-input" type="text" placeholder="Title" value="${q.text || ''}" oninput="updateResultText(this)"/>
             <textarea class="end-body drawflow-input" placeholder="Body (optional)" oninput="updateResultBody(this)">${q.result_body || ''}</textarea>
-            <label class="email-append-label">
-                <input type="checkbox" class="email-append-checkbox drawflow-input" ${emailChecked} onchange="updateEmailAppendToggle(this)">
-                Append to email?
-            </label>
-            <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:${emailDisplay}" oninput="updateEmailAppendText(this)">${q['email-append-text'] || ''}</textarea>
+            <div>
+                <label class="email-append-label">
+                    <input type="checkbox" class="email-append-checkbox drawflow-input" ${emailChecked} onchange="updateEmailAppendToggle(this)">
+                    Append to email?
+                </label>
+                <textarea class="email-text drawflow-input" placeholder="Text to append to email (optional)" style="display:${emailDisplay}" oninput="updateEmailAppendText(this)">${q['email-append-text'] || ''}</textarea>
+            </div>
          </div>`;
             nodeId = editor.addNode('result', 1, 1, x, y, 'result', { question_id: q.id }, template);
             nodeQuestionMap[nodeId] = q.id;

@@ -95,12 +95,29 @@ textarea {
     font-family: 'DM Serif Display', Georgia, serif;
     font-size: 15px;
     border: none;
-    background: transparent;
-    color: #154734;
-    width: 100%;
-    padding: 0;
+    background:transparent;
+    color:#164733;
+    padding: 2px 4px;
     resize: none;
     outline: none;
+    border: none;
+    max-width: 100%;
+}
+
+.result_body, .email_append_text {
+    max-height: 30vh;
+    min-height: 60px;
+    field-sizing: content;
+    resize: vertical;
+    overflow-y: scroll;
+    background:white;
+}
+
+hr {
+    border: .5px solid #16473333;
+    width: 80%;
+    align-self: center;
+    
 }
 
 
@@ -347,6 +364,8 @@ main#empty_state {
     background: white;
     border-left: 1px solid white;
     overflow-y: auto;
+    max-width: 33vw;
+    overflow-x: hidden;
 }
 
 #answer_panel_header {
@@ -472,10 +491,22 @@ main#empty_state {
     width: auto;
 }
 
-.result_body {
-    all: revert;
-    field-sizing: content;
-    font-family: 'DM Serif Display', Georgia, serif;
+
+div:has(> .email_append_label){
+    display: flex;
+    flex-direction: column;
+    gap:6px;
+}
+
+.email_append_label {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    gap:6px;
+    align-items: center;
+    accent-color: #164733;
+    color:#164733;
+    font-size: small;
 }
 
 .answer_input::placeholder {
@@ -515,8 +546,25 @@ main#empty_state {
 .open_text_preview {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
 }
+
+.modal {
+    animation: fadeIn .3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(.95);
+
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 
 .open_text_preview p {
     font-size: 13px;
@@ -924,11 +972,6 @@ header a:hover h1 {
 }
 
 
-
-/* TEST CODE TEST CODE TEST CODE TEST CODE */
-/* TEST CODE TEST CODE TEST CODE TEST CODE */
-
-
 /* css/drag-drop-modal.css */
 
 .modal-overlay {
@@ -937,28 +980,162 @@ header a:hover h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); 
-    display: none;                        
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 9999;                        
+    z-index: 9999;
 }
 
 .modal-content {
     background: #ffffff;
-    padding: 25px;
+    padding: 30px;        
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: row; 
+    gap: 30px;           
+
+    width: 95vw;          
+    max-width: 1500px;     
+    min-width: 500px;     
+    height: 90vh;         
+    max-height: 1000px;    
+    min-height: 500px; 
+}
+
+.Drop-Box-Window,
+.Drag-Box-Window,
+.drop-drag-window-content {
+    background: #f8fafc;    
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1;                
+    min-height: 0;          
+    display: flex;
+    flex-direction: column; 
+    gap: 15px;           
+    overflow-y: auto;
+}
+
+.modal-body {
+    flex-grow: 1;         
+    display: flex !important; 
+    flex-direction: column !important; 
+    gap: 20px;              
+    height: 100%;           
+    min-height: 0;            
+    overflow: hidden;
+}
+
+.created-drop-item {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
-    width: 500px;
-    max-width: 90%;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.drop-label {
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.drop-item-input {
+    flex-grow: 1;
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.remove-item-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 4px;
+}
+
+.remove-item-btn:hover {
+    color: #b91c1c;
+}
+
+.modal-sidebar {
+    display: flex;
+    flex-direction: column; 
+    gap: 12px;              
+    border-right: 1px solid #e2e8f0; 
+    padding-right: 20px;
+    min-width: 140px;       
+}
+
+.add-drop-box,
+.add-drag-box,
+.square-btn {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 6px; 
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.drop-btn {
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    color: #4a5568;
+}
+.drop-btn:hover {
+    background-color: #4a5568;
+    color: white;
+    border-color: #4a5568;
+}
+
+.trash-btn {
+    border: 1px solid #f8d7da;
+    background-color: #fff5f5;
+    color: #dc3545;
+}
+.trash-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.sidebar-bottom-group {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .modal-footer {
-    margin-top: 20px;
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    flex-direction: column; 
+    gap: 8px;
+    margin-top: 0;          
 }
 
-/* TEST CODE TEST CODE TEST CODE TEST CODE */
-/* TEST CODE TEST CODE TEST CODE TEST CODE */
+.btn-save, .btn-cancel {
+    width: 100%;            
+    padding: 10px 0;        
+    text-align: center;
+}
+
+.btn-save { background-color: #007bff; color: white; }
+.btn-save:hover { background-color: #0056b3; }
+
+.btn-cancel { background-color: #e2e8f0; color: #4a5568; }
+.btn-cancel:hover { background-color: #cbd5e1; }
+/* End of drag drop CSS */

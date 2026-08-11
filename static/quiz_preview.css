@@ -172,6 +172,7 @@ body {
     white-space: nowrap;
     font-size: 15px;
 }
+
 .slider-label-selected {
     font-weight: bold;
     font-size: 20px;
@@ -386,22 +387,91 @@ pre {
     margin-bottom: 10px;
 }
 
-#email-followup input {
-    padding: 0 4px;
-    border-bottom:#154734 2px solid;
-    background-color:#22956930;
-}
-#email-followup {
+/* Drag Drop CSS*/
+.drag-drop-container {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 25px;
+    margin: 20px 0;
+    width: 100%;
 }
-#email-followup-steps {
-    gap: 4px;
+  
+.drop-zones-area, 
+.drag-items-area {
     display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+  
+.drag-drop-container .box {
+    width: 140px;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    padding: 1px;             
+    text-align: center;       
+    word-break: break-word;   
+    overflow-y: auto;         
+}
+  
+.drag-drop-container .target-box {
+    border: 2px dashed #b0b0b0;
+    background-color: #ffffff;
+    color: #888888;
+    height: auto;               
+    min-height: 140px;         
+    display: flex;
+    flex-direction: row;        
+    flex-wrap: wrap;            
+    justify-content: center;
+    align-items: center;
+    gap: 3px;                  
+    padding: 1px;              
+    position: relative;
 }
 
+.target-box > span {
+    font-weight: bold;
+    margin-bottom: 5px;
+    width: 100%;
+    text-align: center;
+    flex-shrink: 0; 
+}
+  
+.target-box .drag-box {
+    width: 100% !important;   
+    max-width: 100%;          
+    min-height: 50px;         
+    height: auto;             
+    flex-shrink: 0;           
+    box-sizing: border-box;   
+}
 
+.drag-drop-container .target-box.drag-over {
+    border-color: #4a90e2;
+    background-color: #eaf2fc;
+    color: #4a90e2;
+}
+  
+.drag-drop-container .drag-box {
+    background-color: #4a90e2;
+    color: white;
+    cursor: grab;
+    user-select: none;
+}
+  
+.drag-drop-container .drag-box:active {
+    cursor: grabbing;
+}
 
 @media (max-width: 540px) {
 

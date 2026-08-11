@@ -12,9 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/drawflow@0.0.60/dist/drawflow.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='drawflow.css') }}">
 
-    <!--Drag and Drop Styles-->
-    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_builder.css') }}">
-
+    
 </head>
 
 <body>
@@ -86,7 +84,7 @@
 
 
     <div id="share_overlay" class="share_overlay">
-        <div class="share_content">
+        <div class="share_content modal">
             <div class="share_header">
                 <h2>Search for the person you want to share with below</h2>
                 <button class="close_btn" onclick="closeShare()">x</button>
@@ -114,7 +112,7 @@
     </div>
 
     <div id="assign_overlay" class="share_overlay">
-        <div class="share_content">
+        <div class="share_content modal">
             <div class="share_header">
                 <h2>Assign quiz to a user</h2>
                 <button class="close_btn" onclick="closeAssign()">x</button>
@@ -129,7 +127,7 @@
     </div>
 
     <div id="delete_overlay" class="delete_overlay">
-        <div class="delete_content">
+        <div class="delete_content modal">
             <div class="share_header">
                 <h2>Are you completly sure you want to delete this quiz?</h2>
                 <button class="close_btn" onclick="closeDelete()">x</button>
@@ -143,7 +141,7 @@
     </div>
 
     <div id="branching_overlay">
-        <div id="branching_content">
+        <div id="branching_content" class="modal">
             <div class="share_header">
                 <h2>Drag and drop to decide on the branching logic of your quiz below.</h2>
                 <button class="close_btn" onclick="closeBranching()">✕</button>
@@ -182,29 +180,34 @@
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
 
 
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
 
     <div id="dragDropModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="modal-title">Drag & Drop Setup TEST</h3>
-            <div class="modal-body">
-                <input type="text" id="drag-option-input" placeholder="Enter an answer option...">
+        <div class="modal modal-content">
+            
+            <div class="modal-sidebar">
+                <button id="drag-box" type="button" class="add-drop-box drop-btn" onclick="addDraggableBox()" title="Add Drag Element">
+                    + Draggable Box
+                </button>
+
+                <button id="drop-box" type="button" class="add-drag-box drop-btn" onclick="addDropBox()" title="Add Drop Target">
+                    + Drop Box
+                </button>
+
+                <div class="sidebar-bottom-group">
+                    <div class="modal-footer">
+                        <button id="modal-save-btn" class="square-btn drop-btn" onclick="saveDragDropQuestion()">Save & Close</button>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button id="modal-save-btn" class="btn-save">Save</button>
-                <button type="button" onclick="closeModal()" class="btn-cancel">Cancel</button>
+
+            <div class="modal-body">
+                <div id="drag-box-window" class="Drag-Box-Window"></div>
+                <div id="drop-box-window" class="Drop-Box-Window"></div>
             </div>
         </div>
     </div>
-    
+        
     <script src="{{ url_for('static', filename='quiz_builder.js') }}"></script>
-
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-    <!-- TEST CODE -- -- TEST CODE -- -- TEST CODE -- -- TEST CODE -->
-
 
 </body>
 
