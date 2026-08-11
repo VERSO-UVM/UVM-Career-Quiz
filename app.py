@@ -31,6 +31,139 @@ app.config.update(
 )
 mail = Mail(app)
 
+def connect_dashboard(user_id=None):
+    """
+    Connect the Streamlit dashboard to the Flask app by loading and returning user quiz data.
+    
+    This function bridges the Flask backend with the Streamlit dashboard located in the 
+    dashboard_test folder. It retrieves user quiz data from the database and formats it 
+    for display in the dashboard.
+    
+    Args:
+        user_id (str, optional): The ID of the user to load dashboard data for. 
+                                If None, uses the current session user_id.
+    
+    Returns:
+        dict: A dictionary containing:
+            - 'success' (bool): Whether the data was successfully loaded
+            - 'user_data' (UserQuizData or None): The user's quiz data object
+            - 'error' (str or None): Error message if loading failed
+        
+    Raises:
+        ValueError: If no user_id is provided and no user is logged in
+    """
+    try:
+        # Use provided user_id or get from session
+        current_user_id = user_id or session.get('user_id')
+        
+        if not current_user_id:
+            return {
+                'success': False,
+                'user_data': None,
+                'error': 'No user ID provided and no user logged in'
+            }
+        
+        # Import dashboard functions to load user data
+        import sys
+        dashboard_path = os.path.join(os.path.dirname(__file__), 'dashboard_test')
+        if dashboard_path not in sys.path:
+            sys.path.insert(0, dashboard_path)
+        
+        # Query user data from database
+        user_quiz_data = db.has_dashboard_access(current_user_id) 
+        
+        if user_quiz_data is None:
+            return {
+                'success': False,
+                'user_data': None,
+                'error': f'No quiz data found for user {current_user_id}'
+            }
+        
+        return {
+            'success': True,
+            'user_data': user_quiz_data,
+            'error': None
+        }
+    
+    except Exception as e:
+        return {
+            'success': False,
+            'user_data': None,
+            'error': f'Error connecting to dashboard: {str(e)}'
+        }
+
+
+@app.route('/dashboard', methods=['GET'])
+def dashboard_redirect():
+    """
+    Redirect authenticated users to the Streamlit dashboard.
+    
+    This route ensures only logged-in users can access the dashboard and provides
+    a direct entry point from the Flask application to the Streamlit dashboard
+    in the dashboard_test folder.
+    
+    Returns:
+        302: Redirect to Streamlit dashboard if user is logged in
+        403: Access denied if user is not logged in
+    """
+    if not session.get('user_id'):
+        return require_login("Please log in to access the dashboard")
+    
+    # Load user dashboard data for validation
+    dashboard_data = connect_dashboard()
+    
+    if not dashboard_data['success']:
+        return jsonify({
+            'error': 'Failed to load dashboard data',
+            'details': dashboard_data['error']
+        }), 500
+    
+    # In production, you would redirect to the Streamlit app URL
+    # For now, return the user data as JSON
+    return jsonify({
+        'message': 'Dashboard data loaded successfully',
+        'user_id': session.get('user_id'),
+        'username': session.get('username'),
+        'data_status': 'ready_for_streamlit'
+    }), 200
+
+
+@app.route('/api/dashboard-data', methods=['GET'])
+def get_dashboard_data():
+    """
+    API endpoint to retrieve dashboard data for the current user.
+    
+    This endpoint allows the Streamlit dashboard (or frontend) to fetch the user's
+    quiz completion status and answers in JSON format.
+    
+    Returns:
+        200: JSON object with user quiz data
+        403: Access denied if user is not logged in
+        500: Error loading dashboard data
+    """
+    if not session.get('user_id'):
+        return jsonify({'error': 'Not logged in'}), 403
+    
+    dashboard_data = connect_dashboard()
+    
+    if not dashboard_data['success']:
+        return jsonify({
+            'error': 'Failed to load dashboard data',
+            'details': dashboard_data['error']
+        }), 500
+    
+    user_data = dashboard_data['user_data']
+    
+    # Format user data as JSON
+    return jsonify({
+        'success': True,
+        'user_id': user_data.u_id if user_data else None,
+        'completed_quiz_count': user_data.completed_quiz_count if user_data else 0,
+        'completed_quizzes': [quiz[0] for quiz in user_data.completed_quizzes] if user_data else [],
+        'quizzes_to_do': user_data.quizzes_to_do if user_data else [],
+        'data_ready': True
+    }), 200
+
 # @app.route('/send-test-email', methods=['POST'])
 # async def send_test_email():
 #     message = Message(
@@ -299,7 +432,8 @@ def quiz_selection():
                 quiz.append(filename[:-5])
         for q in quiz:
             name.append(db.find_name_with_id(q))
-        return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0, username = session["username"])
+        has_dashboard_access = db.has_dashboard_access(session['user_id'])
+        return render_template("quiz_selection.html", quizzes = quiz, names = name, count = 0, username = session["username"], has_dashboard_access = has_dashboard_access)
     return require_login("You need to log in to see your quizzes.")
 
 @app.route("/quiz_preview/<quiz>")

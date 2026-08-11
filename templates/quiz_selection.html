@@ -42,6 +42,11 @@
                 <a id="quiz_creation" href="{{url_for('show_available_quizzes')}}">
                     <button class="quiz_selector">Take a Quiz</button>
                 </a>
+                {% if has_dashboard_access %}
+                <a id="dashboard_link" href="{{ url_for('dashboard_redirect') }}">
+                    <button class="quiz_selector">Dashboard</button>
+                </a>
+                {% endif %}
             </div>
         </div>
     </main>

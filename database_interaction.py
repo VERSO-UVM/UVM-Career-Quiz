@@ -320,10 +320,10 @@ def user_with_access(q_id : str) -> list[str] | None:
 def quizzes_for_user(u_id : str):
     """
     Retrieve all quizzes that a user has access to.
-
+ 
     Args:
         u_id (str): the id of the user whose quizzes we want to retrieve
-
+ 
     Returns:
         list: a list of dictionaries, each containing the quiz id and name
               of a quiz the user has access to. Returns an empty list if
@@ -340,6 +340,29 @@ def quizzes_for_user(u_id : str):
     rows = cur.fetchall()
     conn.close()
     return [{"id": row[0], "name": row[1] or None} for row in rows]
+
+
+def has_dashboard_access(u_id: str) -> bool:
+    """
+    Check if a user has dashboard access (creator, admin, or editor role on at least one quiz).
+ 
+    Args:
+        u_id (str): the id of the user to check
+ 
+    Returns:
+        bool: True if the user has creator, admin, or editor role on at least one quiz, False otherwise
+    """
+    conn, cur = connecting_to_sql()
+    query = """
+        SELECT EXISTS(
+            SELECT 1 FROM ACCESS
+            WHERE u_ID = ? AND role IN (?, ?, ?)
+        )
+    """
+    cur.execute(query, (u_id, ROLE_CREATOR, ROLE_ADMIN, ROLE_EDITOR))
+    result = cur.fetchone()
+    conn.close()
+    return bool(result[0]) if result else False
 
 
 
