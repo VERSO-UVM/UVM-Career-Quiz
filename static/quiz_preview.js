@@ -42,11 +42,11 @@ function buildPages(quiz) {
  * @returns when the quiz is fully finished, as a way to escape and not continue with unneded behavior 
  */
 function updateFooter() {
-    const answered = history.length;
+    const answered = history.filter(idx => pages[idx].item.type !== 'result').length;
     if (cur >= pages.length) {
         document.getElementById('footer-fill').style.width = '100%';
         document.getElementById('footer-label').textContent = `${answered} questions answered`;
-        document.getElementById('footer-remain').textContent = 'All done!';
+        document.getElementById('footer-remain').textContent = '';
         return;
     }
 
@@ -61,7 +61,7 @@ function updateFooter() {
     const bestPct = bestTotal > 0 ? Math.round((answered / bestTotal) * 100) : 0;
 
     // progress bar just goesd off worst case scenario for the time being. maybe we could add a range later? not sure best way to do this.
-    document.getElementById('footer-fill').style.width = worstPct + '%';
+    document.getElementById('footer-fill').style.width = bestPct + '%';
 
 
     document.getElementById('footer-label').textContent = (worstPct == bestPct)
@@ -91,7 +91,8 @@ function getRemainingRange(startIdx) {
 
         visiting.add(idx);
 
-        const answers = pages[idx].item.answer || [];
+        const item = pages[idx].item;
+        const answers = item.answer || [];
         let childRanges;
 
         // if theres no answers, just add 1
@@ -105,9 +106,12 @@ function getRemainingRange(startIdx) {
 
         visiting.delete(idx);
 
+        // "result" pages aren't real inputs, so they shouldn't count toward remaining
+        const weight = item.type === 'result' ? 0 : 1;
+
         const result = [
-            1 + Math.min(...childRanges.map(r => r[0])),
-            1 + Math.max(...childRanges.map(r => r[1]))
+            weight + Math.min(...childRanges.map(r => r[0])),
+            weight + Math.max(...childRanges.map(r => r[1]))
         ];
 
         memo.set(idx, result);
@@ -193,7 +197,7 @@ function renderQuestionPage(page) {
             ${item.result_body ? `<p class="result-body">${esc(item.result_body)}</p>` : ''}
         </div>`;
     } else if (item.type === 'drag') {
-        
+
         // Return the container markup directly in the body string
         body = `
             <div class="drag-drop-container" id="drag-drop-container-${item.id}">
@@ -221,16 +225,16 @@ function renderQuestionPage(page) {
  */
 function extractDragDropState(dropArea) {
     const dropBoxes = dropArea.querySelectorAll('.target-box');
-    
+
     let allIdsArray = [];
     let allTextsArray = [];
 
     for (const dropBox of dropBoxes) {
         // Find all drag boxes currently dropped inside THIS specific drop box
         const nestedDrags = dropBox.querySelectorAll('.drag-box');
-        
+
         let dragDropIDString = dropBox.id;
-        
+
         // Get just the drop box's title (ignoring nested drag elements)
         let dropBoxTitle = "";
         const titleSpan = dropBox.querySelector('span');
@@ -324,7 +328,7 @@ function addAllDropsAndDrags(item) {
                 /** 
                  * This will save the users response for JSON and 
                  * if they want to go back and look at there answer during the quiz
-                 * */ 
+                 * */
                 const questionResults = extractDragDropState(dropArea)
                 responses[item.id] = {
                     dragDropId: questionResults.dragDropId,
@@ -333,9 +337,9 @@ function addAllDropsAndDrags(item) {
             }
         });
 
-        dropArea.appendChild(dropElem);    
+        dropArea.appendChild(dropElem);
     });
-    
+
 
     // Render Draggable Boxes
     dragsList.forEach((drag, index) => {
@@ -360,7 +364,7 @@ function addAllDropsAndDrags(item) {
  * data is formatted to be accepted into the data base
  * @param {*} savedResponse The users response to the question
  */
-function selectDRAG(savedResponse){
+function selectDRAG(savedResponse) {
     if (savedResponse && savedResponse.dragDropId) {
         // savedResponse.dragDropId looks like: "dropId|dragId1|dragId2, dropId2|dragId3"
         const dropBoxGroups = savedResponse.dragDropId.split(', ');
@@ -442,11 +446,11 @@ function formatCompletedQuizData() {
             };
 
             // Special case for 'text' questions since there not stored normally
-            if(ques.type === 'text'){
+            if (ques.type === 'text') {
                 let userAnswer = null;
                 // Compare user response id to the answer id's
-                for(const response of responseEntries){
-                    if(ques.id === response[questionIdIndex]){
+                for (const response of responseEntries) {
+                    if (ques.id === response[questionIdIndex]) {
                         userAnswer = {
                             text: response[textResponseIndex],
                             id: Math.random().toString(36).slice(2, 9)
@@ -459,12 +463,12 @@ function formatCompletedQuizData() {
                 }
             }
             //  Special case for 'drag' questions since there not stored normally
-            if(ques.type === 'drag'){
+            if (ques.type === 'drag') {
                 let userAnswer = null;
                 // Compare user response id to the answer id's
-                for(const response of responseEntries){
+                for (const response of responseEntries) {
 
-                    if(ques.id === response[questionIdIndex]){
+                    if (ques.id === response[questionIdIndex]) {
                         userAnswer = {
                             text: response[textResponseIndex].dragDropText,
                             id: response[textResponseIndex].dragDropId
@@ -755,23 +759,20 @@ function resolveLeadsTo(leads_to) {
 function nextQuestion(qId) {
     const item = pages[cur].item;
 
-    if(item.type === 'drag'){
+    if (item.type === 'drag') {
         history.push(cur);
         cur++; // Just go to the next chronological page normally
     } else {
         const allAnswers = quiz.categories.flatMap(cat => cat.items).flatMap(i => i.answer);
-
         const answerId = responses[qId];
         const answer = allAnswers.find(a => a.id === answerId) || item.answer?.[0];
         const leads_to = answer?.leads_to;
 
-    history.push(cur);
-    cur = resolveLeadsTo(leads_to);
-    recordVisit(cur);
         history.push(cur);
         cur = resolveLeadsTo(leads_to);
+        recordVisit(cur);
     }
-    
+
     render();
     window.scrollTo({ top: 0 });
 }
