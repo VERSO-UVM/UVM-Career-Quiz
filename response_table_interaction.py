@@ -229,6 +229,7 @@ class TypeCheck:
             raise IncompatibleType(message=f"Data is of type: {type(data)}, must be of type '<class 'bytes'>'")
 """
 # --------------------------------------- GENERIC QUERY TEST -----------------------------------------------------------------------
+"""
 def __generic_query_response(ptr_t_cursor, query, func,  write_query, read_args, write_args=None, write=False, fn_val=None):
     conn, cur = ptr_t_cursor()
     try:
@@ -269,7 +270,7 @@ def __generic_query_response(ptr_t_cursor, query, func,  write_query, read_args,
 
 
 
-
+"""
 # not sure if this will work but we'll see 
 # ------------------------------------------------------------------------------------------------------------------------------------
 def connecting_to_sql():
@@ -755,7 +756,7 @@ def _api_error(action: str, message: str, **meta):
 
 
 # this is the head pointer to this file, all dashboard functions should be able to be called from here
-def api_header(action: str = None, **kwargs):
+def api_header(action = None, **kwargs):
     """
     Unified entry point for database/report lookups.
 
