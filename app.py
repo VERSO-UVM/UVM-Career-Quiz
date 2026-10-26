@@ -6,6 +6,7 @@ import time
 import database_interaction as db 
 import log_in
 
+#helloo everybody
 
 app = Flask(__name__)
 #TODO this is for testing purpose and will need to be changed as soon as we get a server
