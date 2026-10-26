@@ -11,6 +11,9 @@ import subprocess
 from flask_mailing import Mail, Message
 
 
+# shade is cool
+
+
 app = Flask(__name__)
 #TODO this is for testing purpose and will need to be changed as soon as we get a server
 app.secret_key = "flask_is_making_me_do_this"
