@@ -13,6 +13,7 @@ from flask_mailing import Mail, Message
 
 # shade is cool
 #but seb is cooler
+#lololololol
 
 
 app = Flask(__name__)
