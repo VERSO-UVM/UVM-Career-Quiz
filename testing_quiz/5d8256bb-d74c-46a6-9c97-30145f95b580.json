@@ -387,7 +387,7 @@
               "text": ""
             }
           ],
-          "email-append": false,
+          "email-append": true,
           "email-append-text": "",
           "id": "8fma18c",
           "result_body": "Our online Guide to Resumes has tips and examples to help you get started. We'll include a link to it at the end. ",
@@ -429,6 +429,6 @@
   ],
   "desc": "This is an example of what our quiz builder can do in comparison to qualtrics. The long term goal is for this quiz to be similar to the one in qualtrics, but better. Missing :\n- Purely text based category (no answer needed) \n- Image?",
   "id": "5d8256bb-d74c-46a6-9c97-30145f95b580",
-  "last_modified": 1785434750.055347,
+  "last_modified": 1793025513.197922,
   "title": "Career Quiz 1"
 }
