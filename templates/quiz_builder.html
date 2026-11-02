@@ -20,11 +20,14 @@
     <header>
         <h1>Quiz builder</h1>
         <div class="header_actions">
+            {% if user_role in ('creator','admin','editor') %}
+            <span id="save_status" class="save_status" aria-live="polite"></span>
+            {% endif %}
             <a href="{{ url_for('quiz_selection') }}">
                 <button class="home_btn">Home</button>
             </a>
             {% if user_role in ('creator','admin','editor') %}
-            <button class="export_quiz" onclick="saveQuiz()">Save your quiz</button>
+            <button id="save_btn" class="export_quiz" onclick="saveQuiz()" title="Save (Ctrl+S / ⌘S)">Save your quiz</button>
             {% endif %}
             <button onclick="previewQuiz()" class="preview_btn">Preview</button>
             {% if user_role in ('creator','admin') %}
@@ -43,11 +46,11 @@
             <div class="quiz_info">
                 <p>Title</p>
                 <input class="quiz_input" id="quiz-title" placeholder="A fitting title for your quiz" value=""
-                    oninput="render()" {% if user_role=='reader' %}readonly{% endif %}>
+                    oninput="render(); markDirty()" {% if user_role=='reader' %}readonly{% endif %}>
             </div>
             <div class="quiz_info">
                 <p>Subtitle / description</p>
-                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?" oninput="render()" {%
+                <textarea class="quiz_input" id="quiz-desc" placeholder="What is this quiz for?" oninput="render(); markDirty()" {%
                     if user_role=='reader' %}readonly{% endif %}></textarea>
             </div>
             {% if user_role in ('creator','admin','editor') %}
@@ -141,6 +144,8 @@
         </div>
     </div>
 
+
+    <div id="toast_container" class="toast_container"></div>
 
     <script>
         let quiz = {{ quiz | tojson }} || {

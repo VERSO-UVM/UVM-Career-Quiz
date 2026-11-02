@@ -905,3 +905,113 @@ header .role_badge {
 .role_select_inline:focus {
     outline: 2px solid #154734;
 }
+.save_status {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.save_status--saved {
+    color: #cfe8db;
+}
+
+.save_status--dirty {
+    background: #ffd416;
+    color: #154734;
+}
+
+.save_status--new,
+.save_status--saving {
+    color: whitesmoke;
+    font-style: italic;
+}
+
+.save_status--error {
+    background: #b3261e;
+    color: white;
+}
+
+.export_quiz:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.toast_container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 2000;
+    max-width: min(380px, calc(100vw - 40px));
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: white;
+    color: #1d1d1d;
+    border-left: 5px solid #154734;
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 14px;
+    animation: toast-in 0.2s ease-out;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.toast--success {
+    border-left-color: #2e7d32;
+}
+
+.toast--error {
+    border-left-color: #b3261e;
+}
+
+.toast--info {
+    border-left-color: #154734;
+}
+
+.toast--leaving {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.toast_close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px;
+}
+
+.toast_close:hover,
+.toast_close:focus-visible {
+    color: #000;
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast {
+        animation: none;
+        transition: none;
+    }
+}
