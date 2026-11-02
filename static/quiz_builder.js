@@ -251,6 +251,7 @@ function saveQuiz() {
                 alert(data.error);
             } else {
                 quiz.id = data.id; // update in-memory id
+                quiz.last_modified = data.last_modified;
                 markClean();
                 if (window.location.href.includes("new_quiz")) {
                     window.location.href = `/quiz_builder/${data.id}`;
