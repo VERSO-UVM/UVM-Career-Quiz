@@ -13,9 +13,52 @@ function uid() {
 
 function markDirty() {
     isDirty = true;
+    setSaveStatus('dirty');
 }
 function markClean() {
     isDirty = false;
+    setSaveStatus('saved');
+}
+
+const SAVE_STATUS_TEXT = {
+    saved: 'All changes saved',
+    dirty: 'Unsaved changes',
+    saving: 'Saving…',
+    new: 'Not saved yet',
+    error: 'Save failed',
+};
+
+function setSaveStatus(state) {
+    if (_role === 'reader') return;
+    const el = document.getElementById('save_status');
+    el.textContent = SAVE_STATUS_TEXT[state];
+    el.className = `save_status save_status--${state}`;
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast--${type}`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+    const text = document.createElement('span');
+    text.textContent = message;
+
+    const close = document.createElement('button');
+    close.className = 'toast_close';
+    close.setAttribute('aria-label', 'Dismiss notification');
+    close.textContent = '✕';
+    close.addEventListener('click', () => dismissToast(toast));
+
+    toast.append(text, close);
+    document.getElementById('toast_container').appendChild(toast);
+
+    setTimeout(() => dismissToast(toast), type === 'error' ? 8000 : 3500);
+}
+
+function dismissToast(toast) {
+    if (!toast.isConnected) return;
+    toast.classList.add('toast--leaving');
+    setTimeout(() => toast.remove(), 200);
 }
 
 /**
@@ -35,7 +78,7 @@ function addCategory() {
     const id = uid();
     //25 is an arbitrary number for the sake of having a limit, might want to remove that one day
     if (quiz.categories.length >= 25) {
-        alert("Too many categories");
+        showToast("You can have at most 25 categories.", 'error');
         return;
     }
     quiz.categories.push({ id, name: 'Category ' + (quiz.categories.length + 1), items: [] });
@@ -231,34 +274,59 @@ function renderCategory() {
  * save the quiz, by sending the "quiz" dict to the backend, and saving that as a json object
  * @returns here to break out of the function in case of unexpected behavior(here no title)
  */
-function saveQuiz() {
+async function saveQuiz() {
+    const saveBtn = document.getElementById('save_btn');
+    if (saveBtn.disabled) return;
     if (!quiz.title) {
-        alert("You have not chosen the name of your quiz. Please do so before saving it");
+        showToast("Give your quiz a title before saving it.", 'error');
+        document.getElementById('quiz-title').focus();
         return;
     }
-    const jsonString = JSON.stringify(quiz, null, 2);
 
-    fetch('/save_quiz', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: jsonString
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                quiz.id = data.id; // update in-memory id
-                quiz.last_modified = data.last_modified;
-                markClean();
-                if (window.location.href.includes("new_quiz")) {
-                    window.location.href = `/quiz_builder/${data.id}`;
-                }
-            }
+    saveBtn.disabled = true;
+    setSaveStatus('saving');
+
+    try {
+        const response = await fetch('/save_quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(quiz, null, 2)
         });
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
+        }
+        const data = await response.json();
+
+        if (data.error) {
+            setSaveStatus('error');
+            showToast(data.error, 'error');
+            return;
+        }
+
+        quiz.id = data.id;
+        quiz.last_modified = data.last_modified;
+        markClean();
+        if (window.location.href.includes("new_quiz")) {
+            window.location.href = `/quiz_builder/${data.id}`;
+            return;
+        }
+        showToast("Quiz saved.", 'success');
+    } catch (err) {
+        console.error(err);
+        setSaveStatus('error');
+        showToast("Could not save your quiz. Check your connection and try again.", 'error');
+    } finally {
+        saveBtn.disabled = false;
+    }
 }
+
+document.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        if (!document.getElementById('save_btn')) return;
+        event.preventDefault();
+        saveQuiz();
+    }
+});
 
 
 /**
@@ -540,7 +608,7 @@ async function submitShare() {
         }
     }
     else
-        alert("Please choose a title and save your quiz before trying to share it")
+        showToast("Give your quiz a title and save it before sharing.", 'error');
 }
 /**
  * Load from the backend the exact user who have access to this quiz
@@ -631,7 +699,7 @@ function previewQuiz() {
     if (quiz.title && !window.location.href.includes("new_quiz"))
         window.location.href = `/quiz_preview/${quiz.id}`;
     else
-        alert("Please choose a title and save your quiz before trying to preview it")
+        showToast("Give your quiz a title and save it before previewing.", 'error');
 }
 
 function openDelete() {
@@ -644,26 +712,37 @@ function closeDelete() {
 
 async function deleteQuiz() {
     if (!quiz.title && window.location.href.includes("new_quiz")) {
-        alert("Your quiz has not even been saved once, and as such does not need to be deleted, you can just refresh the page.")
+        showToast("This quiz has never been saved, so there is nothing to delete.", 'info');
         closeDelete()
         return
     }
-    const response = await fetch('/quiz_delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quiz_id: quiz.id })
-    });
-    const result = await response.json()
-    if (!result.error) {
-        window.location.href = result.redirect;
-
-    }
-    else {
-        alert(result.error)
+    try {
+        const response = await fetch('/quiz_delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quiz_id: quiz.id })
+        });
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
+        }
+        const result = await response.json()
+        if (!result.error) {
+            window.removeEventListener('beforeunload', warnIfUnsaved);
+            window.location.href = result.redirect;
+        }
+        else {
+            closeDelete();
+            showToast(result.error, 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        closeDelete();
+        showToast("Could not delete the quiz. Check your connection and try again.", 'error');
     }
 }
 // having render here ensure that everything is shown properly, as it will render everything once when the page is loaded for the first time
 render();
+setSaveStatus(window.location.href.includes("new_quiz") ? 'new' : 'saved');
 
 
 
@@ -727,6 +806,7 @@ function addNodeAnswer(btn) {
     const question = getQuizQuestion(nodeId);
     if (question) {
         question.answer.push({ id: uid(), text: '', leads_to: null });
+        markDirty();
     }
 
     const div = document.createElement('div');
@@ -764,6 +844,7 @@ function removeNodeAnswer(btn) {
     const question = getQuizQuestion(nodeId);
     if (question) {
         question.answer.splice(answerIndex, 1);
+        markDirty();
     }
 
     answer.remove();
@@ -983,7 +1064,10 @@ function updateQuestionText(input) {
     const nodeEl = input.closest('.drawflow-node');
     const nodeId = nodeEl.id.replace('node-', '');
     const question = getQuizQuestion(nodeId);
-    if (question) question.text = input.value;
+    if (question) {
+        question.text = input.value;
+        markDirty();
+    }
 }
 
 function updateAnswerText(input) {
@@ -995,14 +1079,18 @@ function updateAnswerText(input) {
     const answerEl = input.closest('.answer');
     const outputKey = answerEl.dataset.output;
     const answerIndex = parseInt(outputKey.replace('output_', '')) - 1;
-    if (question.answer[answerIndex]) question.answer[answerIndex].text = input.value;
+    if (question.answer[answerIndex]) {
+        question.answer[answerIndex].text = input.value;
+        markDirty();
+    }
 }
 
 
 
-window.addEventListener('beforeunload', (event) => {
+function warnIfUnsaved(event) {
     if (isDirty) {
         event.preventDefault();
         event.returnValue = '';
     }
-});
+}
+window.addEventListener('beforeunload', warnIfUnsaved);
